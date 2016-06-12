@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "system",
+    "sourceMap": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "outFile": "dist/app.js"
+  },
+  "files": [
+    "src/game.ts",
+    "app.ts"
+  ]
+}

@@ -1,0 +1,71 @@
+
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="center sliding">Scene</div>
+    </div>
+</div>
+
+<div class="pages">
+    <div data-page="scene" class="page" data-ted-meid="{{meid}}">
+        <div class="page-content">
+
+            <div class="list-block">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-inner">
+                                <div class="item-title label">Name</div>
+                                <div class="item-input">
+                                    <input id="ted-scene-name" type="text" placeholder="name" value="{{me.name}}">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-inner">
+                                <div class="item-input">
+                                    <input id="ted-scene-desc" type="text" placeholder="description" value="{{me.desc}}">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="ted-moments">
+            <div class="content-block-title">Moments</div>
+            <div class="list-block">
+                <ul>
+                    {{#each me.moments}}
+                    <li>
+                        <a href="page/moment.html?id={{this.id}}" data-view=".view-right" class="item-link">
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">{{this.when}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            </div>
+
+            <div class="content-block-title">Actions</div>
+            <div class="list-block">
+                <ul>
+                    <li>
+                        <a href="page/action.html?id=1" class="item-link">
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">Frapper la batterie</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

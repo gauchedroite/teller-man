@@ -1,0 +1,29 @@
+{
+  "name": "teller-man",
+  "version": "0.1.0",
+  "description": "Teller Game Editor",
+  "main": "index.html",
+  "author": "Christian Trépanier",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/gauchedroite/teller-man.git"
+  },
+  "scripts": {
+    "tsc": "tsc -p ./",
+    "tsc:w": "tsc -p ./ -w",
+    "less": "lessc --strict-math=on app.less dist/app.css",
+    "less:w": "nodemon -e less -w ./ -x \"npm run less\"",
+    "http": "http-server",
+    "dev": "concurrently \"npm run tsc:w\" \"npm run less:w\" \"npm run http\" "
+  },
+  "dependencies": {
+    "systemjs": "^0.19.29"
+  },
+  "devDependencies": {
+    "concurrently": "^2.1.0",
+    "less": "^2.7.1",
+    "nodemon": "^1.9.2",
+    "typescript": "^1.8.10"
+  }
+}

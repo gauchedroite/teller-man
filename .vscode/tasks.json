@@ -1,0 +1,33 @@
+{
+    "version": "0.1.0",
+    "command": "npm",
+    "isShellCommand": true,
+    "showOutput": "always",
+    "suppressTaskName": true,
+    "tasks": [
+        {
+            "taskName": "run typescript once",
+            "args": ["run", "tsc"]
+        },
+        {
+            "taskName": "watch typescript",
+            "args": ["run", "tsc:w"]
+        },
+        {
+            "taskName": "run less once",
+            "args": ["run", "less"]
+        },
+        {
+            "taskName": "watch less",
+            "args": ["run", "less:w"]
+        },
+        {
+            "taskName": "start http server",
+            "args": ["run", "http"]
+        },
+        {
+            "taskName": "dev loop",
+            "args": ["run", "dev"]
+        }
+    ]
+}

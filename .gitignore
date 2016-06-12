@@ -1,0 +1,9 @@
+build/
+node_modules/
+typings/
+.private/
+*.cmd
+*.js
+*.log
+*.map
+*.zip
