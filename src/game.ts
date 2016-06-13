@@ -8,14 +8,21 @@ interface String {
 
 class Game {
 
-    static $: any;
+    app: any;
+    $: any;
+    leftView: any;
+    centerView: any;
+    rightView: any;
 
-    static preprocess(content: string, url: any, next: any) {
-        const pages = [
+    preprocess(content: string, url: any, next: any) {
+        var game = this;
+        var pages = [
             {
                 url: "page/game.html", 
                 fix: function (data: any, id: number) {
-            }},
+                    console.log(game.loadGame());
+                }
+            },
             {
                 url: "page/situation-index.html", 
                 fix: function (data: any, id: number) {
@@ -23,7 +30,7 @@ class Game {
             {
                 url: "page/situation.html", 
                 fix: function (data: any, id: number) {
-                    var me = data.situations[id];
+                    var me = game.getSituation(game.situations, id);
                     data.me = me;
                     data.meid = id;
                     data.me.scenes = [];
@@ -36,7 +43,7 @@ class Game {
             {
                 url: "page/scene.html", 
                 fix: function (data: any, id: number) {
-                    var me = data.scenes[id];
+                    var me = game.getScene(game.scenes, id);
                     data.me = me;
                     data.meid = id;
                     data.me.moments = [];
@@ -49,7 +56,7 @@ class Game {
             {
                 url: "page/moment.html", 
                 fix: function (data: any, id: number) {
-                    var me = data.moments[id];
+                    var me = game.getMoment(game.moments, id);
                     data.me = me;
                     data.meid = id;
                 }
@@ -59,8 +66,8 @@ class Game {
             if (url == undefined) return;
             var page = pages[i];
             if (url.startsWith(page.url)) {
-                var id = Game.$.parseUrlQuery(url).id;
-                var data = Game.loadGame();
+                var id = this.$.parseUrlQuery(url).id;
+                var data = this.loadGame();
                 page.fix(data, id);
                 var template = Template7.compile(content);
                 var resultContent = template(data);
@@ -70,8 +77,13 @@ class Game {
         return (content);
     };
 
-    constructor(private app: any, private $: any, private leftView: any, private centerView: any, private rightView: any) {
-        Game.$ = $;
+    init = (app: any, $: any, leftView: any, centerView: any, rightView: any) => {
+
+        this.app = app;
+        this.$ = $;
+        this.leftView = leftView;
+        this.centerView = centerView;
+        this.rightView = rightView;
 
         app.onPageInit("*", function (page: any) {
             if (page.url == undefined) return;
@@ -90,20 +102,65 @@ class Game {
             }
         });
 
-        $(document).on("click", "div#ted-scenes li", function (e: any) {
+        $(document).on("click", "div#ted-situations li", (e: any) => {
             $(e.target.closest("ul")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
-        $(document).on("click", "div#ted-moments li", function (e: any) {
+        $(document).on("click", "div#ted-scenes li", (e: any) => {
             $(e.target.closest("ul")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
-        $("#ted-save-game").on("click", function (e: any) {
-            app.confirm("Are you sure?", "Mock Game Data", function () {
-                Game.mockData();
+        $(document).on("click", "div#ted-moments li", (e: any) => {
+            $(e.target.closest("ul")).find("li").removeClass("ted-selected");
+            $(e.target.closest("li")).addClass("ted-selected"); 
+        });
+
+        $(document).on("click", "#ted-save-game", (e: any) => {
+            app.confirm("Are you sure?", "Mock Game Data", this.mockData);
+        });
+
+        $(document).on("click", "#ted-add-situation", (e: any) => {
+            var id = this.addSituation();
+            var li = '<li class="ted-selected">'
+                   +    '<a href="page/situation.html?id=' + id + '" class="item-link">'
+                   +        '<div class="item-content">'
+                   +            '<div class="item-inner">'
+                   +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +        '</div>'
+                   +    '</a>'
+                   +'</li>';
+            var $ul = $("#ted-situations ul");
+            $ul.find("li").removeClass("ted-selected");
+            $ul.append(li);
+            leftView.router.load({ url: "page/situation.html?id=" + id });
+        });
+
+        $(document).on("click", "#ted-delete-situation", (e: any) => {
+            app.confirm("Are you sure?", "Delete Situation", () => {
+                this.deleteSituation(Game.getMeId(e.target));
+                var history = this.leftView.history;
+                this.leftView.router.back({
+                    url: history[history.length - 2],
+                    force: true,
+                    ignoreCache: true
+                 });
             });
+        });
+
+        $(document).on("change", "#ted-situation-name", (e: any) => {
+            this.saveSituationName(e.target.value, Game.getMeId(e.target));
+            $("#ted-situations li.ted-selected div.item-title").text(e.target.value);
+        });
+
+        $(document).on("change", "#ted-situation-when", (e: any) => {
+            this.saveSituationWhen(e.target.value, Game.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-situation-tags", (e: any) => {
+            this.saveSituationTags(e.target.value, Game.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-scene-name", (e: any) => {
@@ -125,7 +182,7 @@ class Game {
         });
     }
 
-    static mockData = () => {
+    mockData = () => {
         localStorage.clear();
         var game = {
             id: 0, name: "Le jeu de paume", startsid: 0
@@ -152,7 +209,7 @@ class Game {
         localStorage.setItem("moments", JSON.stringify(moments));
     }
 
-    static loadGame = () => {
+    loadGame = () => {
         var game = JSON.parse(localStorage.getItem("game"));
         var sits = JSON.parse(localStorage.getItem("situations"));
         var scns = JSON.parse(localStorage.getItem("scenes"));
@@ -171,28 +228,90 @@ class Game {
         return parseInt(target.closest("div.page").getAttribute("data-ted-meid"));
     }
 
+    addSituation = () => {
+        var id = -1;
+        var sits = this.situations;
+        for (var i = 0; i < sits.length; i++) {
+            var sit = sits[i];
+            if (sit.id > id) id = sit.id;
+        }
+        id++;
+        var sit: any = { id: id, name: null, when: null, tags: [], sids: [], npcids: [] };
+        sits.push(sit);
+        this.situations = sits;
+        return id;
+    }
+
+    deleteSituation = (id: number) => {
+        var sits = this.situations;
+        var index = this.getSituationIndex(sits, id);
+        sits.splice(index, 1);
+        this.situations = sits;
+    }
+
+    saveSituationName = (name: string, id: number) => {
+        var sits = this.situations;
+        var sit = this.getSituation(sits, id);
+        sit.name = name;
+        this.situations = sits;
+    }
+
+    saveSituationWhen = (when: string, id: number) => {
+        var sits = this.situations;
+        var sit = this.getSituation(sits, id);
+        sit.when = when;
+        this.situations = sits;
+    }
+
+    saveSituationTags = (name: string, id: number) => {
+        //TODO
+    }
+
     saveSceneName = (name: string, id: number) => {
         var scns = this.scenes;
-        scns[id].name = name;
+        var scn = this.getScene(scns, id);
+        scn.name = name;
         this.scenes = scns;
     }
 
     saveSceneDesc = (desc: string, id: number) => {
         var scns = this.scenes;
-        scns[id].desc = desc;
+        var scn = this.getScene(scns, id);
+        scn.desc = desc;
         this.scenes = scns;
     }
 
     saveMomentWhen = (when: string, id: number) => {
         var moms = this.moments;
-        moms[id].when = when;
+        var mom = this.getMoment(moms, id);
+        mom.when = when;
         this.moments = moms;
     }
 
     saveMomentText = (text: string, id: number) => {
         var moms = this.moments;
-        moms[id].text = text;
+        var mom = this.getMoment(moms, id);
+        mom.text = text;
         this.moments = moms;
+    }
+
+    get situations() {
+        return JSON.parse(localStorage.getItem("situations"));
+    }
+
+    set situations(moms: any) {
+        localStorage.setItem("situations", JSON.stringify(moms));
+    }
+
+    getSituation = (sits: any, id: number) => {
+        return (sits[this.getSituationIndex(sits, id)]);
+    }
+
+    getSituationIndex = (sits: any, id: number) => {
+        for (var i = 0; i < sits.length; i++) {
+            if (sits[i].id == id)
+                return i;
+        }
     }
 
     get scenes() {
@@ -203,11 +322,25 @@ class Game {
         localStorage.setItem("scenes", JSON.stringify(moms));
     }
 
+    getScene = (scns: any, id: number) => {
+        for (var i = 0; i < scns.length; i++) {
+            if (scns[i].id == id)
+                return scns[i];
+        }
+    }
+
     get moments() {
         return JSON.parse(localStorage.getItem("moments"));
     }
 
     set moments(moms: any) {
         localStorage.setItem("moments", JSON.stringify(moms));
+    }
+
+    getMoment = (moms: any, id: number) => {
+        for (var i = 0; i < moms.length; i++) {
+            if (moms[i].id == id)
+                return moms[i];
+        }
     }
 }

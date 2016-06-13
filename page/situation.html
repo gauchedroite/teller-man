@@ -11,6 +11,7 @@
 
 <div class="pages">
     <div data-page="situation" class="page" data-ted-meid="{{meid}}">
+
         <div class="page-content">
             
             <div class="list-block">
@@ -20,7 +21,7 @@
                             <div class="item-inner">
                                 <div class="item-title label">Name</div>
                                 <div class="item-input">
-                                    <input type="text" placeholder="condition" value="{{me.name}}">
+                                    <input id="ted-situation-name" type="text" placeholder="condition" value="{{me.name}}">
                                 </div>
                             </div>
                         </div>
@@ -30,7 +31,7 @@
                             <div class="item-inner">
                                 <div class="item-title label">When</div>
                                 <div class="item-input">
-                                    <input type="text" placeholder="condition" value="{{me.when}}">
+                                    <input id="ted-situation-when" type="text" placeholder="condition" value="{{me.when}}">
                                 </div>
                             </div>
                         </div>
@@ -40,7 +41,7 @@
                             <div class="item-inner">
                                 <div class="item-title label">Tags</div>
                                 <div class="item-input">
-                                    <input type="text" placeholder="tags" value="{{me.tags}}">
+                                    <input id="ted-situation-tags" type="text" placeholder="tags" value="{{me.tags}}">
                                 </div>
                             </div>
                         </div>
@@ -54,10 +55,10 @@
                 <ul>
                     {{#each me.scenes}}
                     <li>
-                        <a href="page/scene.html?id={{this.id}}" data-view=".view-center" class="item-link">
+                        <a href="page/scene.html?id={{id}}" data-view=".view-center" class="item-link">
                             <div class="item-content">
                                 <div class="item-inner">
-                                    <div class="item-title">{{this.name}}</div>
+                                    <div class="item-title">{{name}}</div>
                                 </div>
                             </div>
                         </a>
@@ -70,7 +71,7 @@
             <div class="content-block-title">NPC</div>
             <div class="list-block">
                 <ul>
-                    <li>
+                    <!--<li>
                         <a href="page/npc.html?id=1" class="item-link">
                             <div class="item-content">
                                 <div class="item-inner">
@@ -78,10 +79,17 @@
                                 </div>
                             </div>
                         </a>
-                    </li>
+                    </li>-->
                 </ul>
             </div>
 
         </div>
+
+        <div class="toolbar">
+            <div class="toolbar-inner">
+                <a id="ted-delete-situation" href="#" class="link">Delete</a>
+            </div>
+        </div>
+
     </div>
 </div>
