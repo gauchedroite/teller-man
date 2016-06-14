@@ -117,8 +117,22 @@ class Game {
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
+        $(document).on("click", "#ted-mock-game", (e: any) => {
+            app.confirm("This will ovewrite the current game data. Is this ok?", "Mock Game Data", this.mockData);
+        });
+
+        $(document).on("click", "#ted-load-game", (e: any) => {
+            var data = this.loadGame();
+            delete data.me;
+            delete data.meid;
+            var text = JSON.stringify(data);
+            $("#ted-game-data").val(text);
+        });
+
         $(document).on("click", "#ted-save-game", (e: any) => {
-            app.confirm("Are you sure?", "Mock Game Data", this.mockData);
+            app.confirm("This will ovewrite the current game data. Is this ok?", "Save Game Data", () => {
+                //
+            });
         });
 
         $(document).on("click", "#ted-add-situation", (e: any) => {
