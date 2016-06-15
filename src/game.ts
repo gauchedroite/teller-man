@@ -6,6 +6,43 @@ interface String {
     startsWith(s: string): boolean
 }
 
+interface IGame {
+    id: number
+    name: string
+    startsid: number
+}
+
+interface ISituation {
+    id: number
+    name: string
+    when: string
+    tags: Array<string>
+    sids: Array<number>
+    npcids: Array<number>
+}
+
+interface IScene {
+    id: number
+    name: string
+    desc: string
+    bids: Array<number>
+    aids: Array<number>
+}
+
+interface IMoment {
+    id: number
+    when: string
+    text: string
+}
+
+interface IGameData {
+    game: IGame
+    situations: Array<ISituation>
+    scenes: Array<IScene>
+    moments: Array<IMoment>
+    me: any
+    meid: number
+}
 
 class Game {
     $: any;
@@ -20,7 +57,7 @@ class Game {
         var data = this.loadGame();
         for (var i = 0; i < data.situations.length; i++) {
             var sit = data.situations[i];
-            sit.selected = (sit.id == data.game.startsid ? "selected" : "");
+            (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : "");
         }
         var gameinfo = document.getElementById("ted-game-info");
         var content = gameinfo.innerHTML;
@@ -33,21 +70,21 @@ class Game {
         var pages = [
             {
                 url: "http://", 
-                fix: function (data: any, id: number) {
+                fix: function (data: IGameData, id: number) {
                     for (var i = 0; i < data.situations.length; i++) {
                         var sit = data.situations[i];
-                        sit.selected = (sit.id == data.game.startsid ? "selected" : "");
+                        (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : "");
                     }
                 }
             },
             {
                 url: "page/situation-index.html", 
-                fix: function (data: any, id: number) {
+                fix: function (data: IGameData, id: number) {
                 }
             },
             {
                 url: "page/situation.html", 
-                fix: function (data: any, id: number) {
+                fix: function (data: IGameData, id: number) {
                     var me = game.getSituation(game.situations, id);
                     data.me = me;
                     data.meid = id;
@@ -60,7 +97,7 @@ class Game {
             },
             {
                 url: "page/scene.html", 
-                fix: function (data: any, id: number) {
+                fix: function (data: IGameData, id: number) {
                     var me = game.getScene(game.scenes, id);
                     data.me = me;
                     data.meid = id;
@@ -73,7 +110,7 @@ class Game {
             },
             {
                 url: "page/moment.html", 
-                fix: function (data: any, id: number) {
+                fix: function (data: IGameData, id: number) {
                     var me = game.getMoment(game.moments, id);
                     data.me = me;
                     data.meid = id;
@@ -171,7 +208,7 @@ class Game {
             leftView.router.load({ url: "page/situation.html?id=" + id });
         });
 
-        $(document).on("click", "#ted-delete-situation", (e: any) => {
+        $(document).on("click", "#ted-delete-situation", (e: Event) => {
             app.confirm("Are you sure?", "Delete Situation", () => {
                 this.deleteSituation(Game.getMeId(e.target));
                 var history = this.leftView.history;
@@ -230,20 +267,20 @@ class Game {
 
     mockData = () => {
         localStorage.clear();
-        var game = {
+        var game: IGame = {
             id: 0, name: "Le jeu de paume", startsid: 0
         };
-        var situations = [
+        var situations: Array<ISituation> = [
             { id: 0, name: "Beginning", when: "undef cheval", tags: ["chap1", "trésor"], sids: [0, 1, 2, 3], npcids: [0] },
             { id: 1, name: "Dead dog", when: "todo", tags: ["chap1", "dog"], sids: [], npcids: [] }
         ];
-        var scenes = [
+        var scenes: Array<IScene> = [
             { id: 0, name: "Bord de l'eau", desc: "EXT. Bord de l'eau", bids: [], aids: [] },
             { id: 1, name: "Conductrice", desc: "EXT. Conductrice", bids: [0], aids: [] },
             { id: 2, name: "Camion", desc: "EXT. Le camion accidenté", bids: [0, 1, 2], aids: [0] },
             { id: 3, name: "Capot", desc: "EXT. Le capot", bids: [], aids: [] }
         ];
-        var moments = [
+        var moments: Array<IMoment> = [
             { id: 0, when: "not cheval", text: "[0] .a Jack" },
             { id: 1, when: "undef inv.crowbar", text: "[1] .a Jack" },
             { id: 2, when: "inv.crowbar", text: "[2] .a Jack" },
@@ -256,17 +293,17 @@ class Game {
     }
 
     loadGame = () => {
-        var game = JSON.parse(localStorage.getItem("game"));
-        var sits = JSON.parse(localStorage.getItem("situations"));
-        var scns = JSON.parse(localStorage.getItem("scenes"));
-        var moms = JSON.parse(localStorage.getItem("moments"));
-        return { 
+        var game = <IGame> JSON.parse(localStorage.getItem("game"));
+        var sits = <Array<ISituation>> JSON.parse(localStorage.getItem("situations"));
+        var scns = <Array<IScene>> JSON.parse(localStorage.getItem("scenes"));
+        var moms = <Array<IMoment>> JSON.parse(localStorage.getItem("moments"));
+        return <IGameData> { 
             game: game, 
             situations: sits,
             scenes: scns,
             moments: moms,
-            me: <any>null,
-            meid: <number>null
+            me: null,
+            meid: null
         };
     }
 
@@ -301,7 +338,7 @@ class Game {
             if (sit.id > id) id = sit.id;
         }
         id++;
-        var sit: any = { id: id, name: null, when: null, tags: [], sids: [], npcids: [] };
+        var sit: ISituation = { id: id, name: null, when: null, tags: [], sids: [], npcids: [] };
         sits.push(sit);
         this.situations = sits;
         return id;
@@ -361,56 +398,56 @@ class Game {
     }
 
     get game() {
-        return JSON.parse(localStorage.getItem("game"));
+        return <IGame> JSON.parse(localStorage.getItem("game"));
     }
 
-    set game(game: any) {
+    set game(game: IGame) {
         localStorage.setItem("game", JSON.stringify(game));
     }
 
-    get situations() {
+    get situations() : Array<ISituation> {
         return JSON.parse(localStorage.getItem("situations"));
     }
 
-    set situations(moms: any) {
-        localStorage.setItem("situations", JSON.stringify(moms));
+    set situations(sits: Array<ISituation>) {
+        localStorage.setItem("situations", JSON.stringify(sits));
     }
 
-    getSituation = (sits: any, id: number) => {
+    getSituation = (sits: Array<ISituation>, id: number) => {
         return (sits[this.getSituationIndex(sits, id)]);
     }
 
-    getSituationIndex = (sits: any, id: number) => {
+    getSituationIndex = (sits: Array<ISituation>, id: number) => {
         for (var i = 0; i < sits.length; i++) {
             if (sits[i].id == id)
                 return i;
         }
     }
 
-    get scenes() {
+    get scenes() : Array<IScene> {
         return JSON.parse(localStorage.getItem("scenes"));
     }
 
-    set scenes(moms: any) {
+    set scenes(moms: Array<IScene>) {
         localStorage.setItem("scenes", JSON.stringify(moms));
     }
 
-    getScene = (scns: any, id: number) => {
+    getScene = (scns: Array<IScene>, id: number) => {
         for (var i = 0; i < scns.length; i++) {
             if (scns[i].id == id)
                 return scns[i];
         }
     }
 
-    get moments() {
+    get moments() : Array<IMoment> {
         return JSON.parse(localStorage.getItem("moments"));
     }
 
-    set moments(moms: any) {
+    set moments(moms: Array<IMoment>) {
         localStorage.setItem("moments", JSON.stringify(moms));
     }
 
-    getMoment = (moms: any, id: number) => {
+    getMoment = (moms: Array<IMoment>, id: number) => {
         for (var i = 0; i < moms.length; i++) {
             if (moms[i].id == id)
                 return moms[i];
