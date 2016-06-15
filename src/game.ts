@@ -1,4 +1,5 @@
 
+declare var Dom7: any;
 declare var Template7: any;
 
 interface String {
@@ -7,26 +8,43 @@ interface String {
 
 
 class Game {
-
-    app: any;
     $: any;
+    app: any;
     leftView: any;
     centerView: any;
     rightView: any;
+
+    constructor() {
+        this.$ = Dom7;
+        var $ = Dom7;
+        var data = this.loadGame();
+        for (var i = 0; i < data.situations.length; i++) {
+            var sit = data.situations[i];
+            sit.selected = (sit.id == data.game.startsid ? "selected" : "");
+        }
+        var gameinfo = document.getElementById("ted-game-info");
+        var content = gameinfo.innerHTML;
+        var template = Template7.compile(content);
+        gameinfo.innerHTML = template(data);
+    }
 
     preprocess(content: string, url: any, next: any) {
         var game = this;
         var pages = [
             {
-                url: "page/game.html", 
+                url: "http://", 
                 fix: function (data: any, id: number) {
-                    console.log(game.loadGame());
+                    for (var i = 0; i < data.situations.length; i++) {
+                        var sit = data.situations[i];
+                        sit.selected = (sit.id == data.game.startsid ? "selected" : "");
+                    }
                 }
             },
             {
                 url: "page/situation-index.html", 
                 fix: function (data: any, id: number) {
-            }},
+                }
+            },
             {
                 url: "page/situation.html", 
                 fix: function (data: any, id: number) {
@@ -77,13 +95,14 @@ class Game {
         return (content);
     };
 
-    init = (app: any, $: any, leftView: any, centerView: any, rightView: any) => {
-
+    init = (app: any, leftView: any, centerView: any, rightView: any) => {
+        
         this.app = app;
-        this.$ = $;
         this.leftView = leftView;
         this.centerView = centerView;
         this.rightView = rightView;
+
+        var $ = this.$;
 
         app.onPageInit("*", function (page: any) {
             if (page.url == undefined) return;
@@ -164,6 +183,19 @@ class Game {
             });
         });
 
+        $(document).on("change", "#ted-game-name", (e: any) => {
+            this.saveGameName(e.target.value);
+        });
+
+        $(document).on("click", "input[name^='radio-']", (e: any) => {
+            var $ssp = $(e.target).closest("div.smart-select-popup");
+            if ($ssp.length == 0) return;
+            var $dp = $ssp.find("div[data-page]");
+            var $pc = $dp.find("div.page-content input:checked");
+            var $it = $pc.next("div.item-inner").find("div.item-title");
+            this.saveGameStartSituation($it.text());
+        });
+
         $(document).on("change", "#ted-situation-name", (e: any) => {
             this.saveSituationName(e.target.value, Game.getMeId(e.target));
             $("#ted-situations li.ted-selected div.item-title").text(e.target.value);
@@ -242,6 +274,25 @@ class Game {
         return parseInt(target.closest("div.page").getAttribute("data-ted-meid"));
     }
 
+    saveGameName = (name: string) => {
+        var game = this.game;
+        game.name = name;
+        this.game = game;
+    }
+
+    saveGameStartSituation = (text: string) => {
+        var game = this.game;
+        var sits = this.situations;
+        for (var i = 0; i < sits.length; i++) {
+            var sit = sits[i];
+            if (sit.name == text) {
+                game.startsid = sit.id;
+                this.game = game;
+                return;
+            }
+        }
+    }
+
     addSituation = () => {
         var id = -1;
         var sits = this.situations;
@@ -307,6 +358,14 @@ class Game {
         var mom = this.getMoment(moms, id);
         mom.text = text;
         this.moments = moms;
+    }
+
+    get game() {
+        return JSON.parse(localStorage.getItem("game"));
+    }
+
+    set game(game: any) {
+        localStorage.setItem("game", JSON.stringify(game));
     }
 
     get situations() {

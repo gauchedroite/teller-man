@@ -21,27 +21,110 @@
         <div class="view view-left navbar-through" style="height: 600px;">
             <div class="navbar">
                 <div class="navbar-inner">
-                    <div class="center sliding">Games</div>
+                    <div class="center sliding">Game</div>
                 </div>
             </div>
+
             <div class="pages">
-                <div data-page="index-left" class="page toolbar-fixed">
+                <div data-page="index-left" class="page">
+
                     <div class="page-content">
-                        <div class="content-block-title">Select a Game to edit</div>
-                        <div class="list-block">
+
+                        <div class="content-block-title">Game Info</div>
+                        <div id="ted-game-info" class="list-block">
                             <ul>
                                 <li>
-                                    <a href="page/game.html?id=1" class="item-link">
+                                    <div class="item-content">
+                                        <div class="item-inner">
+                                            <div class="item-title label">Name</div>
+                                            <div class="item-input">
+                                                <input id="ted-game-name" type="text" placeholder="Game name" value="{{game.name}}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="#" class="item-link smart-select" data-open-in="popup" data-page-title="Situation to start game with" data-searchbar="true" data-searchbar-placeholder="Search">
+                                        <select name="situations">
+                                            {{#each situations}}
+                                            <option value="{{this.id}}" {{this.selected}}>{{this.name}}</option>
+                                            {{/each}}
+                                        </select>
                                         <div class="item-content">
                                             <div class="item-inner">
-                                                <div class="item-title">Le jeu de paume</div>
+                                                <div class="item-title">Start with</div>
+                                                <div id="ted-game-start-situation" class="item-after"></div>
                                             </div>
                                         </div>
                                     </a>
                                 </li>
                             </ul>
                         </div>
+
+                        <div class="content-block-title">Game Objects</div>
+                        <div class="list-block">
+                            <ul>
+                                <li>
+                                    <a href="page/situation-index.html" class="item-link">
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title">Situations</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="page/npc.html" class="item-link">
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title">NPC</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="page/state.html" class="item-link">
+                                        <div class="item-content">
+                                            <div class="item-inner">
+                                                <div class="item-title">State</div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content-block-title">Game Data</div>
+                        <div class="list-block">
+                            <ul>
+                                <li>
+                                    <div class="item-content">
+                                        <div class="item-inner">
+                                            <div class="item-input">
+                                                <textarea id="ted-game-data" style="font-family: monospace; font-size: small;"></textarea>
+                                            </div> 
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="content-block" style="margin-top: -20px;">
+                            <div class="row">
+                                <div class="col-33">
+                                    <a id="ted-mock-game" href="#" class="button button-fill color-red">Mock</a>
+                                </div>
+                                <div class="col-33">
+                                    <a id="ted-load-game" href="#" class="button button-fill color-green">Get</a>
+                                </div>
+                                <div class="col-33">
+                                    <a id="ted-save-game" href="#" class="button button-fill color-red">Save</a>
+                                </div>
+                            </div>  
+                        </div>
+
                     </div>
+
                 </div>
             </div>
         </div>

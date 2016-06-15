@@ -2,7 +2,6 @@
 namespace TellerMan {
 
     declare var Framework7: any;
-    declare var Dom7: any;
 
     var game = new Game();
 
@@ -10,11 +9,10 @@ namespace TellerMan {
         cache: false,
         preprocess: game.preprocess.bind(game)
     });
-    var $ = Dom7;
 
     var leftView = app.addView(".view-left", { dynamicNavbar: true });
     var centerView = app.addView(".view-center", { dynamicNavbar: true });
     var rightView = app.addView(".view-right", { dynamicNavbar: true });
 
-    game.init(app, $, leftView, centerView, rightView);
+    game.init(app, leftView, centerView, rightView);
 }
