@@ -38,7 +38,7 @@ class Game {
                     var data = gdata.loadGame();
                     for (var i = 0; i < data.situations.length; i++) {
                         var sit = data.situations[i];
-                        (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : "");
+                        (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : null);
                     }
                     return data;
                 }
@@ -56,11 +56,7 @@ class Game {
                     var me = gdata.getSituation(gdata.situations, id);
                     data.me = me;
                     data.meid = id;
-                    data.me.scenes = [];
-                    for (var i = 0; i < me.sids.length; i ++) {
-                        var sid = me.sids[i];
-                        data.me.scenes.push(data.scenes[sid]);
-                    }
+                    data.me.scenes = gdata.getScenesOf(me);
                     return data;
                 }
             },
@@ -71,11 +67,7 @@ class Game {
                     var me = gdata.getScene(gdata.scenes, id);
                     data.me = me;
                     data.meid = id;
-                    data.me.moments = [];
-                    for (var i = 0; i < me.bids.length; i ++) {
-                        var bid = me.bids[i];
-                        data.me.moments.push(data.moments[bid]);
-                    }
+                    data.me.moments = gdata.getMomentsOf(me);
                     return data;
                 }
             },
@@ -158,8 +150,9 @@ class Game {
         });
 
         $(document).on("click", "#ted-save-game", (e: any) => {
-            app.confirm("This will ovewrite the current game data. Is this ok?", "Save Game Data", () => {
-                //
+            app.confirm("This will ovewrite the current game data. A manual refresh of the game will be required. Is this ok?", "Save Game Data", () => {
+                var text = $("#ted-game-data").val();
+                this.gdata.saveData(text);
             });
         });
 
@@ -196,7 +189,7 @@ class Game {
             var sitid = Game.getMeId(e.target);
             var id = this.gdata.addScene(sitid);
             var li = '<li class="ted-selected">'
-                   +    '<a href="page/scene.html?id=' + id + '" data-view=".view-right" class="item-link">'
+                   +    '<a href="page/scene.html?id=' + id + '" data-view=".view-center" class="item-link">'
                    +        '<div class="item-content">'
                    +            '<div class="item-inner">'
                    +                '<div class="item-title"></div>'
@@ -209,6 +202,52 @@ class Game {
             $ul.append(li);
             centerView.router.load({ url: "page/scene.html?id=" + id });
         });
+
+        $(document).on("click", "#ted-delete-scene", (e: Event) => {
+            app.confirm("Are you sure?", "Delete Scene", () => {
+                this.gdata.deleteScene(Game.getMeId(e.target));
+                var history = this.centerView.history;
+                this.centerView.router.back({
+                    url: history[0],
+                    force: true,
+                    ignoreCache: true
+                 });
+                 this.leftView.router.refreshPage();
+            });
+        });
+
+        $(document).on("click", "#ted-add-moment", (e: any) => {
+            var momid = Game.getMeId(e.target);
+            var id = this.gdata.addMoment(momid);
+            var li = '<li class="ted-selected">'
+                   +    '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link">'
+                   +        '<div class="item-content">'
+                   +            '<div class="item-inner">'
+                   +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +        '</div>'
+                   +    '</a>'
+                   +'</li>';
+            var $ul = $("#ted-moments ul");
+            $ul.find("li").removeClass("ted-selected");
+            $ul.append(li);
+            rightView.router.load({ url: "page/moment.html?id=" + id });
+        });
+
+        $(document).on("click", "#ted-delete-moment", (e: Event) => {
+            app.confirm("Are you sure?", "Delete Moment", () => {
+                this.gdata.deleteMoment(Game.getMeId(e.target));
+                var history = this.rightView.history;
+                this.rightView.router.back({
+                    url: history[0],
+                    force: true,
+                    ignoreCache: true
+                 });
+                 this.centerView.router.refreshPage();
+            });
+        });
+
+
 
         $(document).on("change", "#ted-game-name", (e: any) => {
             this.gdata.saveGameName(e.target.value);

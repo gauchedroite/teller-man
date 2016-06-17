@@ -81,6 +81,15 @@ class GameData {
         };
     }
 
+    saveData = (text: string) => {
+        var gdata = <IGameData> JSON.parse(text);
+        localStorage.clear();
+        localStorage.setItem("game", JSON.stringify(gdata.game));
+        localStorage.setItem("situations", JSON.stringify(gdata.situations));
+        localStorage.setItem("scenes", JSON.stringify(gdata.scenes));
+        localStorage.setItem("moments", JSON.stringify(gdata.moments));
+    }
+
 //
 // game
 //
@@ -126,8 +135,7 @@ class GameData {
         var sit = sits[index];
         //
         for (var i = 0; i < sit.sids.length; i++) {
-            var id = sit.sids[i];
-            this.deleteScene(id);
+            this.deleteScene(sit.sids[i]);
         }
         //
         sit.sids = [];
@@ -181,7 +189,7 @@ class GameData {
         var scn = scns[index];
         //
         for (var i = 0; i < scn.bids.length; i++) {
-            //todo this.deleteMoment(scn.bids[i]);
+            this.deleteMoment(scn.bids[i]);
         }
         //
         scns.splice(index, 1);
@@ -192,7 +200,7 @@ class GameData {
             var sit = sits[i];
             for (var j = 0; j < sit.sids.length; j++) {
                 if (sit.sids[j] == id) {
-                    sit.sids.splice(j);
+                    sit.sids.splice(j, 1);
                     break;
                 }
             }
@@ -217,6 +225,46 @@ class GameData {
 //
 // moments
 //
+    addMoment = (scnid: number) => {
+        var id = -1;
+        var moms = this.moments;
+        for (var i = 0; i < moms.length; i++) {
+            var mom = moms[i];
+            if (mom.id > id) id = mom.id;
+        }
+        id++;
+        var mom: IMoment = { id: id, when: null, text: null };
+        moms.push(mom);
+        this.moments = moms;
+        //
+        var scns = this.scenes;
+        var scn = this.getScene(scns, scnid);
+        scn.bids.push(id);
+        this.scenes = scns;
+        return id;
+    }
+
+    deleteMoment = (id: number) => {
+        var moms = this.moments;
+        var index = this.getMomentIndex(moms, id);
+        var mom = moms[index];
+        //
+        moms.splice(index, 1);
+        this.moments = moms;
+        //
+        var scns = this.scenes;
+        for (var i = 0; i < scns.length; i++) {
+            var scn = scns[i];
+            for (var j = 0; j < scn.bids.length; j++) {
+                if (scn.bids[j] == id) {
+                    scn.bids.splice(j, 1);
+                    break;
+                }
+            }
+        }
+        this.scenes = scns;
+    }
+
     saveMomentWhen = (when: string, id: number) => {
         var moms = this.moments;
         var mom = this.getMoment(moms, id);
@@ -281,6 +329,21 @@ class GameData {
         }
     }
 
+    getScenesOf = (sit: ISituation): Array<IScene> => {
+        var scenes = this.scenes;
+        var scns: Array<IScene> = [];
+        for (var i = 0; i < sit.sids.length; i++) {
+            var id = sit.sids[i];
+            for (var j = 0; j < scenes.length; j++) {
+                if (scenes[j].id == id) {
+                    scns.push(scenes[j]);
+                    break;
+                }
+            }
+        }
+        return scns;
+    }
+
     get moments() : Array<IMoment> {
         return JSON.parse(localStorage.getItem("moments"));
     }
@@ -290,9 +353,28 @@ class GameData {
     }
 
     getMoment = (moms: Array<IMoment>, id: number) => {
+        return (moms[this.getMomentIndex(moms, id)]);
+    }
+
+    getMomentIndex = (moms: Array<IMoment>, id: number) => {
         for (var i = 0; i < moms.length; i++) {
             if (moms[i].id == id)
-                return moms[i];
+                return i;
         }
+    }
+
+    getMomentsOf = (scn: IScene): Array<IMoment> => {
+        var moments = this.moments;
+        var moms: Array<IMoment> = [];
+        for (var i = 0; i < scn.bids.length; i++) {
+            var id = scn.bids[i];
+            for (var j = 0; j < moments.length; j++) {
+                if (moments[j].id == id) {
+                    moms.push(moments[j]);
+                    break;
+                }
+            }
+        }
+        return moms;
     }
 }
