@@ -192,6 +192,24 @@ class Game {
             });
         });
 
+        $(document).on("click", "#ted-add-scene", (e: any) => {
+            var sitid = Game.getMeId(e.target);
+            var id = this.gdata.addScene(sitid);
+            var li = '<li class="ted-selected">'
+                   +    '<a href="page/scene.html?id=' + id + '" data-view=".view-right" class="item-link">'
+                   +        '<div class="item-content">'
+                   +            '<div class="item-inner">'
+                   +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +        '</div>'
+                   +    '</a>'
+                   +'</li>';
+            var $ul = $("#ted-scenes ul");
+            $ul.find("li").removeClass("ted-selected");
+            $ul.append(li);
+            centerView.router.load({ url: "page/scene.html?id=" + id });
+        });
+
         $(document).on("change", "#ted-game-name", (e: any) => {
             this.gdata.saveGameName(e.target.value);
         });

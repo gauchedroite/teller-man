@@ -81,6 +81,9 @@ class GameData {
         };
     }
 
+//
+// game
+//
     saveGameName = (name: string) => {
         var game = this.game;
         game.name = name;
@@ -100,6 +103,9 @@ class GameData {
         }
     }
 
+//
+// situations
+//
     addSituation = () => {
         var id = -1;
         var sits = this.situations;
@@ -117,6 +123,14 @@ class GameData {
     deleteSituation = (id: number) => {
         var sits = this.situations;
         var index = this.getSituationIndex(sits, id);
+        var sit = sits[index];
+        //
+        for (var i = 0; i < sit.sids.length; i++) {
+            var id = sit.sids[i];
+            this.deleteScene(id);
+        }
+        //
+        sit.sids = [];
         sits.splice(index, 1);
         this.situations = sits;
     }
@@ -139,6 +153,53 @@ class GameData {
         //TODO
     }
 
+//
+// scenes
+//
+    addScene = (sitid: number) => {
+        var id = -1;
+        var scns = this.scenes;
+        for (var i = 0; i < scns.length; i++) {
+            var scn = scns[i];
+            if (scn.id > id) id = scn.id;
+        }
+        id++;
+        var scn: IScene = { id: id, name: null, desc: null, bids: [], aids: [] };
+        scns.push(scn);
+        this.scenes = scns;
+        //
+        var sits = this.situations;
+        var sit = this.getSituation(sits, sitid);
+        sit.sids.push(id);
+        this.situations = sits;
+        return id;
+    }
+
+    deleteScene = (id: number) => {
+        var scns = this.scenes;
+        var index = this.getSceneIndex(scns, id);
+        var scn = scns[index];
+        //
+        for (var i = 0; i < scn.bids.length; i++) {
+            //todo this.deleteMoment(scn.bids[i]);
+        }
+        //
+        scns.splice(index, 1);
+        this.scenes = scns;
+        //
+        var sits = this.situations;
+        for (var i = 0; i < sits.length; i++) {
+            var sit = sits[i];
+            for (var j = 0; j < sit.sids.length; j++) {
+                if (sit.sids[j] == id) {
+                    sit.sids.splice(j);
+                    break;
+                }
+            }
+        }
+        this.situations = sits;
+    }
+
     saveSceneName = (name: string, id: number) => {
         var scns = this.scenes;
         var scn = this.getScene(scns, id);
@@ -153,6 +214,9 @@ class GameData {
         this.scenes = scns;
     }
 
+//
+// moments
+//
     saveMomentWhen = (when: string, id: number) => {
         var moms = this.moments;
         var mom = this.getMoment(moms, id);
@@ -167,6 +231,10 @@ class GameData {
         this.moments = moms;
     }
 
+
+//
+// localstorage
+//
     get game() {
         return <IGame> JSON.parse(localStorage.getItem("game"));
     }
@@ -203,9 +271,13 @@ class GameData {
     }
 
     getScene = (scns: Array<IScene>, id: number) => {
+        return (scns[this.getSceneIndex(scns, id)]);
+    }
+
+    getSceneIndex = (scns: Array<IScene>, id: number) => {
         for (var i = 0; i < scns.length; i++) {
             if (scns[i].id == id)
-                return scns[i];
+                return i;
         }
     }
 
