@@ -19,8 +19,7 @@ class Game {
         this.$ = Dom7;
         var $ = Dom7;
         var data = this.gdata.loadGame();
-        for (var i = 0; i < data.situations.length; i++) {
-            var sit = data.situations[i];
+        for (var sit of data.situations) {
             (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : "");
         }
         var gameinfo = document.getElementById("ted-game-info");
@@ -36,8 +35,7 @@ class Game {
                 url: "http://", 
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
-                    for (var i = 0; i < data.situations.length; i++) {
-                        var sit = data.situations[i];
+                    for (var sit of data.situations) {
                         (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : null);
                     }
                     return data;
@@ -82,9 +80,8 @@ class Game {
                 }
             }
         ];
-        for (var i = 0; i < pages.length; i++) {
-            if (url == undefined) return;
-            var page = pages[i];
+        if (url == undefined) return;
+        for (var page of pages) {
             if (url.startsWith(page.url)) {
                 var id = this.$.parseUrlQuery(url).id;
                 var data = page.getData(id);

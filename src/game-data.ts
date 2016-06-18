@@ -102,8 +102,7 @@ class GameData {
     saveGameStartSituation = (text: string) => {
         var game = this.game;
         var sits = this.situations;
-        for (var i = 0; i < sits.length; i++) {
-            var sit = sits[i];
+        for (var sit of sits) {
             if (sit.name == text) {
                 game.startsid = sit.id;
                 this.game = game;
@@ -118,8 +117,7 @@ class GameData {
     addSituation = () => {
         var id = -1;
         var sits = this.situations;
-        for (var i = 0; i < sits.length; i++) {
-            var sit = sits[i];
+        for (var sit of sits) {
             if (sit.id > id) id = sit.id;
         }
         id++;
@@ -134,8 +132,8 @@ class GameData {
         var index = this.getSituationIndex(sits, id);
         var sit = sits[index];
         //
-        for (var i = 0; i < sit.sids.length; i++) {
-            this.deleteScene(sit.sids[i]);
+        for (var sid of sit.sids) {
+            this.deleteScene(sid);
         }
         //
         sit.sids = [];
@@ -167,8 +165,7 @@ class GameData {
     addScene = (sitid: number) => {
         var id = -1;
         var scns = this.scenes;
-        for (var i = 0; i < scns.length; i++) {
-            var scn = scns[i];
+        for (var scn of scns) {
             if (scn.id > id) id = scn.id;
         }
         id++;
@@ -188,19 +185,18 @@ class GameData {
         var index = this.getSceneIndex(scns, id);
         var scn = scns[index];
         //
-        for (var i = 0; i < scn.mids.length; i++) {
-            this.deleteMoment(scn.mids[i]);
+        for (var mid of scn.mids) {
+            this.deleteMoment(mid);
         }
         //
         scns.splice(index, 1);
         this.scenes = scns;
         //
         var sits = this.situations;
-        for (var i = 0; i < sits.length; i++) {
-            var sit = sits[i];
-            for (var j = 0; j < sit.sids.length; j++) {
-                if (sit.sids[j] == id) {
-                    sit.sids.splice(j, 1);
+        for (var sit of sits) {
+            for (var i = 0; i < sit.sids.length; i++) {
+                if (sit.sids[i] == id) {
+                    sit.sids.splice(i, 1);
                     break;
                 }
             }
@@ -228,8 +224,7 @@ class GameData {
     addMoment = (scnid: number) => {
         var id = -1;
         var moms = this.moments;
-        for (var i = 0; i < moms.length; i++) {
-            var mom = moms[i];
+        for (var mom of moms) {
             if (mom.id > id) id = mom.id;
         }
         id++;
@@ -253,11 +248,10 @@ class GameData {
         this.moments = moms;
         //
         var scns = this.scenes;
-        for (var i = 0; i < scns.length; i++) {
-            var scn = scns[i];
-            for (var j = 0; j < scn.mids.length; j++) {
-                if (scn.mids[j] == id) {
-                    scn.mids.splice(j, 1);
+        for (var scn of scns) {
+            for (var i = 0; i < scn.mids.length; i++) {
+                if (scn.mids[i] == id) {
+                    scn.mids.splice(i, 1);
                     break;
                 }
             }
@@ -283,6 +277,9 @@ class GameData {
 //
 // localstorage
 //
+    //
+    // game
+    //
     get game() {
         return <IGame> JSON.parse(localStorage.getItem("game"));
     }
@@ -291,6 +288,9 @@ class GameData {
         localStorage.setItem("game", JSON.stringify(game));
     }
 
+    //
+    // situations
+    //
     get situations() : Array<ISituation> {
         return JSON.parse(localStorage.getItem("situations"));
     }
@@ -310,6 +310,9 @@ class GameData {
         }
     }
 
+    //
+    // scenes
+    //
     get scenes() : Array<IScene> {
         return JSON.parse(localStorage.getItem("scenes"));
     }
@@ -332,11 +335,10 @@ class GameData {
     getScenesOf = (sit: ISituation): Array<IScene> => {
         var scenes = this.scenes;
         var scns: Array<IScene> = [];
-        for (var i = 0; i < sit.sids.length; i++) {
-            var id = sit.sids[i];
-            for (var j = 0; j < scenes.length; j++) {
-                if (scenes[j].id == id) {
-                    scns.push(scenes[j]);
+        for (var sid of sit.sids) {
+            for (var scene of scenes) {
+                if (scene.id == sid) {
+                    scns.push(scene);
                     break;
                 }
             }
@@ -344,6 +346,9 @@ class GameData {
         return scns;
     }
 
+    //
+    // moments
+    //
     get moments() : Array<IMoment> {
         return JSON.parse(localStorage.getItem("moments"));
     }
@@ -366,11 +371,10 @@ class GameData {
     getMomentsOf = (scn: IScene): Array<IMoment> => {
         var moments = this.moments;
         var moms: Array<IMoment> = [];
-        for (var i = 0; i < scn.mids.length; i++) {
-            var id = scn.mids[i];
-            for (var j = 0; j < moments.length; j++) {
-                if (moments[j].id == id) {
-                    moms.push(moments[j]);
+        for (var mid of scn.mids) {
+            for (var moment of moments) {
+                if (moment.id == mid) {
+                    moms.push(moment);
                     break;
                 }
             }
