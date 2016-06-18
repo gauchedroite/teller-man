@@ -17,7 +17,7 @@ interface IScene {
     id: number
     name: string
     desc: string
-    bids: Array<number>
+    mids: Array<number>
     aids: Array<number>
 }
 
@@ -49,10 +49,10 @@ class GameData {
             { id: 1, name: "Dead dog", when: "todo", tags: ["chap1", "dog"], sids: [], npcids: [] }
         ];
         var scenes: Array<IScene> = [
-            { id: 0, name: "Bord de l'eau", desc: "EXT. Bord de l'eau", bids: [], aids: [] },
-            { id: 1, name: "Conductrice", desc: "EXT. Conductrice", bids: [0], aids: [] },
-            { id: 2, name: "Camion", desc: "EXT. Le camion accidenté", bids: [0, 1, 2], aids: [0] },
-            { id: 3, name: "Capot", desc: "EXT. Le capot", bids: [], aids: [] }
+            { id: 0, name: "Bord de l'eau", desc: "EXT. Bord de l'eau", mids: [], aids: [] },
+            { id: 1, name: "Conductrice", desc: "EXT. Conductrice", mids: [0], aids: [] },
+            { id: 2, name: "Camion", desc: "EXT. Le camion accidenté", mids: [0, 1, 2], aids: [0] },
+            { id: 3, name: "Capot", desc: "EXT. Le capot", mids: [], aids: [] }
         ];
         var moments: Array<IMoment> = [
             { id: 0, when: "not cheval", text: "[0] .a Jack" },
@@ -172,7 +172,7 @@ class GameData {
             if (scn.id > id) id = scn.id;
         }
         id++;
-        var scn: IScene = { id: id, name: null, desc: null, bids: [], aids: [] };
+        var scn: IScene = { id: id, name: null, desc: null, mids: [], aids: [] };
         scns.push(scn);
         this.scenes = scns;
         //
@@ -188,8 +188,8 @@ class GameData {
         var index = this.getSceneIndex(scns, id);
         var scn = scns[index];
         //
-        for (var i = 0; i < scn.bids.length; i++) {
-            this.deleteMoment(scn.bids[i]);
+        for (var i = 0; i < scn.mids.length; i++) {
+            this.deleteMoment(scn.mids[i]);
         }
         //
         scns.splice(index, 1);
@@ -239,7 +239,7 @@ class GameData {
         //
         var scns = this.scenes;
         var scn = this.getScene(scns, scnid);
-        scn.bids.push(id);
+        scn.mids.push(id);
         this.scenes = scns;
         return id;
     }
@@ -255,9 +255,9 @@ class GameData {
         var scns = this.scenes;
         for (var i = 0; i < scns.length; i++) {
             var scn = scns[i];
-            for (var j = 0; j < scn.bids.length; j++) {
-                if (scn.bids[j] == id) {
-                    scn.bids.splice(j, 1);
+            for (var j = 0; j < scn.mids.length; j++) {
+                if (scn.mids[j] == id) {
+                    scn.mids.splice(j, 1);
                     break;
                 }
             }
@@ -366,8 +366,8 @@ class GameData {
     getMomentsOf = (scn: IScene): Array<IMoment> => {
         var moments = this.moments;
         var moms: Array<IMoment> = [];
-        for (var i = 0; i < scn.bids.length; i++) {
-            var id = scn.bids[i];
+        for (var i = 0; i < scn.mids.length; i++) {
+            var id = scn.mids[i];
             for (var j = 0; j < moments.length; j++) {
                 if (moments[j].id == id) {
                     moms.push(moments[j]);
