@@ -12,12 +12,35 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/framework7/1.4.2/css/framework7.ios.min.css">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/framework7/1.4.2/css/framework7.ios.colors.css">
     <link href="dist/ionicons/css/ionicons.css" rel="stylesheet"/>
-    <link rel="stylesheet" href="dist/app.css">
+    <style>
+        .view-left {
+            float: left;
+            width: 260px;
+            border-right: 1px solid #b2b2b2;
+        }
+        .view-center {
+            float: left;
+            width: 260px;
+            border-right: 1px solid #b2b2b2;
+        }
+        .view-right {
+            width: -webkit-calc(100% - 2 * 260px - 2px);
+            width: -moz-calc(100% - 2 * 260px - 2px);
+            width: -ms-calc(100% - 2 * 260px - 2px);
+            width: calc(100% - 2 * 260px - 2px);
+        }
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        .ted-selected {
+            background-color: cornsilk;
+        }
+    </style>
 </head>
 
 <body>
     
-    <div class="views" style="height: 600px;">
+    <div class="views">
         
         <div class="view view-left navbar-through">
             <div class="navbar">
@@ -158,9 +181,6 @@
 
     </div>
 
-    <div style="width: 100%; height: 100%; border-top: 1px solid #b2b2b2;">
-    </div>
-    
     <script src="//cdnjs.cloudflare.com/ajax/libs/framework7/1.4.2/js/framework7.min.js"></script>
     <script src="dist/app.js"></script>
 </body>

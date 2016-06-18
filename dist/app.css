@@ -14,9 +14,9 @@
   width: -ms-calc(100% - 2 * 260px - 2px);
   width: calc(100% - 2 * 260px - 2px);
 }
-::-webkit-scrollbar {
-  display: none;
-}
 .ted-selected {
   background-color: cornsilk;
+}
+::-webkit-scrollbar {
+  display: none;
 }
