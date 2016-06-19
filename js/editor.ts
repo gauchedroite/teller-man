@@ -6,7 +6,7 @@ interface String {
     startsWith(s: string): boolean
 }
 
-class Game {
+class Editor {
     gdata: GameData;
     $: any;
     app: any;
@@ -172,7 +172,7 @@ class Game {
 
         $(document).on("click", "#ted-delete-situation", (e: Event) => {
             app.confirm("Are you sure?", "Delete Situation", () => {
-                this.gdata.deleteSituation(Game.getMeId(e.target));
+                this.gdata.deleteSituation(Editor.getMeId(e.target));
                 var history = this.leftView.history;
                 this.leftView.router.back({
                     url: history[history.length - 2],
@@ -183,7 +183,7 @@ class Game {
         });
 
         $(document).on("click", "#ted-add-scene", (e: any) => {
-            var sitid = Game.getMeId(e.target);
+            var sitid = Editor.getMeId(e.target);
             var id = this.gdata.addScene(sitid);
             var li = '<li class="ted-selected">'
                    +    '<a href="page/scene.html?id=' + id + '" data-view=".view-center" class="item-link">'
@@ -202,7 +202,7 @@ class Game {
 
         $(document).on("click", "#ted-delete-scene", (e: Event) => {
             app.confirm("Are you sure?", "Delete Scene", () => {
-                this.gdata.deleteScene(Game.getMeId(e.target));
+                this.gdata.deleteScene(Editor.getMeId(e.target));
                 var history = this.centerView.history;
                 this.centerView.router.back({
                     url: history[0],
@@ -214,7 +214,7 @@ class Game {
         });
 
         $(document).on("click", "#ted-add-moment", (e: any) => {
-            var momid = Game.getMeId(e.target);
+            var momid = Editor.getMeId(e.target);
             var id = this.gdata.addMoment(momid);
             var li = '<li class="ted-selected">'
                    +    '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link">'
@@ -233,7 +233,7 @@ class Game {
 
         $(document).on("click", "#ted-delete-moment", (e: Event) => {
             app.confirm("Are you sure?", "Delete Moment", () => {
-                this.gdata.deleteMoment(Game.getMeId(e.target));
+                this.gdata.deleteMoment(Editor.getMeId(e.target));
                 var history = this.rightView.history;
                 this.rightView.router.back({
                     url: history[0],
@@ -260,34 +260,34 @@ class Game {
         });
 
         $(document).on("change", "#ted-situation-name", (e: any) => {
-            this.gdata.saveSituationName(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveSituationName(e.target.value, Editor.getMeId(e.target));
             $("#ted-situations li.ted-selected div.item-title").text(e.target.value);
         });
 
         $(document).on("change", "#ted-situation-when", (e: any) => {
-            this.gdata.saveSituationWhen(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveSituationWhen(e.target.value, Editor.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-situation-tags", (e: any) => {
-            this.gdata.saveSituationTags(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveSituationTags(e.target.value, Editor.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-scene-name", (e: any) => {
-            this.gdata.saveSceneName(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveSceneName(e.target.value, Editor.getMeId(e.target));
             $("#ted-scenes li.ted-selected div.item-title").text(e.target.value);
         });
 
         $(document).on("change", "#ted-scene-desc", (e: any) => {
-            this.gdata.saveSceneDesc(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveSceneDesc(e.target.value, Editor.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-moment-when", (e: any) => {
-            this.gdata.saveMomentWhen(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveMomentWhen(e.target.value, Editor.getMeId(e.target));
             $("#ted-moments li.ted-selected div.item-title").text(e.target.value);
         });
 
         $(document).on("change", "#ted-moment-text", (e: any) => {
-            this.gdata.saveMomentText(e.target.value, Game.getMeId(e.target));
+            this.gdata.saveMomentText(e.target.value, Editor.getMeId(e.target));
         });
     }
 

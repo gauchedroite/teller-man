@@ -1,22 +1,253 @@
-.view-left {
-  float: left;
-  width: 260px;
-  border-right: 1px solid #b2b2b2;
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
 }
-.view-center {
-  float: left;
-  width: 260px;
-  border-right: 1px solid #b2b2b2;
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
 }
-.view-right {
-  width: -webkit-calc(100% - 2 * 260px - 2px);
-  width: -moz-calc(100% - 2 * 260px - 2px);
-  width: -ms-calc(100% - 2 * 260px - 2px);
-  width: calc(100% - 2 * 260px - 2px);
+body {
+  line-height: 1;
 }
-.ted-selected {
-  background-color: cornsilk;
+ol,
+ul {
+  list-style: none;
+}
+blockquote,
+q {
+  quotes: none;
+}
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+.ide-body {
+  background-color: #efeff4;
+}
+.ide-game {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+.ide-game .iphone5 {
+  margin: 4px auto;
+  width: 320px;
+  height: 568px;
+  border: 1px solid #b2b2b2;
+}
+.ide-game iframe {
+  width: 100%;
+  height: 100%;
+}
+.ide-editor {
+  position: absolute;
+  width: calc(100% - 4px);
+  height: 490px;
+  z-index: 10;
+  bottom: 3px;
+  border: 1px solid #b2b2b2;
+  margin-left: 2px;
+}
+.ide-editor iframe {
+  width: 100%;
+  height: 100%;
+}
+.game-body {
+  background-color: white;
+  font-family: monospace;
 }
 ::-webkit-scrollbar {
   display: none;
+}
+.shell {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 36px;
+  width: 100%;
+  z-index: 500;
+  background-color: black;
+  color: #f0f0f0;
+}
+.navbar-inner {
+  width: 100%;
+  height: 100%;
+  padding: 8px 0 0 12px;
+}
+.navbar-inner div.title {
+  display: inline-block;
+  width: calc(100% - 44px);
+}
+.navbar-inner div.menu {
+  font-size: 16px;
+  display: inline-block;
+  color: orange;
+}
+.content-text {
+  margin: 50px 40px;
+  border: 1px solid #f0f0f0;
+  padding: 8px;
+}
+.content-text p {
+  padding-bottom: 12px;
+}
+.choice-panel {
+  position: fixed;
+  width: 100%;
+  top: 100%;
+  border-top: 3px solid #333;
+  background-color: white;
+  transition: top 0.25s ease;
+}
+.choice-panel ul {
+  padding: 32px;
+  font-size: large;
+}
+.choice-panel ul li {
+  padding-bottom: 22px;
+}
+.choice-panel ul li:last-child {
+  padding-bottom: 10px;
+}
+.choice-panel ul .kind {
+  font-size: larger;
+  width: 32px;
+  height: 32px;
+  float: left;
+  border-radius: 50%;
+  border: 2px solid black;
+  background-color: orange;
+  text-align: center;
+  transform: translateY(-6px);
+}
+.choice-panel ul .kind i {
+  width: 32px;
+  height: 32px;
+}
+.choice-panel ul .kind > div {
+  width: 32px;
+  padding-top: 5px;
+}
+.choice-panel ul .choice {
+  margin-left: 56px;
+}
+.choice-panel:before {
+  content: "";
+  width: 100%;
+  height: 3px;
+  position: absolute;
+  top: 0;
+  background-color: orange;
+  border-bottom: 3px solid #333;
+}
+.choice-panel.raise {
+  top: 300px;
+  transition: top 0.25s ease;
 }

@@ -9,8 +9,9 @@
     "outFile": "dist/app.js"
   },
   "files": [
-    "src/game-data.ts",
-    "src/game.ts",
+    "js/game-data.ts",
+    "js/editor.ts",
+    "js/game.ts",
     "app.ts"
   ]
 }
