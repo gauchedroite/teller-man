@@ -154,12 +154,12 @@ table {
   width: 100%;
   height: 100%;
 }
-.game-body {
-  background-color: white;
-  font-family: monospace;
-}
 ::-webkit-scrollbar {
   display: none;
+}
+body {
+  background-color: black;
+  font-family: monospace;
 }
 .shell {
   position: absolute;
@@ -176,27 +176,36 @@ table {
   background-color: black;
   color: #f0f0f0;
 }
-.navbar-inner {
+.navbar .navbar-inner {
   width: 100%;
   height: 100%;
   padding: 8px 0 0 12px;
 }
-.navbar-inner div.title {
+.navbar .navbar-inner div.title {
   display: inline-block;
   width: calc(100% - 44px);
 }
-.navbar-inner div.menu {
+.navbar .navbar-inner div.menu {
   font-size: 16px;
   display: inline-block;
   color: orange;
 }
-.content-text {
-  margin: 50px 40px;
-  border: 1px solid #f0f0f0;
-  padding: 8px;
+.content {
+  background-color: white;
+  transition: opacity 0.25s ease;
 }
-.content-text p {
+.content .content-text {
+  margin: 36px 40px 0 40px;
+  border-left: 1px solid #f0f0f0;
+  padding: 16px 8px;
+  transition: margin-bottom 0.25 ease;
+}
+.content .content-text p {
   padding-bottom: 12px;
+}
+.content.overlay {
+  opacity: 0.5;
+  transition: opacity 0.25s ease;
 }
 .choice-panel {
   position: fixed;
@@ -246,8 +255,4 @@ table {
   top: 0;
   background-color: orange;
   border-bottom: 3px solid #333;
-}
-.choice-panel.raise {
-  top: 300px;
-  transition: top 0.25s ease;
 }
