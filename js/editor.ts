@@ -134,10 +134,6 @@ class Editor {
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
-        $(document).on("click", "#ted-mock-game", (e: any) => {
-            app.confirm("This will ovewrite the current game data. Is this ok?", "Mock Game Data", this.gdata.mockData);
-        });
-
         $(document).on("click", "#ted-load-game", (e: any) => {
             var data = this.gdata.loadGame();
             delete data.me;

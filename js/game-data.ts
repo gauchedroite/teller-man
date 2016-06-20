@@ -39,55 +39,33 @@ interface IGameData {
 
 class GameData {
 
-    mockData = () => {
-        localStorage.clear();
-        var game: IGame = {
-            id: 0, name: "Le jeu de paume", startsid: 0
-        };
-        var situations: Array<ISituation> = [
-            { id: 0, name: "Beginning", when: "undef cheval", tags: ["chap1", "trésor"], sids: [0, 1, 2, 3], npcids: [0] },
-            { id: 1, name: "Dead dog", when: "todo", tags: ["chap1", "dog"], sids: [], npcids: [] }
-        ];
-        var scenes: Array<IScene> = [
-            { id: 0, name: "Bord de l'eau", desc: "EXT. Bord de l'eau", mids: [], aids: [] },
-            { id: 1, name: "Conductrice", desc: "EXT. Conductrice", mids: [0], aids: [] },
-            { id: 2, name: "Camion", desc: "EXT. Le camion accidenté", mids: [0, 1, 2], aids: [0] },
-            { id: 3, name: "Capot", desc: "EXT. Le capot", mids: [], aids: [] }
-        ];
-        var moments: Array<IMoment> = [
-            { id: 0, when: "not cheval", text: "[0] .a Jack" },
-            { id: 1, when: "undef inv.crowbar", text: "[1] .a Jack" },
-            { id: 2, when: "inv.crowbar", text: "[2] .a Jack" },
-            { id: 3, when: "not inv.crowbar", text: "[3] .a Jack" }
-        ];
-        localStorage.setItem("game", JSON.stringify(game));
-        localStorage.setItem("situations", JSON.stringify(situations));
-        localStorage.setItem("scenes", JSON.stringify(scenes));
-        localStorage.setItem("moments", JSON.stringify(moments));
-    }
-
     loadGame = () => {
-        var game = <IGame> JSON.parse(localStorage.getItem("game"));
-        var sits = <Array<ISituation>> JSON.parse(localStorage.getItem("situations"));
-        var scns = <Array<IScene>> JSON.parse(localStorage.getItem("scenes"));
-        var moms = <Array<IMoment>> JSON.parse(localStorage.getItem("moments"));
-        return <IGameData> { 
-            game: game, 
-            situations: sits,
-            scenes: scns,
-            moments: moms,
+        var game = this.game;
+        var sits = this.situations;
+        var scns = this.scenes;
+        var moms = this.moments;
+        var gdata = <IGameData> { 
+            game: game || <IGame>{id:0, name: null, startsid:0}, 
+            situations: sits || [],
+            scenes: scns || [],
+            moments: moms || [],
             me: null,
             meid: null
         };
+        if (game == null) {
+            var text = JSON.stringify(gdata);
+            this.saveData(text);
+        }
+        return gdata;
     }
 
     saveData = (text: string) => {
         var gdata = <IGameData> JSON.parse(text);
-        localStorage.clear();
-        localStorage.setItem("game", JSON.stringify(gdata.game));
-        localStorage.setItem("situations", JSON.stringify(gdata.situations));
-        localStorage.setItem("scenes", JSON.stringify(gdata.scenes));
-        localStorage.setItem("moments", JSON.stringify(gdata.moments));
+        this.clearStorage();
+        this.game = gdata.game;
+        this.situations = gdata.situations;
+        this.scenes = gdata.scenes;
+        this.moments = gdata.moments;
     }
 
 //
@@ -159,6 +137,17 @@ class GameData {
         //TODO
     }
 
+    getSituation = (sits: Array<ISituation>, id: number) => {
+        return (sits[this.getSituationIndex(sits, id)]);
+    }
+
+    getSituationIndex = (sits: Array<ISituation>, id: number) => {
+        for (var i = 0; i < sits.length; i++) {
+            if (sits[i].id == id)
+                return i;
+        }
+    }
+
 //
 // scenes
 //
@@ -218,6 +207,31 @@ class GameData {
         this.scenes = scns;
     }
 
+    getScene = (scns: Array<IScene>, id: number) => {
+        return (scns[this.getSceneIndex(scns, id)]);
+    }
+
+    getSceneIndex = (scns: Array<IScene>, id: number) => {
+        for (var i = 0; i < scns.length; i++) {
+            if (scns[i].id == id)
+                return i;
+        }
+    }
+
+    getScenesOf = (sit: ISituation): Array<IScene> => {
+        var scenes = this.scenes;
+        var scns: Array<IScene> = [];
+        for (var sid of sit.sids) {
+            for (var scene of scenes) {
+                if (scene.id == sid) {
+                    scns.push(scene);
+                    break;
+                }
+            }
+        }
+        return scns;
+    }
+
 //
 // moments
 //
@@ -273,90 +287,6 @@ class GameData {
         this.moments = moms;
     }
 
-
-//
-// localstorage
-//
-    //
-    // game
-    //
-    get game() {
-        return <IGame> JSON.parse(localStorage.getItem("game"));
-    }
-
-    set game(game: IGame) {
-        localStorage.setItem("game", JSON.stringify(game));
-    }
-
-    //
-    // situations
-    //
-    get situations() : Array<ISituation> {
-        return JSON.parse(localStorage.getItem("situations"));
-    }
-
-    set situations(sits: Array<ISituation>) {
-        localStorage.setItem("situations", JSON.stringify(sits));
-    }
-
-    getSituation = (sits: Array<ISituation>, id: number) => {
-        return (sits[this.getSituationIndex(sits, id)]);
-    }
-
-    getSituationIndex = (sits: Array<ISituation>, id: number) => {
-        for (var i = 0; i < sits.length; i++) {
-            if (sits[i].id == id)
-                return i;
-        }
-    }
-
-    //
-    // scenes
-    //
-    get scenes() : Array<IScene> {
-        return JSON.parse(localStorage.getItem("scenes"));
-    }
-
-    set scenes(moms: Array<IScene>) {
-        localStorage.setItem("scenes", JSON.stringify(moms));
-    }
-
-    getScene = (scns: Array<IScene>, id: number) => {
-        return (scns[this.getSceneIndex(scns, id)]);
-    }
-
-    getSceneIndex = (scns: Array<IScene>, id: number) => {
-        for (var i = 0; i < scns.length; i++) {
-            if (scns[i].id == id)
-                return i;
-        }
-    }
-
-    getScenesOf = (sit: ISituation): Array<IScene> => {
-        var scenes = this.scenes;
-        var scns: Array<IScene> = [];
-        for (var sid of sit.sids) {
-            for (var scene of scenes) {
-                if (scene.id == sid) {
-                    scns.push(scene);
-                    break;
-                }
-            }
-        }
-        return scns;
-    }
-
-    //
-    // moments
-    //
-    get moments() : Array<IMoment> {
-        return JSON.parse(localStorage.getItem("moments"));
-    }
-
-    set moments(moms: Array<IMoment>) {
-        localStorage.setItem("moments", JSON.stringify(moms));
-    }
-
     getMoment = (moms: Array<IMoment>, id: number) => {
         return (moms[this.getMomentIndex(moms, id)]);
     }
@@ -380,5 +310,68 @@ class GameData {
             }
         }
         return moms;
+    }
+
+
+//
+// localstorage
+//
+    clearStorage = () => {
+        localStorage.clear();
+    }
+
+    //
+    // game
+    //
+    get game() {
+        return <IGame> JSON.parse(localStorage.getItem("game"));
+    }
+
+    set game(game: IGame) {
+        localStorage.setItem("game", JSON.stringify(game));
+    }
+
+    //
+    // situations
+    //
+    get situations() : Array<ISituation> {
+        return JSON.parse(localStorage.getItem("situations"));
+    }
+
+    set situations(sits: Array<ISituation>) {
+        localStorage.setItem("situations", JSON.stringify(sits));
+    }
+
+    //
+    // scenes
+    //
+    get scenes() : Array<IScene> {
+        return JSON.parse(localStorage.getItem("scenes"));
+    }
+
+    set scenes(moms: Array<IScene>) {
+        localStorage.setItem("scenes", JSON.stringify(moms));
+    }
+
+    //
+    // moments
+    //
+    get moments() : Array<IMoment> {
+        return JSON.parse(localStorage.getItem("moments"));
+    }
+
+    set moments(moms: Array<IMoment>) {
+        localStorage.setItem("moments", JSON.stringify(moms));
+    }
+
+    //
+    // state
+    //
+    get state() : any {
+        return JSON.parse(localStorage.getItem("state"));
+    }
+
+    set state(moms: any) {
+        localStorage.setItem("state", JSON.stringify(moms));
     }
 }

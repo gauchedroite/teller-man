@@ -51,6 +51,7 @@
 ::-webkit-scrollbar {
     display: none;
 }
+
 body {
     background-color: black;
     font-family: monospace;
@@ -79,10 +80,16 @@ body {
         div.title {
             display: inline-block;
             width: calc(100% - 44px);
+            i:after {
+                content: " ";
+            }
         }
         div.menu {
             font-size: 16px;
             display: inline-block;
+            color: @accent-color;
+        }
+        div.title i {
             color: @accent-color;
         }
     }
@@ -90,6 +97,7 @@ body {
 
 .content {
     background-color: white;
+    min-height: 100%;
     .content-text {
         margin: 36px 40px 0 40px;
         border-left: 1px solid #f0f0f0;
@@ -158,4 +166,15 @@ body {
     //     top: 300px;
     //     transition: top 0.25s ease; 
     // }
+}
+
+.actor {
+    width: 100%;
+    margin-left: 75px;
+    text-transform: uppercase;
+    span {
+        text-transform: none;
+        color: #888;
+        font-size: smaller;
+    }
 }

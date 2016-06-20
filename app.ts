@@ -5,6 +5,7 @@ namespace TellerMan {
 
     if (document.title === "Teller Editor")
     {
+        //console.log("t.e.l.l.e.r");
         var editor = new Editor();
 
         var app = new Framework7({
@@ -20,8 +21,10 @@ namespace TellerMan {
     }
     else if (document.title === "Teller IDE")
     {
+        //console.log("i.d.e");
     }
     else {
+        //console.log("g.a.m.e");
         var game = new Game();
     }
 }

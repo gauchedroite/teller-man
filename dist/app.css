@@ -185,13 +185,20 @@ body {
   display: inline-block;
   width: calc(100% - 44px);
 }
+.navbar .navbar-inner div.title i:after {
+  content: " ";
+}
 .navbar .navbar-inner div.menu {
   font-size: 16px;
   display: inline-block;
   color: orange;
 }
+.navbar .navbar-inner div.title i {
+  color: orange;
+}
 .content {
   background-color: white;
+  min-height: 100%;
   transition: opacity 0.25s ease;
 }
 .content .content-text {
@@ -255,4 +262,14 @@ body {
   top: 0;
   background-color: orange;
   border-bottom: 3px solid #333;
+}
+.actor {
+  width: 100%;
+  margin-left: 75px;
+  text-transform: uppercase;
+}
+.actor span {
+  text-transform: none;
+  color: #888;
+  font-size: smaller;
 }
