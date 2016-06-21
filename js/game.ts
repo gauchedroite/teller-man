@@ -1,4 +1,15 @@
 
+interface IDialog {
+    actor: string
+    mood: string
+    parenthetical: string
+    lines: Array<string>
+}
+interface IText {
+    lines: Array<string>
+}
+type IMomentData = IDialog | IText;
+
 class Game {
     gdata: GameData;
     data: IGameData;
@@ -13,7 +24,15 @@ class Game {
 
         this.data = this.gdata.loadGame();
         var moment = this.getNextMoment();
-        this.showMoment(moment);
+        var parsed = this.parseMoment(moment);
+        var markup = this.markupParsedMoment(parsed);
+        var scene = this.getParentScene(moment);
+
+        var $title = document.querySelector(".title span");
+        $title.textContent = scene.name;
+
+        var $content = document.querySelector(".content-text");
+        $content.innerHTML = markup;
 
         document.querySelector(".content").addEventListener("click", this.slideChoicesUp);
         document.querySelector(".choice-panel").addEventListener("click", this.slideChoicesDown);
@@ -93,17 +112,6 @@ class Game {
         return true;
     };
 
-    showMoment = (moment: IMoment) => {
-        var data = this.data;
-        var scene = this.getParentScene(moment);
-
-        var $title = document.querySelector(".title span");
-        $title.textContent = scene.name;
-
-        var $content = document.querySelector(".content-text");
-        $content.innerHTML = this.parseMoment(moment.text);
-    };
-
     getParentScene = (moment: IMoment): IScene => {
         var scenes = this.data.scenes;
         for (var scene of scenes) {
@@ -114,28 +122,86 @@ class Game {
         }
     };
 
-    parseMoment = (text: string): string => {
-        var chunks = Array<string>();
+    parseMoment = (moment: IMoment): Array<IMomentData> => {
+        var text = moment.text;
+        var parsed = Array<IMomentData>();
+        var current = <IMomentData>{};
+        var state = "";
 
         var parts = text.split("\n");
         for (var part of parts) {
             if (part.length > 0) {
                 if (part.startsWith(".a")) {
                     var actor = part.substring(2).trim();
-                    var mood = "";
                     var aa = actor.split("/");
+
+                    var dialog = current = <IDialog>{};
                     if (aa.length == 2) {
-                        actor = aa[0];
-                        mood = `<span>/${aa[1]}</span>`;
+                        dialog.actor = aa[0];
+                        dialog.mood = aa[1];
                     }
-                    chunks.push(`<div class="actor">${actor}${mood}</div>`); 
+                    else {
+                        dialog.actor = aa[0];
+                    }
+                    state = "DIALOG";
+                }
+                else if (part.startsWith("(")) {
+                    (<IDialog>current).parenthetical = part;
                 }
                 else {
-                    chunks.push(`<p>${part}</p>`);
+                    if (state == "DIALOG") {
+                        var lines = part.split("/");
+
+                        let my = <IDialog>current;
+                        my.lines = Array<string>();
+                        for (var line of lines) {
+                            my.lines.push(line);
+                        }
+                        parsed.push(current);
+                        state = "";
+                    }
+                    else {
+                        var lines = part.split("/");
+
+                        let my = <IText>{};
+                        my.lines = Array<string>();
+                        for (var line of lines) {
+                            my.lines.push(line);
+                        }
+                        parsed.push(my);
+                    }
                 }
             }
         }
-
-        return chunks.join("");;
+        console.log(parsed);
+        return parsed;
     };
+
+    markupParsedMoment = (parsed: Array<IMomentData>): string => {
+        var chunks = Array<string>();
+        for (var part of parsed) {
+            let dialog = <IDialog>part;
+
+            if (dialog.actor != undefined) {
+                chunks.push(`<section class="dialog">`);
+                chunks.push(`<h1>${dialog.actor}</h1>`);
+
+                if (dialog.parenthetical != undefined)
+                    chunks.push(`<h2>${dialog.parenthetical}</h2>`);
+
+                for (var line of dialog.lines) {
+                    chunks.push(`<p>${line}</p>`);
+                }
+                chunks.push(`</section>`);
+            }
+            else {
+                chunks.push(`<section class="text">`);
+                for (var line of dialog.lines) {
+                    chunks.push(`<p>${line}</p>`);
+                }
+                chunks.push(`</section>`);
+            }
+        }
+        return chunks.join("");
+    }
 }
