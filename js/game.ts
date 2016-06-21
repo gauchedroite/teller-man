@@ -1,18 +1,11 @@
 
-interface IDialog {
-    actor: string
-    mood: string
-    parenthetical: string
-    lines: Array<string>
-}
-interface IText {
-    lines: Array<string>
-}
-type IMomentData = IDialog | IText;
-
 class Game {
     gdata: GameData;
+    ui: UI;
     data: IGameData;
+    six: number;
+    mode: string;
+    sections: Array<string>;
 
     constructor() {
         this.gdata = new GameData();
@@ -23,41 +16,43 @@ class Game {
         }
 
         this.data = this.gdata.loadGame();
-        var moment = this.getNextMoment();
-        var parsed = this.parseMoment(moment);
-        var markup = this.markupParsedMoment(parsed);
-        var scene = this.getParentScene(moment);
-
-        var $title = document.querySelector(".title span");
-        $title.textContent = scene.name;
-
-        var $content = document.querySelector(".content-text");
-        $content.innerHTML = markup;
-
-        document.querySelector(".content").addEventListener("click", this.slideChoicesUp);
-        document.querySelector(".choice-panel").addEventListener("click", this.slideChoicesDown);
+        this.ui = new UI(this.update);
+        this.mode = "INIT";
+        this.update();
     }
 
-    slideChoicesUp = () => {
-        var content = document.querySelector(".content");
-        content.classList.add("overlay");
+    update = (): void => {
+        var ui = this.ui;
+        if (this.mode == "SECTION") {
+            if (this.six < this.sections.length) {
+                var html = this.sections[this.six++];
+                ui.typeSection(html);
+            }
+            else {
+                this.mode = "CHOICES";
+                ui.slideChoicesUp();                
+            }
+        }
+        else if (this.mode == "CHOICES") {
+            this.mode = "";
+            ui.slideChoicesDown();
+        }
+        else if (this.mode == "INIT") {
+            var moment = this.getNextMoment();
+            var parsed = this.parseMoment(moment);
 
-        var panel = <HTMLElement>document.querySelector(".choice-panel");
-        panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
+            this.six = 0;
+            this.sections = this.markupParsedMoment(parsed);
 
-        var text = <HTMLElement>document.querySelector(".content-text");
-        text.style.marginBottom = panel.offsetHeight + "px";
-    };
+            var scene = this.getParentScene(moment);
+            ui.typeTitle(scene.name);
 
-    slideChoicesDown = () => {
-        var content = document.querySelector(".content");
-        content.classList.remove("overlay");
-
-        var panel = <HTMLElement>document.querySelector(".choice-panel");
-        panel.style.top = "100%";
-
-        var text = <HTMLElement>document.querySelector(".content-text");
-        text.style.marginBottom = "0";
+            this.mode = "SECTION";
+            this.update();
+        }
+        else {
+            console.log("g.a.m.e.o.v.e.r?");
+        }
     };
 
     getNextMoment = (): IMoment => {
@@ -173,14 +168,15 @@ class Game {
                 }
             }
         }
-        console.log(parsed);
         return parsed;
     };
 
-    markupParsedMoment = (parsed: Array<IMomentData>): string => {
-        var chunks = Array<string>();
+    markupParsedMoment = (parsed: Array<IMomentData>): Array<string> => {
+        var sections = Array<string>();
+
         for (var part of parsed) {
             let dialog = <IDialog>part;
+            let chunks = Array<string>();
 
             if (dialog.actor != undefined) {
                 chunks.push(`<section class="dialog">`);
@@ -201,7 +197,9 @@ class Game {
                 }
                 chunks.push(`</section>`);
             }
+
+            sections.push(chunks.join(""));
         }
-        return chunks.join("");
+        return sections;
     }
 }
