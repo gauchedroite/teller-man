@@ -265,6 +265,7 @@ body {
 section.dialog h1 {
   margin-left: 40%;
   text-transform: uppercase;
+  font-weight: bold;
 }
 section.dialog h2 {
   margin: 0 28%;

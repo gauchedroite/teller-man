@@ -1,5 +1,6 @@
 
 class UI {
+    sections: Array<string>;
 
     constructor (private update: () => void) {
         document.querySelector(".content").addEventListener("click", this.update);
@@ -33,7 +34,8 @@ class UI {
         title.textContent = text;
     };
 
-    typeSection = (html: string) => {
+    typeSection = (chunk: IMomentData) => {
+        var html = this.markupChunk(chunk);
         var content = document.querySelector(".content-text");
         var div = document.createElement("div");
         div.innerHTML = html;
@@ -45,5 +47,32 @@ class UI {
             section.style.transition = "all 0.15s ease";
         }, 0);
     };
+
+    private markupChunk = (chunk: IMomentData): string => {
+        let dialog = <IDialog>chunk;
+        let html = Array<string>();
+
+        if (dialog.actor != undefined) {
+            html.push(`<section class="dialog">`);
+            html.push(`<h1>${dialog.actor}</h1>`);
+
+            if (dialog.parenthetical != undefined)
+                html.push(`<h2>${dialog.parenthetical}</h2>`);
+
+            for (var line of dialog.lines) {
+                html.push(`<p>${line}</p>`);
+            }
+            html.push(`</section>`);
+        }
+        else {
+            html.push(`<section class="text">`);
+            for (var line of dialog.lines) {
+                html.push(`<p>${line}</p>`);
+            }
+            html.push(`</section>`);
+        }
+
+        return html.join("");
+    }
 
 }

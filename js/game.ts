@@ -3,9 +3,9 @@ class Game {
     gdata: GameData;
     ui: UI;
     data: IGameData;
-    six: number;
+    chunks: Array<IMomentData>
+    cix: number;
     mode: string;
-    sections: Array<string>;
 
     constructor() {
         this.gdata = new GameData();
@@ -24,9 +24,9 @@ class Game {
     update = (): void => {
         var ui = this.ui;
         if (this.mode == "SECTION") {
-            if (this.six < this.sections.length) {
-                var html = this.sections[this.six++];
-                ui.typeSection(html);
+            if (this.cix < this.chunks.length) {
+                var chunk = this.chunks[this.cix++];
+                ui.typeSection(chunk);
             }
             else {
                 this.mode = "CHOICES";
@@ -39,10 +39,8 @@ class Game {
         }
         else if (this.mode == "INIT") {
             var moment = this.getNextMoment();
-            var parsed = this.parseMoment(moment);
-
-            this.six = 0;
-            this.sections = this.markupParsedMoment(parsed);
+            this.chunks = this.parseMoment(moment);
+            this.cix = 0;
 
             var scene = this.getParentScene(moment);
             ui.typeTitle(scene.name);
@@ -170,36 +168,4 @@ class Game {
         }
         return parsed;
     };
-
-    markupParsedMoment = (parsed: Array<IMomentData>): Array<string> => {
-        var sections = Array<string>();
-
-        for (var part of parsed) {
-            let dialog = <IDialog>part;
-            let chunks = Array<string>();
-
-            if (dialog.actor != undefined) {
-                chunks.push(`<section class="dialog">`);
-                chunks.push(`<h1>${dialog.actor}</h1>`);
-
-                if (dialog.parenthetical != undefined)
-                    chunks.push(`<h2>${dialog.parenthetical}</h2>`);
-
-                for (var line of dialog.lines) {
-                    chunks.push(`<p>${line}</p>`);
-                }
-                chunks.push(`</section>`);
-            }
-            else {
-                chunks.push(`<section class="text">`);
-                for (var line of dialog.lines) {
-                    chunks.push(`<p>${line}</p>`);
-                }
-                chunks.push(`</section>`);
-            }
-
-            sections.push(chunks.join(""));
-        }
-        return sections;
-    }
 }
