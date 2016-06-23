@@ -7,14 +7,25 @@ class UI {
         document.querySelector(".choice-panel").addEventListener("click", this.update);
     }
 
-    slideChoicesUp = () => {
-        var content = document.querySelector(".content");
+    slideChoicesUp = (sceneChoices: Array<string>) => {
+        let panel = <HTMLElement>document.querySelector(".choice-panel");
+        panel.innerHTML = "";
+        let ul = document.createElement("ul");
+        for (var choice of sceneChoices) {
+            let li = document.createElement("li");
+            li.innerHTML = `
+                <div class="kind"><div><i class="icon ion-ios-location"></i></div></div>
+                <div class="choice">${choice}</div>`;
+            ul.appendChild(li);
+        }
+        panel.appendChild(ul);
+
+        let content = document.querySelector(".content");
         content.classList.add("overlay");
 
-        var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
-        var text = <HTMLElement>document.querySelector(".content-text");
+        let text = <HTMLElement>document.querySelector(".content-text");
         text.style.marginBottom = panel.offsetHeight + "px";
     };
 
