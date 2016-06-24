@@ -374,4 +374,15 @@ class GameData {
     set state(moms: any) {
         localStorage.setItem("state", JSON.stringify(moms));
     }
+
+    //
+    // history
+    //
+    get history() : Array<number> {
+        return JSON.parse(localStorage.getItem("history"));
+    }
+
+    set history(mids: Array<number>) {
+        localStorage.setItem("history", JSON.stringify(mids));
+    }
 }

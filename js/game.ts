@@ -9,11 +9,8 @@ class Game {
 
     constructor() {
         this.gdata = new GameData();
-
-        var state = this.gdata.state;
-        if (state == undefined || state == null) {
-            this.gdata.state = { intro: true };
-        }
+this.gdata.state = { intro: true };  //clear and init the state
+this.gdata.history = [];             //init the list of showned moments
 
         this.data = this.gdata.loadGame();
         this.ui = new UI(this.update);
@@ -29,7 +26,9 @@ class Game {
                 ui.typeSection(chunk);
             }
             else {
-                delete this.gdata.state.intro;
+                let state = this.gdata.state;
+                delete state.intro;
+                this.gdata.state = state;
                 this.mode = "CHOICES";
                 let scenes = this.getPossibleScenes();
                 let sceneChoices = scenes.map((obj) => { return obj.name; });
@@ -46,7 +45,7 @@ class Game {
             var winner = Math.floor(Math.random() * moments.length);
             var moment = moments[winner];
 
-            this.chunks = this.parseMoment(moment.text);
+            this.chunks = this.parseAndExecuteMoment(moment);
             this.cix = 0;
 
             var scene = this.getParentScene(moment);
@@ -95,6 +94,7 @@ class Game {
 
     getNextMoments = (): Array<IMoment> => {
         var data = this.data;
+        var history = this.gdata.history;
 
         // todo - filter situations
         var situation = data.situations[0];
@@ -116,8 +116,12 @@ class Game {
             for (var mid of scene.mids) {
                 for (var moment of data.moments) {
                     if (moment.id == mid) {
-                        if (this.isValidMoment(moment)) {
-                            moments.push(moment);
+                        // do not show the same moment twice
+                        if (history.indexOf(mid) == -1) {
+                            // only show valid moments
+                            if (this.isValidMoment(moment)) {
+                                moments.push(moment);
+                            }
                         }
                     }
                 }
@@ -130,22 +134,34 @@ class Game {
     isValidMoment = (moment: IMoment): boolean => {
         var when = moment.when || "";
         if (when == "") return false;
-
+        let state = this.gdata.state;
+        //
+        if (typeof state.intro !== "undefined") {
+            if (when == "intro") return true;
+            return false;
+        }
+        //
+        let ok = true;
+console.log(state);
         let conds = when.split(",");
         for (var cond of conds) {
             let parts = cond.replace("=", ":").split(":");
             let name = parts[0].trim();
             let value: any = (parts.length == 2 ? parts[1].trim() : "true");
             if (value == "true" || value == "false") value = (value == "true");
-
-            if (value === "undef" && this.gdata.state[name] != undefined) return false;
-
-            let vstate = this.gdata.state[name];
-            if (vstate == undefined || vstate == null) return false;
-
-            if (vstate !== value) return false;
+            let statevalue = state[name];
+console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
+            if (value === "undef") {
+                if (typeof statevalue !== "undefined") ok = false;
+            }
+            else {
+                if (typeof statevalue === "undefined") ok = false;
+                else if (statevalue !== value) ok = false;
+            }
+            if (ok == false) break;
         }
-        return true;
+console.log(`  ok=${ok}, when=${moment.when}`);
+        return ok;
     };
 
     getParentScene = (moment: IMoment): IScene => {
@@ -158,13 +174,14 @@ class Game {
         }
     };
 
-    parseMoment = (text: string): Array<IMomentData> => {
+    parseAndExecuteMoment = (moment: IMoment): Array<IMomentData> => {
         var parsed = Array<IMomentData>();
         var current = <IMomentData>{};
         var fsm = "";
         var inComment = false
+        var canRepeat = false;
 
-        var parts = text.split("\n");
+        var parts = moment.text.split("\n");
         for (var part of parts) {
             if (part.length > 0) {
                 if (part.startsWith("/*")) {
@@ -197,10 +214,20 @@ class Game {
                         let name = parts[0].trim();
                         let value: any = (parts.length == 2 ? parts[1].trim() : "true");
                         if (value == "true" || value == "false") value = (value == "true");
+
+                        let state = this.gdata.state;
                         if (value === "undef")
-                            delete this.gdata.state[name];
+                            delete state[name];
                         else
-                            this.gdata.state[name] = value;
+                            state[name] = value;
+                        this.gdata.state = state;
+                    }
+                }
+                else if (part.startsWith(".f")) {
+                    let flags = part.substring(2).split(",");
+                    for (var oneflag of flags) {
+                        let flag = oneflag.trim();
+                        if (flag == "can-repeat") canRepeat = true;
                     }
                 }
                 else {
@@ -227,6 +254,11 @@ class Game {
                     }
                 }
             }
+        }
+        if (canRepeat == false) {
+            let history = this.gdata.history;
+            history.push(moment.id);
+            this.gdata.history = history;
         }
         return parsed;
     };
