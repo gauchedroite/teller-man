@@ -1,20 +1,20 @@
 
 class UI {
     sections: Array<string>;
-    blurbMode: string;
+    blurbOp: Op;
 
-    constructor (private update: (mode: string, param?: any) => void) {
+    constructor (private update: (op: Op, param?: any) => void) {
         let me = this;
         document.querySelector(".content").addEventListener("click", (e) => {
-            me.update(me.blurbMode);
+            me.update(me.blurbOp);
         });
     }
 
-    onBlurbTap = (mode: string) => {
-        this.blurbMode = mode;
+    onBlurbTap = (op: Op) => {
+        this.blurbOp = op;
     };
 
-    alert = (mode: string, text: string) => {
+    alert = (op: Op, text: string) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
         content.style.pointerEvents = "none";
@@ -28,11 +28,11 @@ class UI {
         let me = this;
         modal.addEventListener("click", function onClick(e) {
             modal.removeEventListener("click", onClick);
-            me.update(mode);
+            me.update(op);
         });
     };
 
-    slideChoicesUp = (mode: string, sceneChoices: Array<string>) => {
+    showChoices = (op: Op, sceneChoices: Array<string>) => {
         let panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.innerHTML = "";
         let ul = document.createElement("ul");
@@ -57,20 +57,26 @@ class UI {
         text.style.marginBottom = panel.offsetHeight + "px";
 
         let me = this;
-        document.querySelector(".choice-panel li").addEventListener("click", function onChoice(e) {
-            document.querySelector(".choice-panel li").removeEventListener("click", onChoice);
+        let lis = document.querySelectorAll(".choice-panel li");
+        const onChoice = (e: any) => {
+            for (var i = 0; i < lis.length; i++) {
+                lis[i].removeEventListener("click", onChoice);
+            } 
             var target = <HTMLElement>e.target;
             var li: HTMLElement = target;
             while (true) {
                 if (li.nodeName == "LI") break;
                 li = li.parentElement;
             }
-            var index = parseInt( li.getAttribute("data-index"));
-            me.update(mode, index);
-        });
+            var index = parseInt(li.getAttribute("data-index"));
+            me.update(op, index);
+        };
+        for (var i = 0; i < lis.length; i++) {
+            lis[i].addEventListener("click", onChoice);
+        } 
     };
 
-    slideChoicesDown = () => {
+    hideChoices = () => {
         var content = <HTMLElement>document.querySelector(".content");
         content.classList.remove("overlay");
         content.style.pointerEvents = "auto";
@@ -82,22 +88,32 @@ class UI {
         text.style.marginBottom = "0";
     };
 
-    typeTitle = (text: string) => {
+    setTitle = (text: string) => {
         var title = document.querySelector(".title span");
         title.textContent = text;
     };
 
-    typeBlurb = (chunk: IMomentData) => {
+    addBlurb = (chunk: IMomentData) => {
         var html = this.markupChunk(chunk);
         var content = document.querySelector(".content-text");
         var div = document.createElement("div");
         div.innerHTML = html;
         var section = <HTMLDivElement>div.firstChild;
+        var spans = section.querySelectorAll("span");
         section.style.opacity = "0";
         content.appendChild(section);
         setTimeout(function() {
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
+            if (spans.length > 0) {
+                var ispan = 0;
+                const show = () => {
+                    var span = <HTMLElement>spans[ispan++];
+                    span.style = null;
+                    if (ispan < spans.length) setTimeout(show, 25);
+                };
+                setTimeout(show, 100);
+            }
         }, 0);
     };
 
@@ -118,7 +134,10 @@ class UI {
                 html.push(`<h2>${dialog.parenthetical}</h2>`);
 
             for (var line of dialog.lines) {
-                html.push(`<p>${line}</p>`);
+                var spans = Array.prototype.map.call(line, function (char:any) {
+                    return `<span style="visibility:hidden">${char}</span>`;
+                })
+                html.push(`<p>${spans.join("")}</p>`);
             }
             html.push(`</section>`);
         }
@@ -131,5 +150,5 @@ class UI {
         }
 
         return html.join("");
-    }
+    };
 }

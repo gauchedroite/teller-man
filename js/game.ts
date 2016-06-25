@@ -4,7 +4,9 @@ class Game {
     ui: UI;
     data: IGameData;
     choiceScenes: Array<IScene>;
-    moment: IMoment;
+    currentScene: IScene;
+    currentMoment: IMoment;
+    forbiddenSceneId: number;
     chunks: Array<IMomentData>;
     cix: number;
 
@@ -13,30 +15,33 @@ class Game {
 this.gdata.state = { intro: true };  //clear and init the state
 this.gdata.history = [];             //init the list of showned moments
 
-        this.data = this.gdata.loadGame();
         this.ui = new UI(this.update);
-        this.update("INIT");
+        this.update(Op.INIT);
     }
 
-    update = (mode: string, param?: any): void => {
+    update = (op: Op, param?: any): void => {
+        this.data = this.gdata.loadGame();
         var ui = this.ui;
-        if (mode == "MOMENT") {
-            if (this.moment == null) { console.log("No moment to play"); return null; }
+        if (op == Op.MOMENT) {
+            if (this.currentMoment == null) { 
+                ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment."); 
+                return null;
+            }
 
-            this.chunks = this.parseAndExecuteMoment(this.moment);
+            this.chunks = this.parseAndExecuteMoment(this.currentMoment);
             this.cix = 0;
 
-            let scene = this.getParentScene(this.moment);
-            ui.typeTitle(scene.name);
+            this.currentScene = this.getParentScene(this.currentMoment);
+            ui.setTitle(this.currentScene.name);
             ui.clearBlurb();
-            ui.onBlurbTap("BLURB");
+            ui.onBlurbTap(Op.BLURB);
 
-            this.update("BLURB");
+            this.update(Op.BLURB);
         }
-        else if (mode == "BLURB") {
+        else if (op == Op.BLURB) {
             if (this.cix < this.chunks.length) {
                 var chunk = this.chunks[this.cix++];
-                ui.typeBlurb(chunk);
+                ui.addBlurb(chunk);
             }
             else {
                 let state = this.gdata.state;
@@ -47,24 +52,24 @@ this.gdata.history = [];             //init the list of showned moments
                 this.choiceScenes = this.getPossibleScenes();
                 if (this.choiceScenes.length > 0) {
                     let textChoices = this.choiceScenes.map((obj) => { return obj.name; });
-                    ui.slideChoicesUp("CHOICES", textChoices);
+                    ui.showChoices(Op.CHOICES, textChoices);
                 }
                 else {
-                    this.ui.alert("RETRY", "Il ne se passe plus rien pour le moment");
+                    ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment.");
                 }
             }
         }
-        else if (mode == "CHOICES") {
-            ui.slideChoicesDown();
+        else if (op == Op.CHOICES) {
+            ui.hideChoices();
             let chosen = this.choiceScenes[<number>param];
-            this.moment = this.getNextMoment(chosen);
-            this.update("MOMENT");
+            this.currentMoment = this.getNextMoment(chosen);
+            this.update(Op.MOMENT);
         }
-        else if (mode == "INIT") {
-            this.moment = this.getNextMoment();
-            this.update("MOMENT");
+        else if (op == Op.INIT) {
+            this.currentMoment = this.getNextMoment();
+            this.update(Op.MOMENT);
         }
-        else if (mode == "RETRY") {
+        else if (op == Op.RETRY) {
             console.log("retrying");
         }
         else {
@@ -84,6 +89,7 @@ this.gdata.history = [];             //init the list of showned moments
             for (var scene of data.scenes) {
                 if (scene.id == sid) {
 
+                    if (this.forbiddenSceneId == null || this.forbiddenSceneId != scene.id)
                     for (var mid of scene.mids) {
                         let oneMoment = false;
                         for (var moment of data.moments) {
@@ -102,12 +108,12 @@ this.gdata.history = [];             //init the list of showned moments
             }
         }
         //
+        this.forbiddenSceneId = null;
         return scenes;
     };
 
     getNextMoment = (targetScene?: IScene): IMoment => {
         var data = this.data;
-        var history = this.gdata.history;
         var scenes = Array<IScene>();
 
         if (targetScene == undefined) {
@@ -133,12 +139,8 @@ this.gdata.history = [];             //init the list of showned moments
             for (var mid of scene.mids) {
                 for (var moment of data.moments) {
                     if (moment.id == mid) {
-                        // do not show the same moment twice
-                        if (history.indexOf(mid) == -1) {
-                            // only show valid moments
-                            if (this.isValidMoment(moment)) {
-                                moments.push(moment);
-                            }
+                        if (this.isValidMoment(moment)) {
+                            moments.push(moment);
                         }
                     }
                 }
@@ -160,6 +162,10 @@ this.gdata.history = [];             //init the list of showned moments
             if (when == "intro") return true;
             return false;
         }
+        // a moment can't be played twice
+        var history = this.gdata.history;
+        if (history.indexOf(moment.id) != -1)
+            return false;
         //
         let ok = true;
 //console.log(state);
@@ -167,16 +173,28 @@ this.gdata.history = [];             //init the list of showned moments
         for (var cond of conds) {
             let parts = cond.replace("=", ":").split(":");
             let name = parts[0].trim();
-            let value: any = (parts.length == 2 ? parts[1].trim() : "true");
-            if (value == "true" || value == "false") value = (value == "true");
-            let statevalue = state[name];
-//console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
-            if (value === "undef") {
-                if (typeof statevalue !== "undefined") ok = false;
+            if (name.startsWith("/")) {
+                if (name.startsWith("/here")) {
+                    let sceneid = this.getParentScene(moment).id;
+                    if (this.currentScene.id != sceneid) ok = false;
+                }
+                else {
+                    ok = false;
+                }
             }
-            else {
-                if (typeof statevalue === "undefined") ok = false;
-                else if (statevalue !== value) ok = false;
+            else
+            {
+                let value: any = (parts.length == 2 ? parts[1].trim() : "true");
+                if (value == "true" || value == "false") value = (value == "true");
+                let statevalue = state[name];
+//console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
+                if (value === "undef") {
+                    if (typeof statevalue !== "undefined") ok = false;
+                }
+                else {
+                    if (typeof statevalue === "undefined") ok = false;
+                    else if (statevalue !== value) ok = false;
+                }
             }
             if (ok == false) break;
         }
@@ -210,7 +228,9 @@ this.gdata.history = [];             //init the list of showned moments
                 else if (inComment) {
                     inComment = (part.startsWith("*/") == false);
                 }
-                else if (part.startsWith(".a")) {
+                else if (part.startsWith("//")) {
+                }
+                else if (part.startsWith(".a ")) {
                     let actor = part.substring(2).trim();
                     let aa = actor.split("/");
 
@@ -227,7 +247,7 @@ this.gdata.history = [];             //init the list of showned moments
                 else if (part.startsWith("(")) {
                     (<IDialog>current).parenthetical = part;
                 }
-                else if (part.startsWith(".r")) {
+                else if (part.startsWith(".r ")) {
                     let rems = part.substring(2).split(",");
                     for (var rem of rems) {
                         let parts = rem.replace("=", ":").split(":");
@@ -243,11 +263,12 @@ this.gdata.history = [];             //init the list of showned moments
                         this.gdata.state = state;
                     }
                 }
-                else if (part.startsWith(".f")) {
+                else if (part.startsWith(".f ")) {
                     let flags = part.substring(2).split(",");
                     for (var oneflag of flags) {
                         let flag = oneflag.trim();
                         if (flag == "can-repeat") canRepeat = true;
+                        if (flag == "must-leave-scene") this.forbiddenSceneId = this.getParentScene(moment).id;
                     }
                 }
                 else {

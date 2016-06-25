@@ -11,3 +11,11 @@ interface IText {
 }
 
 type IMomentData = IDialog | IText;
+
+enum Op {
+    INIT,
+    MOMENT,
+    BLURB,
+    CHOICES,
+    RETRY
+}
