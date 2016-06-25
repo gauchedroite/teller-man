@@ -3,9 +3,10 @@ class Game {
     gdata: GameData;
     ui: UI;
     data: IGameData;
-    chunks: Array<IMomentData>
+    choiceScenes: Array<IScene>;
+    moment: IMoment;
+    chunks: Array<IMomentData>;
     cix: number;
-    mode: string;
 
     constructor() {
         this.gdata = new GameData();
@@ -14,45 +15,57 @@ this.gdata.history = [];             //init the list of showned moments
 
         this.data = this.gdata.loadGame();
         this.ui = new UI(this.update);
-        this.mode = "INIT";
-        this.update();
+        this.update("INIT");
     }
 
-    update = (): void => {
+    update = (mode: string, param?: any): void => {
         var ui = this.ui;
-        if (this.mode == "SECTION") {
+        if (mode == "MOMENT") {
+            if (this.moment == null) { console.log("No moment to play"); return null; }
+
+            this.chunks = this.parseAndExecuteMoment(this.moment);
+            this.cix = 0;
+
+            let scene = this.getParentScene(this.moment);
+            ui.typeTitle(scene.name);
+            ui.clearBlurb();
+            ui.onBlurbTap("BLURB");
+
+            this.update("BLURB");
+        }
+        else if (mode == "BLURB") {
             if (this.cix < this.chunks.length) {
                 var chunk = this.chunks[this.cix++];
-                ui.typeSection(chunk);
+                ui.typeBlurb(chunk);
             }
             else {
                 let state = this.gdata.state;
-                delete state.intro;
-                this.gdata.state = state;
-                this.mode = "CHOICES";
-                let scenes = this.getPossibleScenes();
-                let sceneChoices = scenes.map((obj) => { return obj.name; });
-                ui.slideChoicesUp(sceneChoices);                
+                if (state.intro != undefined) {
+                    delete state.intro;
+                    this.gdata.state = state;
+                }
+                this.choiceScenes = this.getPossibleScenes();
+                if (this.choiceScenes.length > 0) {
+                    let textChoices = this.choiceScenes.map((obj) => { return obj.name; });
+                    ui.slideChoicesUp("CHOICES", textChoices);
+                }
+                else {
+                    this.ui.alert("RETRY", "Il ne se passe plus rien pour le moment");
+                }
             }
         }
-        else if (this.mode == "CHOICES") {
-            this.mode = "";
+        else if (mode == "CHOICES") {
             ui.slideChoicesDown();
+            let chosen = this.choiceScenes[<number>param];
+            this.moment = this.getNextMoment(chosen);
+            this.update("MOMENT");
         }
-        else if (this.mode == "INIT") {
-            var moments = this.getNextMoments();
-            if (moments.length == 0) { console.log("invalid game: no starting moment"); return null; }
-            var winner = Math.floor(Math.random() * moments.length);
-            var moment = moments[winner];
-
-            this.chunks = this.parseAndExecuteMoment(moment);
-            this.cix = 0;
-
-            var scene = this.getParentScene(moment);
-            ui.typeTitle(scene.name);
-
-            this.mode = "SECTION";
-            this.update();
+        else if (mode == "INIT") {
+            this.moment = this.getNextMoment();
+            this.update("MOMENT");
+        }
+        else if (mode == "RETRY") {
+            console.log("retrying");
         }
         else {
             console.log("g.a.m.e.o.v.e.r?");
@@ -92,22 +105,26 @@ this.gdata.history = [];             //init the list of showned moments
         return scenes;
     };
 
-    getNextMoments = (): Array<IMoment> => {
+    getNextMoment = (targetScene?: IScene): IMoment => {
         var data = this.data;
         var history = this.gdata.history;
-
-        // todo - filter situations
-        var situation = data.situations[0];
-
         var scenes = Array<IScene>();
-        //
-        for (var sid of situation.sids) {
-            for (var scene of data.scenes) {
-                if (scene.id == sid) {
-                    scenes.push(scene);
-                    break;
+
+        if (targetScene == undefined) {
+            // todo - filter situations
+            let situation = data.situations[0];
+
+            for (var sid of situation.sids) {
+                for (var scene of data.scenes) {
+                    if (scene.id == sid) {
+                        scenes.push(scene);
+                        break;
+                    }
                 }
             }
+        }
+        else {
+            scenes.push(targetScene);
         }
 
         var moments = Array<IMoment>();
@@ -127,8 +144,11 @@ this.gdata.history = [];             //init the list of showned moments
                 }
             }
         }
-        //
-        return moments;
+
+        if (moments.length == 0) return null;
+        var winner = Math.floor(Math.random() * moments.length);
+        var moment = moments[winner];
+        return moment;
     };
 
     isValidMoment = (moment: IMoment): boolean => {
@@ -142,7 +162,7 @@ this.gdata.history = [];             //init the list of showned moments
         }
         //
         let ok = true;
-console.log(state);
+//console.log(state);
         let conds = when.split(",");
         for (var cond of conds) {
             let parts = cond.replace("=", ":").split(":");
@@ -150,7 +170,7 @@ console.log(state);
             let value: any = (parts.length == 2 ? parts[1].trim() : "true");
             if (value == "true" || value == "false") value = (value == "true");
             let statevalue = state[name];
-console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
+//console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
             if (value === "undef") {
                 if (typeof statevalue !== "undefined") ok = false;
             }
@@ -160,7 +180,7 @@ console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
             }
             if (ok == false) break;
         }
-console.log(`  ok=${ok}, when=${moment.when}`);
+//console.log(`  ok=${ok}, when=${moment.when}`);
         return ok;
     };
 

@@ -172,7 +172,7 @@ body {
   left: 0;
   height: 36px;
   width: 100%;
-  z-index: 500;
+  z-index: 10;
   background-color: black;
   color: #f0f0f0;
 }
@@ -273,4 +273,35 @@ section.dialog h2 {
 section.dialog p {
   margin: 0 17%;
   padding-bottom: 12px;
+}
+.modal {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  left: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal .modal-inner {
+  width: 150px;
+  border: 2px #666 solid;
+  padding: 24px;
+  background-color: white;
+  border-radius: 16px;
+  opacity: 0;
+  transform: scale(0);
+}
+.modal .modal-inner p {
+  font-size: x-large;
+  text-align: center;
+  line-height: 1.25;
+}
+.modal.show {
+  left: 0;
+}
+.modal.show .modal-inner {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.15s ease;
 }
