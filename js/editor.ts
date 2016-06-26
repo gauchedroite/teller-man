@@ -66,6 +66,7 @@ class Editor {
                     data.me = me;
                     data.meid = id;
                     data.me.moments = gdata.getMomentsOf(me);
+                    data.me.actions = gdata.getActionsOf(me);
                     return data;
                 }
             },
@@ -74,6 +75,16 @@ class Editor {
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
                     var me = gdata.getMoment(gdata.moments, id);
+                    data.me = me;
+                    data.meid = id;
+                    return data;
+                }
+            },
+            {
+                url: "page/action.html", 
+                getData: function (id: number): IGameData {
+                    var data = gdata.loadGame();
+                    var me = gdata.getAction(gdata.actions, id);
                     data.me = me;
                     data.meid = id;
                     return data;
@@ -120,17 +131,22 @@ class Editor {
         });
 
         $(document).on("click", "div#ted-situations li", (e: any) => {
-            $(e.target.closest("ul")).find("li").removeClass("ted-selected");
+            $(e.target.closest(".page")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
         $(document).on("click", "div#ted-scenes li", (e: any) => {
-            $(e.target.closest("ul")).find("li").removeClass("ted-selected");
+            $(e.target.closest(".page")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
         $(document).on("click", "div#ted-moments li", (e: any) => {
-            $(e.target.closest("ul")).find("li").removeClass("ted-selected");
+            $(e.target.closest(".page")).find("li").removeClass("ted-selected");
+            $(e.target.closest("li")).addClass("ted-selected"); 
+        });
+
+        $(document).on("click", "div#ted-actions li", (e: any) => {
+            $(e.target.closest(".page")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
 
@@ -240,6 +256,36 @@ class Editor {
             });
         });
 
+        $(document).on("click", "#ted-add-action", (e: any) => {
+            var actid = Editor.getMeId(e.target);
+            var id = this.gdata.addAction(actid);
+            var li = '<li class="ted-selected">'
+                   +    '<a href="page/action.html?id=' + id + '" data-view=".view-right" class="item-link">'
+                   +        '<div class="item-content">'
+                   +            '<div class="item-inner">'
+                   +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +        '</div>'
+                   +    '</a>'
+                   +'</li>';
+            var $ul = $("#ted-actions ul");
+            $ul.find("li").removeClass("ted-selected");
+            $ul.append(li);
+            rightView.router.load({ url: "page/action.html?id=" + id });
+        });
+
+        $(document).on("click", "#ted-delete-action", (e: Event) => {
+            app.confirm("Are you sure?", "Delete Action", () => {
+                this.gdata.deleteAction(Editor.getMeId(e.target));
+                var history = this.rightView.history;
+                this.rightView.router.back({
+                    url: history[0],
+                    force: true,
+                    ignoreCache: true
+                 });
+                 this.centerView.router.refreshPage();
+            });
+        });
 
 
         $(document).on("change", "#ted-game-name", (e: any) => {
@@ -284,6 +330,19 @@ class Editor {
 
         $(document).on("change", "#ted-moment-text", (e: any) => {
             this.gdata.saveMomentText(e.target.value, Editor.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-action-name", (e: any) => {
+            this.gdata.saveActionName(e.target.value, Editor.getMeId(e.target));
+            $("#ted-actions li.ted-selected div.item-title").text(e.target.value);
+        });
+
+        $(document).on("change", "#ted-action-when", (e: any) => {
+            this.gdata.saveActionWhen(e.target.value, Editor.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-action-text", (e: any) => {
+            this.gdata.saveActionText(e.target.value, Editor.getMeId(e.target));
         });
     }
 

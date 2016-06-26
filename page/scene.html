@@ -15,7 +15,6 @@
                     <li>
                         <div class="item-content">
                             <div class="item-inner">
-                                <div class="item-title label">Name</div>
                                 <div class="item-input">
                                     <input id="ted-scene-name" type="text" placeholder="name" value="{{me.name}}">
                                 </div>
@@ -53,28 +52,32 @@
             </div>
             </div>
 
+            <div id="ted-actions">
             <div class="content-block-title">Actions</div>
             <div class="list-block">
                 <ul>
-                    <!--
+                    {{#each me.actions}}
                     <li>
-                        <a href="page/action.html?id=1" class="item-link">
+                        <a href="page/action.html?id={{this.id}}" data-view=".view-right" class="item-link">
                             <div class="item-content">
                                 <div class="item-inner">
-                                    <div class="item-title">Frapper la batterie</div>
+                                    <div class="item-title">{{this.name}}</div>
                                 </div>
                             </div>
                         </a>
                     </li>
-                    -->
+                    {{/each}}
                 </ul>
             </div>
+            </div>
+            
         </div>
 
         <div class="toolbar">
             <div class="toolbar-inner">
-                <a id="ted-delete-scene" href="#" class="link"><i class="icon ion-ios-trash" style="font-size: xx-large;"></i>&nbsp;Delete</a>
-                <a id="ted-add-moment" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: xx-large;"></i>&nbsp;Moment</a>
+                <a id="ted-delete-scene" href="#" class="link"><i class="icon ion-ios-trash" style="font-size: x-large;"></i>&nbsp;Delete</a>
+                <a id="ted-add-action" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Action</a>
+                <a id="ted-add-moment" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Moment</a>
             </div>
         </div>
 

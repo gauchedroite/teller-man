@@ -27,11 +27,19 @@ interface IMoment {
     text: string
 }
 
+interface IAction {
+    id: number
+    name: string
+    when: string
+    text: string
+}
+
 interface IGameData {
     game: IGame
     situations: Array<ISituation>
     scenes: Array<IScene>
     moments: Array<IMoment>
+    actions: Array<IAction>
     me: any
     meid: number
 }
@@ -44,11 +52,13 @@ class GameData {
         var sits = this.situations;
         var scns = this.scenes;
         var moms = this.moments;
+        var acts = this.actions;
         var gdata = <IGameData> { 
             game: game || <IGame>{id:0, name: null, startsid:0}, 
-            situations: sits || [],
-            scenes: scns || [],
-            moments: moms || [],
+            situations: sits,
+            scenes: scns,
+            moments: moms,
+            actions: acts,
             me: null,
             meid: null
         };
@@ -66,6 +76,7 @@ class GameData {
         this.situations = gdata.situations;
         this.scenes = gdata.scenes;
         this.moments = gdata.moments;
+        this.actions = gdata.actions;
     }
 
 //
@@ -314,6 +325,93 @@ class GameData {
 
 
 //
+// actions
+//
+    addAction = (scnid: number) => {
+        var id = -1;
+        var acts = this.actions;
+        for (var act of acts) {
+            if (act.id > id) id = act.id;
+        }
+        id++;
+        var act: IAction = { id: id, name: null, when: null, text: null };
+        acts.push(act);
+        this.actions = acts;
+        //
+        var scns = this.scenes;
+        var scn = this.getScene(scns, scnid);
+        scn.aids.push(id);
+        this.scenes = scns;
+        return id;
+    }
+
+    deleteAction = (id: number) => {
+        var acts = this.actions;
+        var index = this.getActionIndex(acts, id);
+        var act = acts[index];
+        //
+        acts.splice(index, 1);
+        this.actions = acts;
+        //
+        var scns = this.scenes;
+        for (var scn of scns) {
+            for (var i = 0; i < scn.aids.length; i++) {
+                if (scn.aids[i] == id) {
+                    scn.aids.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        this.scenes = scns;
+    }
+
+    saveActionWhen = (when: string, id: number) => {
+        var acts = this.actions;
+        var act = this.getAction(acts, id);
+        act.when = when;
+        this.actions = acts;
+    }
+
+    saveActionName = (text: string, id: number) => {
+        var acts = this.actions;
+        var act = this.getAction(acts, id);
+        act.name = text;
+        this.actions = acts;
+    }
+
+    saveActionText = (text: string, id: number) => {
+        var acts = this.actions;
+        var act = this.getAction(acts, id);
+        act.text = text;
+        this.actions = acts;
+    }
+
+    getAction = (acts: Array<IAction>, id: number) => {
+        return (acts[this.getActionIndex(acts, id)]);
+    }
+
+    getActionIndex = (acts: Array<IAction>, id: number) => {
+        for (var i = 0; i < acts.length; i++) {
+            if (acts[i].id == id)
+                return i;
+        }
+    }
+
+    getActionsOf = (scn: IScene): Array<IAction> => {
+        var actions = this.actions;
+        var acts: Array<IAction> = [];
+        for (var aid of scn.aids) {
+            for (var action of actions) {
+                if (action.id == aid) {
+                    acts.push(action);
+                    break;
+                }
+            }
+        }
+        return acts;
+    }
+
+//
 // localstorage
 //
     clearStorage = () => {
@@ -335,7 +433,7 @@ class GameData {
     // situations
     //
     get situations() : Array<ISituation> {
-        return JSON.parse(localStorage.getItem("situations"));
+        return JSON.parse(localStorage.getItem("situations")) || [];
     }
 
     set situations(sits: Array<ISituation>) {
@@ -346,7 +444,7 @@ class GameData {
     // scenes
     //
     get scenes() : Array<IScene> {
-        return JSON.parse(localStorage.getItem("scenes"));
+        return JSON.parse(localStorage.getItem("scenes")) || [];
     }
 
     set scenes(moms: Array<IScene>) {
@@ -357,11 +455,22 @@ class GameData {
     // moments
     //
     get moments() : Array<IMoment> {
-        return JSON.parse(localStorage.getItem("moments"));
+        return JSON.parse(localStorage.getItem("moments")) || [];
     }
 
     set moments(moms: Array<IMoment>) {
         localStorage.setItem("moments", JSON.stringify(moms));
+    }
+
+    //
+    // actions
+    //
+    get actions() : Array<IAction> {
+        return JSON.parse(localStorage.getItem("actions")) || [];
+    }
+
+    set actions(acts: Array<IAction>) {
+        localStorage.setItem("actions", JSON.stringify(acts));
     }
 
     //
