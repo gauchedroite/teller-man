@@ -3,7 +3,6 @@ class Game {
     gdata: GameData;
     ui: UI;
     data: IGameData;
-    choiceScenes: Array<IScene>;
     currentScene: IScene;
     currentMoment: IMoment;
     forbiddenSceneId: number;
@@ -22,6 +21,7 @@ this.gdata.history = [];             //init the list of showned moments
     update = (op: Op, param?: any): void => {
         this.data = this.gdata.loadGame();
         var ui = this.ui;
+
         if (op == Op.MOMENT) {
             if (this.currentMoment == null) { 
                 ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment."); 
@@ -49,10 +49,16 @@ this.gdata.history = [];             //init the list of showned moments
                     delete state.intro;
                     this.gdata.state = state;
                 }
-                this.choiceScenes = this.getPossibleScenes();
-                if (this.choiceScenes.length > 0) {
-                    let textChoices = this.choiceScenes.map((obj) => { return obj.name; });
-                    ui.showChoices(Op.CHOICES, textChoices);
+                let scenes = this.getPossibleScenes();
+                if (scenes.length > 0) {
+                    let sceneChoices = scenes.map((obj) => { 
+                        return <IChoice> { 
+                            kind: "scene",
+                            id: obj.id,
+                            text: obj.name 
+                        }; 
+                    });
+                    ui.showChoices(Op.CHOICES, sceneChoices);
                 }
                 else {
                     ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment.");
@@ -61,7 +67,8 @@ this.gdata.history = [];             //init the list of showned moments
         }
         else if (op == Op.CHOICES) {
             ui.hideChoices();
-            let chosen = this.choiceScenes[<number>param];
+            let choice = <IChoice>param;
+            let chosen = this.gdata.getScene(this.data.scenes, choice.id);
             this.currentMoment = this.getNextMoment(chosen);
             this.update(Op.MOMENT);
         }
@@ -70,10 +77,10 @@ this.gdata.history = [];             //init the list of showned moments
             this.update(Op.MOMENT);
         }
         else if (op == Op.RETRY) {
-            console.log("retrying");
+            console.log("TODO: retrying");
         }
         else {
-            console.log("g.a.m.e.o.v.e.r?");
+            ui.alert(Op.RETRY, "Game Over?");
         }
     };
 
@@ -112,11 +119,12 @@ this.gdata.history = [];             //init the list of showned moments
         return scenes;
     };
 
-    getNextMoment = (targetScene?: IScene): IMoment => {
+    getNextMoments = (targetScene?: IScene): Array<IMoment> => {
         var data = this.data;
         var scenes = Array<IScene>();
 
         if (targetScene == undefined) {
+            
             // todo - filter situations
             let situation = data.situations[0];
 
@@ -146,6 +154,12 @@ this.gdata.history = [];             //init the list of showned moments
                 }
             }
         }
+
+        return moments;
+    };
+
+    getNextMoment = (targetScene?: IScene): IMoment => {
+        var moments = this.getNextMoments(targetScene);
 
         if (moments.length == 0) return null;
         var winner = Math.floor(Math.random() * moments.length);

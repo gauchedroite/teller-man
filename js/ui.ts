@@ -1,3 +1,8 @@
+interface IChoice {
+    kind: string
+    id: number
+    text: string
+}
 
 class UI {
     sections: Array<string>;
@@ -32,17 +37,18 @@ class UI {
         });
     };
 
-    showChoices = (op: Op, sceneChoices: Array<string>) => {
+    showChoices = (op: Op, sceneChoices: Array<IChoice>) => {
         let panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.innerHTML = "";
         let ul = document.createElement("ul");
         for (var i = 0; i < sceneChoices.length; i++) {
             let choice = sceneChoices[i];
             let li = <HTMLLIElement>document.createElement("li");
-            li.setAttribute("data-index", i.toString());
+            li.setAttribute("data-kind", choice.kind);
+            li.setAttribute("data-id", choice.id.toString());
             li.innerHTML = `
                 <div class="kind"><div><i class="icon ion-ios-location"></i></div></div>
-                <div class="choice">${choice}</div>`;
+                <div class="choice">${choice.text}</div>`;
             ul.appendChild(li);
         }
         panel.appendChild(ul);
@@ -68,8 +74,11 @@ class UI {
                 if (li.nodeName == "LI") break;
                 li = li.parentElement;
             }
-            var index = parseInt(li.getAttribute("data-index"));
-            me.update(op, index);
+            me.update(op, <IChoice> {
+                kind: li.getAttribute("data-kind"),
+                id: parseInt(li.getAttribute("data-id")),
+                text: ""
+            });
         };
         for (var i = 0; i < lis.length; i++) {
             lis[i].addEventListener("click", onChoice);
