@@ -49,16 +49,10 @@ this.gdata.history = [];             //init the list of showned moments
                     delete state.intro;
                     this.gdata.state = state;
                 }
-                let scenes = this.getPossibleScenes();
-                if (scenes.length > 0) {
-                    let sceneChoices = scenes.map((obj) => { 
-                        return <IChoice> { 
-                            kind: "scene",
-                            id: obj.id,
-                            text: obj.name 
-                        }; 
-                    });
-                    ui.showChoices(Op.CHOICES, sceneChoices);
+                let moments = this.getNextMoments();
+                let choices = this.buildChoices(moments);
+                if (choices.length > 0) {
+                    ui.showChoices(Op.CHOICES, choices);
                 }
                 else {
                     ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment.");
@@ -84,39 +78,28 @@ this.gdata.history = [];             //init the list of showned moments
         }
     };
 
-    getPossibleScenes = (): Array<IScene> => {
-        var data = this.data;
+    buildChoices = (moments: Array<IMoment>): Array<IChoice> => {
+        let choices = Array<IChoice>();
 
-        // todo - filter situations
-        var situation = data.situations[0];
-
-        var scenes = Array<IScene>();
-        //
-        for (var sid of situation.sids) {
-            for (var scene of data.scenes) {
-                if (scene.id == sid) {
-
-                    if (this.forbiddenSceneId == null || this.forbiddenSceneId != scene.id)
-                    for (var mid of scene.mids) {
-                        let oneMoment = false;
-                        for (var moment of data.moments) {
-                            if (moment.id == mid) {
-                                if (this.isValidMoment(moment)) {
-                                    scenes.push(scene);
-                                    oneMoment = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (oneMoment) break;
-                    }
-
-                }
+        let scenes = Array<IScene>();
+        for (var moment of moments) {
+            let scene = this.getParentScene(moment);
+            if (this.forbiddenSceneId == null || this.forbiddenSceneId != scene.id) {
+                if (scenes.indexOf(scene) == -1)
+                    scenes.push(scene);
             }
         }
-        //
+
+        choices = scenes.map((obj) => { 
+            return <IChoice> { 
+                kind: "scene",
+                id: obj.id,
+                text: obj.name 
+            }; 
+        });
+        
         this.forbiddenSceneId = null;
-        return scenes;
+        return choices;
     };
 
     getNextMoments = (targetScene?: IScene): Array<IMoment> => {
@@ -124,7 +107,7 @@ this.gdata.history = [];             //init the list of showned moments
         var scenes = Array<IScene>();
 
         if (targetScene == undefined) {
-            
+
             // todo - filter situations
             let situation = data.situations[0];
 
@@ -182,7 +165,7 @@ this.gdata.history = [];             //init the list of showned moments
             return false;
         //
         let ok = true;
-//console.log(state);
+
         let conds = when.split(",");
         for (var cond of conds) {
             let parts = cond.replace("=", ":").split(":");
@@ -201,7 +184,6 @@ this.gdata.history = [];             //init the list of showned moments
                 let value: any = (parts.length == 2 ? parts[1].trim() : "true");
                 if (value == "true" || value == "false") value = (value == "true");
                 let statevalue = state[name];
-//console.log(`  name=${name}, value=${value},  state[${name}]=${statevalue}`);
                 if (value === "undef") {
                     if (typeof statevalue !== "undefined") ok = false;
                 }
@@ -212,7 +194,6 @@ this.gdata.history = [];             //init the list of showned moments
             }
             if (ok == false) break;
         }
-//console.log(`  ok=${ok}, when=${moment.when}`);
         return ok;
     };
 
