@@ -11,8 +11,8 @@ class Game {
 
     constructor() {
         this.gdata = new GameData();
-this.gdata.state = { intro: true };  //clear and init the state
-this.gdata.history = [];             //init the list of showned moments
+                                        this.gdata.state = { intro: true };  //clear and init state
+                                        this.gdata.history = [];             //init the list of showned moments
 
         this.ui = new UI(this.update);
         this.update(Op.INIT);
@@ -31,7 +31,7 @@ this.gdata.history = [];             //init the list of showned moments
             this.chunks = this.parseAndExecuteMoment(this.currentMoment);
             this.cix = 0;
 
-            this.currentScene = this.getParentScene(this.currentMoment);
+            this.currentScene = this.getSceneOf(this.currentMoment);
             ui.setTitle(this.currentScene.name);
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
@@ -49,7 +49,7 @@ this.gdata.history = [];             //init the list of showned moments
                     delete state.intro;
                     this.gdata.state = state;
                 }
-                let moments = this.getNextMoments();
+                let moments = this.getAllPossibleMoments();
                 let choices = this.buildChoices(moments);
                 if (choices.length > 0) {
                     ui.showChoices(Op.CHOICES, choices);
@@ -62,12 +62,11 @@ this.gdata.history = [];             //init the list of showned moments
         else if (op == Op.CHOICES) {
             ui.hideChoices();
             let choice = <IChoice>param;
-            let chosen = this.gdata.getScene(this.data.scenes, choice.id);
-            this.currentMoment = this.getNextMoment(chosen);
+            this.currentMoment = this.getChosenMoment(choice);
             this.update(Op.MOMENT);
         }
         else if (op == Op.INIT) {
-            this.currentMoment = this.getNextMoment();
+            this.currentMoment = this.selectOne(this.getAllPossibleMoments());
             this.update(Op.MOMENT);
         }
         else if (op == Op.RETRY) {
@@ -78,31 +77,7 @@ this.gdata.history = [];             //init the list of showned moments
         }
     };
 
-    buildChoices = (moments: Array<IMoment>): Array<IChoice> => {
-        let choices = Array<IChoice>();
-
-        let scenes = Array<IScene>();
-        for (var moment of moments) {
-            let scene = this.getParentScene(moment);
-            if (this.forbiddenSceneId == null || this.forbiddenSceneId != scene.id) {
-                if (scenes.indexOf(scene) == -1)
-                    scenes.push(scene);
-            }
-        }
-
-        choices = scenes.map((obj) => { 
-            return <IChoice> { 
-                kind: "scene",
-                id: obj.id,
-                text: obj.name 
-            }; 
-        });
-        
-        this.forbiddenSceneId = null;
-        return choices;
-    };
-
-    getNextMoments = (targetScene?: IScene): Array<IMoment> => {
+    getAllPossibleMoments = (targetScene?: IScene): Array<IMoment> => {
         var data = this.data;
         var scenes = Array<IScene>();
 
@@ -141,14 +116,80 @@ this.gdata.history = [];             //init the list of showned moments
         return moments;
     };
 
-    getNextMoment = (targetScene?: IScene): IMoment => {
-        var moments = this.getNextMoments(targetScene);
+    buildChoices = (moments: Array<IMoment>): Array<IChoice> => {
+        let scenes = Array<IScene>();
+        let actions = Array<IAction>();
+        
+        for (var moment of moments) {
+            if (moment.kind == Kind.Moment) {
+                let scene = this.getSceneOf(moment);
+                if (this.forbiddenSceneId == null || this.forbiddenSceneId != scene.id) {
+                    if (scenes.indexOf(scene) == -1)
+                        scenes.push(scene);
+                }
+            }
+            else {
+                actions.push(<IAction>moment);                
+            }
+        }
 
-        if (moments.length == 0) return null;
-        var winner = Math.floor(Math.random() * moments.length);
-        var moment = moments[winner];
-        return moment;
+        let choices = Array<IChoice>();
+        choices = scenes.map((obj) => { 
+            return <IChoice> { 
+                kind: "scene",
+                id: obj.id,
+                text: obj.name 
+            }; 
+        });
+        let choices2 = Array<IChoice>();
+        choices2 = actions.map((obj) => { 
+            return <IChoice> { 
+                kind: "action",
+                id: obj.id,
+                text: obj.name 
+            }; 
+        });
+        choices = choices.concat(choices2);
+        
+        this.forbiddenSceneId = null;
+        return choices;
     };
+
+    getChosenMoment = (choice: IChoice): IMoment => {
+        if (choice.kind == "scene") {
+            let data = this.data;
+            let scene: IScene;
+            for (scene of data.scenes) {
+                if (scene.id == choice.id) break;
+            }
+            let moments = Array<IMoment>();
+            for (var moment of data.moments) {
+                if (moment.kind == Kind.Moment) {
+                    if (scene.mids.indexOf(moment.id) != -1) {
+                        if (this.isValidMoment(moment)) {
+                            moments.push(moment);
+                        }
+                    }
+                }
+            }
+            return this.selectOne(moments);
+        }
+        else if (choice.kind == "action") {
+            let id = choice.id;
+            for (var moment of this.data.moments) {
+                if (moment.id == id)
+                    return moment;
+            }
+        }
+        return null;
+    };
+
+    selectOne = (moments: Array<IMoment>) => {
+        if (moments.length == 0) return null;
+        let winner = Math.floor(Math.random() * moments.length);
+        let moment = moments[winner];
+        return moment;
+    }
 
     isValidMoment = (moment: IMoment): boolean => {
         var when = moment.when || "";
@@ -172,7 +213,7 @@ this.gdata.history = [];             //init the list of showned moments
             let name = parts[0].trim();
             if (name.startsWith("/")) {
                 if (name.startsWith("/here")) {
-                    let sceneid = this.getParentScene(moment).id;
+                    let sceneid = this.getSceneOf(moment).id;
                     if (this.currentScene.id != sceneid) ok = false;
                 }
                 else {
@@ -197,12 +238,11 @@ this.gdata.history = [];             //init the list of showned moments
         return ok;
     };
 
-    getParentScene = (moment: IMoment): IScene => {
+    getSceneOf = (moment: IMoment): IScene => {
         var scenes = this.data.scenes;
         for (var scene of scenes) {
-            for (var id of scene.mids) {
-                if (id == moment.id)
-                    return scene;
+            if (scene.id == moment.scnid) {
+                return scene;
             }
         }
     };
@@ -263,7 +303,7 @@ this.gdata.history = [];             //init the list of showned moments
                     for (var oneflag of flags) {
                         let flag = oneflag.trim();
                         if (flag == "can-repeat") canRepeat = true;
-                        if (flag == "must-leave-scene") this.forbiddenSceneId = this.getParentScene(moment).id;
+                        if (flag == "must-leave-scene") this.forbiddenSceneId = this.getSceneOf(moment).id;
                     }
                 }
                 else {

@@ -43,11 +43,12 @@ class UI {
         let ul = document.createElement("ul");
         for (var i = 0; i < sceneChoices.length; i++) {
             let choice = sceneChoices[i];
+            var icon = (choice.kind == "scene" ? "ion-ios-location" : "ion-flash");
             let li = <HTMLLIElement>document.createElement("li");
             li.setAttribute("data-kind", choice.kind);
             li.setAttribute("data-id", choice.id.toString());
             li.innerHTML = `
-                <div class="kind"><div><i class="icon ion-ios-location"></i></div></div>
+                <div class="kind"><div><i class="icon ${icon}"></i></div></div>
                 <div class="choice">${choice.text}</div>`;
             ul.appendChild(li);
         }

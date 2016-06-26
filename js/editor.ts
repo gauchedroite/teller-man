@@ -84,7 +84,7 @@ class Editor {
                 url: "page/action.html", 
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
-                    var me = gdata.getAction(gdata.actions, id);
+                    var me = gdata.getAction(gdata.moments, id);
                     data.me = me;
                     data.meid = id;
                     return data;

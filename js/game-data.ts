@@ -1,3 +1,8 @@
+enum Kind {
+    Moment,
+    Action
+}
+
 interface IGame {
     id: number
     name: string
@@ -18,20 +23,18 @@ interface IScene {
     name: string
     desc: string
     mids: Array<number>
-    aids: Array<number>
 }
 
 interface IMoment {
+    kind: Kind
     id: number
+    scnid: number
     when: string
     text: string
 }
 
-interface IAction {
-    id: number
+interface IAction extends IMoment {
     name: string
-    when: string
-    text: string
 }
 
 interface IGameData {
@@ -39,7 +42,6 @@ interface IGameData {
     situations: Array<ISituation>
     scenes: Array<IScene>
     moments: Array<IMoment>
-    actions: Array<IAction>
     me: any
     meid: number
 }
@@ -52,13 +54,11 @@ class GameData {
         var sits = this.situations;
         var scns = this.scenes;
         var moms = this.moments;
-        var acts = this.actions;
         var gdata = <IGameData> { 
             game: game || <IGame>{id:0, name: null, startsid:0}, 
             situations: sits,
             scenes: scns,
             moments: moms,
-            actions: acts,
             me: null,
             meid: null
         };
@@ -76,7 +76,6 @@ class GameData {
         this.situations = gdata.situations;
         this.scenes = gdata.scenes;
         this.moments = gdata.moments;
-        this.actions = gdata.actions;
     }
 
 //
@@ -169,7 +168,7 @@ class GameData {
             if (scn.id > id) id = scn.id;
         }
         id++;
-        var scn: IScene = { id: id, name: null, desc: null, mids: [], aids: [] };
+        var scn: IScene = { id: id, name: null, desc: null, mids: [] };
         scns.push(scn);
         this.scenes = scns;
         //
@@ -253,7 +252,7 @@ class GameData {
             if (mom.id > id) id = mom.id;
         }
         id++;
-        var mom: IMoment = { id: id, when: null, text: null };
+        var mom: IMoment = { kind: Kind.Moment, id: id, scnid: scnid, when: null, text: null };
         moms.push(mom);
         this.moments = moms;
         //
@@ -314,7 +313,7 @@ class GameData {
         var moms: Array<IMoment> = [];
         for (var mid of scn.mids) {
             for (var moment of moments) {
-                if (moment.id == mid) {
+                if (moment.id == mid && moment.kind == Kind.Moment) {
                     moms.push(moment);
                     break;
                 }
@@ -323,93 +322,64 @@ class GameData {
         return moms;
     }
 
-
 //
 // actions
 //
     addAction = (scnid: number) => {
         var id = -1;
-        var acts = this.actions;
-        for (var act of acts) {
-            if (act.id > id) id = act.id;
+        var moms = this.moments;
+        for (var mom of moms) {
+            if (mom.id > id) id = mom.id;
         }
         id++;
-        var act: IAction = { id: id, name: null, when: null, text: null };
-        acts.push(act);
-        this.actions = acts;
+        var act: IAction = { kind: Kind.Action, id: id, scnid: scnid, when: null, text: null, name: null };
+        moms.push(act);
+        this.moments = moms;
         //
         var scns = this.scenes;
         var scn = this.getScene(scns, scnid);
-        scn.aids.push(id);
+        scn.mids.push(id);
         this.scenes = scns;
         return id;
     }
 
     deleteAction = (id: number) => {
-        var acts = this.actions;
-        var index = this.getActionIndex(acts, id);
-        var act = acts[index];
-        //
-        acts.splice(index, 1);
-        this.actions = acts;
-        //
-        var scns = this.scenes;
-        for (var scn of scns) {
-            for (var i = 0; i < scn.aids.length; i++) {
-                if (scn.aids[i] == id) {
-                    scn.aids.splice(i, 1);
-                    break;
-                }
-            }
-        }
-        this.scenes = scns;
+        this.deleteMoment(id);
     }
 
     saveActionWhen = (when: string, id: number) => {
-        var acts = this.actions;
-        var act = this.getAction(acts, id);
-        act.when = when;
-        this.actions = acts;
+        this.saveMomentWhen(when, id);
     }
 
     saveActionName = (text: string, id: number) => {
-        var acts = this.actions;
-        var act = this.getAction(acts, id);
+        var moms = <Array<IAction>>this.moments;
+        var act = this.getAction(moms, id);
         act.name = text;
-        this.actions = acts;
+        this.moments = moms;
     }
 
     saveActionText = (text: string, id: number) => {
-        var acts = this.actions;
-        var act = this.getAction(acts, id);
-        act.text = text;
-        this.actions = acts;
+        this.saveMomentText(text, id);
     }
 
-    getAction = (acts: Array<IAction>, id: number) => {
-        return (acts[this.getActionIndex(acts, id)]);
-    }
-
-    getActionIndex = (acts: Array<IAction>, id: number) => {
-        for (var i = 0; i < acts.length; i++) {
-            if (acts[i].id == id)
-                return i;
-        }
+    getAction = (acts: Array<IMoment>, id: number) => {
+        return <IAction>this.getMoment(acts, id);
     }
 
     getActionsOf = (scn: IScene): Array<IAction> => {
-        var actions = this.actions;
-        var acts: Array<IAction> = [];
-        for (var aid of scn.aids) {
-            for (var action of actions) {
-                if (action.id == aid) {
-                    acts.push(action);
+        var moments = this.moments;
+        var moms: Array<IMoment> = [];
+        for (var mid of scn.mids) {
+            for (var moment of moments) {
+                if (moment.id == mid && moment.kind == Kind.Action) {
+                    moms.push(moment);
                     break;
                 }
             }
         }
-        return acts;
+        return <Array<IAction>>moms;
     }
+
 
 //
 // localstorage
@@ -460,17 +430,6 @@ class GameData {
 
     set moments(moms: Array<IMoment>) {
         localStorage.setItem("moments", JSON.stringify(moms));
-    }
-
-    //
-    // actions
-    //
-    get actions() : Array<IAction> {
-        return JSON.parse(localStorage.getItem("actions")) || [];
-    }
-
-    set actions(acts: Array<IAction>) {
-        localStorage.setItem("actions", JSON.stringify(acts));
     }
 
     //
