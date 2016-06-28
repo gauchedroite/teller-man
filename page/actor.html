@@ -1,0 +1,56 @@
+
+<div class="navbar">
+    <div class="navbar-inner">
+        <div class="center sliding">Actor</div>
+    </div>
+</div>
+
+<div class="pages">
+    <div data-page="actor" class="page" data-ted-meid="{{meid}}">
+
+        <div class="page-content">
+
+            <div class="list-block">
+                <ul>
+                    <li>
+                        <div class="item-content">
+                            <div class="item-inner">
+                                <div class="item-input">
+                                    <input id="ted-actor-name" type="text" placeholder="name" value="{{me.name}}">
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div id="ted-messages-actor">
+            <div class="content-block-title">Messages</div>
+            <div class="list-block">
+                <ul>
+                    {{#each me.messages}}
+                    <li>
+                        <a href="page/message-actor.html?id={{this.id}}" data-view=".view-right" class="item-link">
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">{{this.when}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    {{/each}}
+                </ul>
+            </div>
+            </div>
+            
+        </div>
+
+        <div class="toolbar">
+            <div class="toolbar-inner">
+                <a id="ted-delete-actor" href="#" class="link"><i class="icon ion-ios-trash" style="font-size: x-large;"></i>&nbsp;Delete</a>
+                <a id="ted-add-message-actor" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Message</a>
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -55,6 +55,7 @@ class Editor {
                     data.me = me;
                     data.meid = id;
                     data.me.scenes = gdata.getScenesOf(me);
+                    data.me.actors = gdata.getActorsOf(me);
                     return data;
                 }
             },
@@ -85,6 +86,26 @@ class Editor {
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
                     var me = gdata.getAction(gdata.moments, id);
+                    data.me = me;
+                    data.meid = id;
+                    return data;
+                }
+            },
+            {
+                url: "page/player.html", 
+                getData: function (id: number): IGameData {
+                    var data = gdata.loadGame();
+                    var me = gdata.getActor(gdata.actors, id);
+                    data.me = me;
+                    data.meid = id;
+                    return data;
+                }
+            },
+            {
+                url: "page/actor.html", 
+                getData: function (id: number): IGameData {
+                    var data = gdata.loadGame();
+                    var me = gdata.getActor(gdata.actors, id);
                     data.me = me;
                     data.meid = id;
                     return data;
@@ -136,6 +157,11 @@ class Editor {
         });
 
         $(document).on("click", "div#ted-scenes li", (e: any) => {
+            $(e.target.closest(".page")).find("li").removeClass("ted-selected");
+            $(e.target.closest("li")).addClass("ted-selected"); 
+        });
+
+        $(document).on("click", "div#ted-actors li", (e: any) => {
             $(e.target.closest(".page")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
@@ -225,6 +251,37 @@ class Editor {
             });
         });
 
+        $(document).on("click", "#ted-add-actor", (e: any) => {
+            var sitid = Editor.getMeId(e.target);
+            var id = this.gdata.addActor(sitid);
+            var li = '<li class="ted-selected">'
+                   +    '<a href="page/actor.html?id=' + id + '" data-view=".view-center" class="item-link">'
+                   +        '<div class="item-content">'
+                   +            '<div class="item-inner">'
+                   +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +        '</div>'
+                   +    '</a>'
+                   +'</li>';
+            var $ul = $("#ted-actors ul");
+            $ul.find("li").removeClass("ted-selected");
+            $ul.append(li);
+            centerView.router.load({ url: "page/actor.html?id=" + id });
+        });
+
+        $(document).on("click", "#ted-delete-actor", (e: Event) => {
+            app.confirm("Are you sure?", "Delete Actor", () => {
+                this.gdata.deleteActor(Editor.getMeId(e.target));
+                var history = this.centerView.history;
+                this.centerView.router.back({
+                    url: history[0],
+                    force: true,
+                    ignoreCache: true
+                 });
+                 this.leftView.router.refreshPage();
+            });
+        });
+
         $(document).on("click", "#ted-add-moment", (e: any) => {
             var momid = Editor.getMeId(e.target);
             var id = this.gdata.addMoment(momid);
@@ -245,7 +302,7 @@ class Editor {
 
         $(document).on("click", "#ted-delete-moment", (e: Event) => {
             app.confirm("Are you sure?", "Delete Moment", () => {
-                this.gdata.deleteMoment(Editor.getMeId(e.target));
+                this.gdata.deleteSceneMoment(Editor.getMeId(e.target));
                 var history = this.rightView.history;
                 this.rightView.router.back({
                     url: history[0],
@@ -321,6 +378,15 @@ class Editor {
 
         $(document).on("change", "#ted-scene-desc", (e: any) => {
             this.gdata.saveSceneDesc(e.target.value, Editor.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-player-name", (e: any) => {
+            this.gdata.saveActorName(e.target.value, Editor.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-actor-name", (e: any) => {
+            this.gdata.saveActorName(e.target.value, Editor.getMeId(e.target));
+            $("#ted-actors li.ted-selected div.item-title").text(e.target.value);
         });
 
         $(document).on("change", "#ted-moment-when", (e: any) => {

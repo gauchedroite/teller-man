@@ -67,19 +67,32 @@
             </div>
             </div>
 
-            <div class="content-block-title">NPC</div>
+            <div id="ted-actors">
+            <div class="content-block-title">Actors</div>
             <div class="list-block">
                 <ul>
-                    <!--<li>
-                        <a href="page/npc.html?id=1" class="item-link">
+                    <li>
+                        <a href="page/player.html?id={{me.aid}}" data-view=".view-center" class="item-link">
                             <div class="item-content">
                                 <div class="item-inner">
-                                    <div class="item-title">Carlos / called</div>
+                                    <div class="item-title">Player</div>
                                 </div>
                             </div>
                         </a>
-                    </li>-->
+                    </li>
+                    {{#each me.actors}}
+                    <li>
+                        <a href="page/actor.html?id={{id}}" data-view=".view-center" class="item-link">
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">{{name}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    {{/each}}
                 </ul>
+            </div>
             </div>
 
         </div>
@@ -87,6 +100,7 @@
         <div class="toolbar">
             <div class="toolbar-inner">
                 <a id="ted-delete-situation" href="#" class="link"><i class="icon ion-ios-trash" style="font-size: x-large;"></i>&nbsp;Delete</a>
+                <a id="ted-add-actor" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Actor</a>
                 <a id="ted-add-scene" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Scene</a>
             </div>
         </div>

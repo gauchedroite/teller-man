@@ -3,6 +3,11 @@ enum Kind {
     Action
 }
 
+enum AKind {
+    Player,
+    NPC
+}
+
 interface IGame {
     id: number
     name: string
@@ -15,13 +20,21 @@ interface ISituation {
     when: string
     tags: Array<string>
     sids: Array<number>
-    npcids: Array<number>
+    aids: Array<number>
+    aid: number
 }
 
 interface IScene {
     id: number
     name: string
     desc: string
+    mids: Array<number>
+}
+
+interface IActor {
+    kind: AKind
+    id: number
+    name: string
     mids: Array<number>
 }
 
@@ -41,6 +54,7 @@ interface IGameData {
     game: IGame
     situations: Array<ISituation>
     scenes: Array<IScene>
+    actors: Array<IActor>
     moments: Array<IMoment>
     me: any
     meid: number
@@ -53,11 +67,13 @@ class GameData {
         var game = this.game;
         var sits = this.situations;
         var scns = this.scenes;
+        var acts = this.actors;
         var moms = this.moments;
         var gdata = <IGameData> { 
             game: game || <IGame>{id:0, name: null, startsid:0}, 
             situations: sits,
             scenes: scns,
+            actors: acts,
             moments: moms,
             me: null,
             meid: null
@@ -75,6 +91,7 @@ class GameData {
         this.game = gdata.game;
         this.situations = gdata.situations;
         this.scenes = gdata.scenes;
+        this.actors = gdata.actors;
         this.moments = gdata.moments;
     }
 
@@ -109,9 +126,13 @@ class GameData {
             if (sit.id > id) id = sit.id;
         }
         id++;
-        var sit: ISituation = { id: id, name: null, when: null, tags: [], sids: [], npcids: [] };
+        var sit: ISituation = { id: id, name: null, when: null, tags: [], sids: [], aids: [], aid: null };
         sits.push(sit);
         this.situations = sits;
+        //
+        var aid = this.addActor(id, AKind.Player);
+        this.saveSituationPlayerId(aid, id);
+        //
         return id;
     }
 
@@ -124,7 +145,11 @@ class GameData {
             this.deleteScene(sid);
         }
         //
-        sit.sids = [];
+        this.deleteActor(sit.aid);
+        for (var aid of sit.aids) {
+            this.deleteActor(aid);
+        }
+        //
         sits.splice(index, 1);
         this.situations = sits;
     }
@@ -140,6 +165,14 @@ class GameData {
         var sits = this.situations;
         var sit = this.getSituation(sits, id);
         sit.when = when;
+        this.situations = sits;
+    }
+
+    saveSituationPlayerId = (aid: number, id: number) => {
+        var sits = this.situations;
+        var sit = this.getSituation(sits, id);
+        sit.aid = aid;
+        sit.aids = [];
         this.situations = sits;
     }
 
@@ -185,7 +218,7 @@ class GameData {
         var scn = scns[index];
         //
         for (var mid of scn.mids) {
-            this.deleteMoment(mid);
+            this.deleteSceneMoment(mid);
         }
         //
         scns.splice(index, 1);
@@ -243,6 +276,84 @@ class GameData {
     }
 
 //
+// actors
+//
+    addActor = (sitid: number, akind?: AKind) => {
+        var id = -1;
+        var acts = this.actors;
+        for (var act of acts) {
+            if (act.id > id) id = act.id;
+        }
+        id++;
+        var kind: AKind =  (akind == undefined ? AKind.NPC : akind);
+        var act: IActor = { id: id, kind: kind, name: null, mids: [] };
+        acts.push(act);
+        this.actors = acts;
+        //
+        var sits = this.situations;
+        var sit = this.getSituation(sits, sitid);
+        sit.aids.push(id);
+        this.situations = sits;
+        return id;
+    }
+
+    deleteActor = (id: number) => {
+        var acts = this.actors;
+        var index = this.getActorIndex(acts, id);
+        var act = acts[index];
+        //
+        for (var mid of act.mids) {
+            this.deleteActorMoment(mid);
+        }
+        //
+        acts.splice(index, 1);
+        this.actors = acts;
+        //
+        var sits = this.situations;
+        for (var sit of sits) {
+            for (var i = 0; i < sit.aids.length; i++) {
+                if (sit.aids[i] == id) {
+                    sit.aids.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        this.situations = sits;
+    }
+
+    saveActorName = (name: string, id: number) => {
+        var acts = this.actors;
+        var act = this.getActor(acts, id);
+        act.name = name;
+        this.actors = acts;
+    }
+
+    getActor = (acts: Array<IActor>, id: number) => {
+        return (acts[this.getActorIndex(acts, id)]);
+    }
+
+    getActorIndex = (acts: Array<IActor>, id: number) => {
+        for (var i = 0; i < acts.length; i++) {
+            if (acts[i].id == id)
+                return i;
+        }
+    }
+
+    getActorsOf = (sit: ISituation): Array<IActor> => {
+        var actors = this.actors;
+        var acts: Array<IActor> = [];
+        for (var aid of sit.aids) {
+            for (var actor of actors) {
+                if (actor.id == aid) {
+                    acts.push(actor);
+                    break;
+                }
+            }
+        }
+        return acts;
+    }
+
+//
 // moments
 //
     addMoment = (scnid: number) => {
@@ -263,7 +374,7 @@ class GameData {
         return id;
     }
 
-    deleteMoment = (id: number) => {
+    deleteSceneMoment = (id: number) => {
         var moms = this.moments;
         var index = this.getMomentIndex(moms, id);
         var mom = moms[index];
@@ -281,6 +392,26 @@ class GameData {
             }
         }
         this.scenes = scns;
+    }
+
+    deleteActorMoment = (id: number) => {
+        var moms = this.moments;
+        var index = this.getMomentIndex(moms, id);
+        var mom = moms[index];
+        //
+        moms.splice(index, 1);
+        this.moments = moms;
+        //
+        var acts = this.actors;
+        for (var act of acts) {
+            for (var i = 0; i < act.mids.length; i++) {
+                if (act.mids[i] == id) {
+                    act.mids.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        this.actors = acts;
     }
 
     saveMomentWhen = (when: string, id: number) => {
@@ -344,7 +475,7 @@ class GameData {
     }
 
     deleteAction = (id: number) => {
-        this.deleteMoment(id);
+        this.deleteSceneMoment(id);
     }
 
     saveActionWhen = (when: string, id: number) => {
@@ -419,6 +550,17 @@ class GameData {
 
     set scenes(moms: Array<IScene>) {
         localStorage.setItem("scenes", JSON.stringify(moms));
+    }
+
+    //
+    // actors
+    //
+    get actors() : Array<IActor> {
+        return JSON.parse(localStorage.getItem("actors")) || [];
+    }
+
+    set actors(moms: Array<IActor>) {
+        localStorage.setItem("actors", JSON.stringify(moms));
     }
 
     //
