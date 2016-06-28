@@ -98,6 +98,7 @@ class Editor {
                     var me = gdata.getActor(gdata.actors, id);
                     data.me = me;
                     data.meid = id;
+                    data.me.messages = gdata.getMessageToOf(me);
                     return data;
                 }
             },
@@ -106,6 +107,16 @@ class Editor {
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
                     var me = gdata.getActor(gdata.actors, id);
+                    data.me = me;
+                    data.meid = id;
+                    return data;
+                }
+            },
+            {
+                url: "page/message-to.html", 
+                getData: function (id: number): IGameData {
+                    var data = gdata.loadGame();
+                    var me = gdata.getMessageTo(gdata.moments, id);
                     data.me = me;
                     data.meid = id;
                     return data;
@@ -146,6 +157,9 @@ class Editor {
             if (page.url.startsWith("page/scene.html")) {
                 rightView.router.back({ url: rightView.history[0], force: true });
             }
+            if (page.url.startsWith("page/player.html")) {
+                rightView.router.back({ url: rightView.history[0], force: true });
+            }
             if (page.url.startsWith("page/situation.html")) {
                 centerView.router.back({ url: centerView.history[0], force: true });
             }
@@ -172,6 +186,11 @@ class Editor {
         });
 
         $(document).on("click", "div#ted-actions li", (e: any) => {
+            $(e.target.closest(".page")).find("li").removeClass("ted-selected");
+            $(e.target.closest("li")).addClass("ted-selected"); 
+        });
+
+        $(document).on("click", "div#ted-messages-to li", (e: any) => {
             $(e.target.closest(".page")).find("li").removeClass("ted-selected");
             $(e.target.closest("li")).addClass("ted-selected"); 
         });
@@ -344,6 +363,37 @@ class Editor {
             });
         });
 
+        $(document).on("click", "#ted-add-message-to", (e: any) => {
+            var actid = Editor.getMeId(e.target);
+            var id = this.gdata.addMessageTo(actid);
+            var li = '<li class="ted-selected">'
+                   +    '<a href="page/message-to.html?id=' + id + '" data-view=".view-right" class="item-link">'
+                   +        '<div class="item-content">'
+                   +            '<div class="item-inner">'
+                   +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +        '</div>'
+                   +    '</a>'
+                   +'</li>';
+            var $ul = $("#ted-messages-to ul");
+            $ul.find("li").removeClass("ted-selected");
+            $ul.append(li);
+            rightView.router.load({ url: "page/message-to.html?id=" + id });
+        });
+
+        $(document).on("click", "#ted-delete-message-to", (e: Event) => {
+            app.confirm("Are you sure?", "Delete Message", () => {
+                this.gdata.deleteMessageTo(Editor.getMeId(e.target));
+                var history = this.rightView.history;
+                this.rightView.router.back({
+                    url: history[0],
+                    force: true,
+                    ignoreCache: true
+                 });
+                 this.centerView.router.refreshPage();
+            });
+        });
+
 
         $(document).on("change", "#ted-game-name", (e: any) => {
             this.gdata.saveGameName(e.target.value);
@@ -409,6 +459,19 @@ class Editor {
 
         $(document).on("change", "#ted-action-text", (e: any) => {
             this.gdata.saveActionText(e.target.value, Editor.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-message-to-name", (e: any) => {
+            this.gdata.saveMessageToName(e.target.value, Editor.getMeId(e.target));
+            $("#ted-messages-to li.ted-selected div.item-title").text(e.target.value);
+        });
+
+        $(document).on("change", "#ted-message-to-when", (e: any) => {
+            this.gdata.saveMessageToWhen(e.target.value, Editor.getMeId(e.target));
+        });
+
+        $(document).on("change", "#ted-message-to-text", (e: any) => {
+            this.gdata.saveMessageToText(e.target.value, Editor.getMeId(e.target));
         });
     }
 

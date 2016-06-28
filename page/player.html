@@ -24,16 +24,16 @@
                 </ul>
             </div>
 
-            <div id="ted-messages-player">
+            <div id="ted-messages-to">
             <div class="content-block-title">Messages</div>
             <div class="list-block">
                 <ul>
                     {{#each me.messages}}
                     <li>
-                        <a href="page/message-player.html?id={{this.id}}" data-view=".view-right" class="item-link">
+                        <a href="page/message-to.html?id={{this.id}}" data-view=".view-right" class="item-link">
                             <div class="item-content">
                                 <div class="item-inner">
-                                    <div class="item-title">{{this.when}}</div>
+                                    <div class="item-title">{{this.name}}</div>
                                 </div>
                             </div>
                         </a>
@@ -47,7 +47,7 @@
 
         <div class="toolbar">
             <div class="toolbar-inner">
-                <a id="ted-add-message-player" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Message</a>
+                <a id="ted-add-message-to" href="#" class="link"><i class="icon ion-ios-plus-outline" style="font-size: x-large;"></i>&nbsp;Message</a>
             </div>
         </div>
 
