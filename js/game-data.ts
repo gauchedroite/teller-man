@@ -1,6 +1,8 @@
 enum Kind {
     Moment,
-    Action
+    Action,
+    MessageTo,
+    MessageFrom
 }
 
 enum AKind {
@@ -48,6 +50,14 @@ interface IMoment {
 
 interface IAction extends IMoment {
     name: string
+}
+
+interface IMessageTo extends IMoment {
+    name: string
+    to: number
+}
+
+interface IMessageFrom extends IMoment {
 }
 
 interface IGameData {
@@ -509,6 +519,115 @@ class GameData {
             }
         }
         return <Array<IAction>>moms;
+    }
+
+//
+// messages TO
+//
+    addMessageTo = (actid: number) => {
+        var id = -1;
+        var moms = this.moments;
+        for (var mom of moms) {
+            if (mom.id > id) id = mom.id;
+        }
+        id++;
+        var msg: IMessageTo = { kind: Kind.MessageTo, id: id, scnid: actid, when: null, text: null, name: null, to: null };
+        moms.push(msg);
+        this.moments = moms;
+        //
+        var acts = this.actors;
+        var act = this.getActor(acts, actid);
+        act.mids.push(id);
+        this.actors = acts;
+        return id;
+    }
+
+    deleteMessageTo = (id: number) => {
+        this.deleteActorMoment(id);
+    }
+
+    saveMessageToWhen = (when: string, id: number) => {
+        this.saveMomentWhen(when, id);
+    }
+
+    saveMessageToName = (text: string, id: number) => {
+        var moms = <Array<IMessageTo>>this.moments;
+        var msg = this.getMessageTo(moms, id);
+        msg.name = text;
+        this.moments = moms;
+    }
+
+    saveMessageToText = (text: string, id: number) => {
+        this.saveMomentText(text, id);
+    }
+
+    getMessageTo = (msgs: Array<IMoment>, id: number) => {
+        return <IMessageTo>this.getMoment(msgs, id);
+    }
+
+    getMessageToOf = (act: IActor): Array<IMessageTo> => {
+        var moments = this.moments;
+        var moms: Array<IMoment> = [];
+        for (var mid of act.mids) {
+            for (var moment of moments) {
+                if (moment.id == mid && moment.kind == Kind.MessageTo) {
+                    moms.push(moment);
+                    break;
+                }
+            }
+        }
+        return <Array<IMessageTo>>moms;
+    }
+
+//
+// messages FROM
+//
+    addMessageFrom = (actid: number) => {
+        var id = -1;
+        var moms = this.moments;
+        for (var mom of moms) {
+            if (mom.id > id) id = mom.id;
+        }
+        id++;
+        var msg: IMessageFrom = { kind: Kind.MessageFrom, id: id, scnid: actid, when: null, text: null };
+        moms.push(msg);
+        this.moments = moms;
+        //
+        var acts = this.actors;
+        var act = this.getActor(acts, actid);
+        act.mids.push(id);
+        this.actors = acts;
+        return id;
+    }
+
+    deleteMessageFrom = (id: number) => {
+        this.deleteActorMoment(id);
+    }
+
+    saveMessageFromWhen = (when: string, id: number) => {
+        this.saveMomentWhen(when, id);
+    }
+
+    saveMessageFromText = (text: string, id: number) => {
+        this.saveMomentText(text, id);
+    }
+
+    getMessageFrom = (msgs: Array<IMoment>, id: number) => {
+        return <IMessageFrom>this.getMoment(msgs, id);
+    }
+
+    getMessageFromOf = (act: IActor): Array<IMessageFrom> => {
+        var moments = this.moments;
+        var moms: Array<IMoment> = [];
+        for (var mid of act.mids) {
+            for (var moment of moments) {
+                if (moment.id == mid && moment.kind == Kind.MessageFrom) {
+                    moms.push(moment);
+                    break;
+                }
+            }
+        }
+        return <Array<IMessageFrom>>moms;
     }
 
 
