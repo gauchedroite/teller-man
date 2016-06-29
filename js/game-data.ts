@@ -18,6 +18,7 @@ interface IGame {
 
 interface ISituation {
     id: number
+    gameid: number
     name: string
     when: string
     tags: Array<string>
@@ -28,6 +29,7 @@ interface ISituation {
 
 interface IScene {
     id: number
+    sitid: number
     name: string
     desc: string
     mids: Array<number>
@@ -36,6 +38,7 @@ interface IScene {
 interface IActor {
     kind: AKind
     id: number
+    sitid: number
     name: string
     mids: Array<number>
 }
@@ -43,7 +46,7 @@ interface IActor {
 interface IMoment {
     kind: Kind
     id: number
-    scnid: number
+    parentid: number
     when: string
     text: string
 }
@@ -129,14 +132,14 @@ class GameData {
 //
 // situations
 //
-    addSituation = () => {
+    addSituation = (gameid: number) => {
         var id = -1;
         var sits = this.situations;
         for (var sit of sits) {
             if (sit.id > id) id = sit.id;
         }
         id++;
-        var sit: ISituation = { id: id, name: null, when: null, tags: [], sids: [], aids: [], aid: null };
+        var sit: ISituation = { id: id, gameid: gameid, name: null, when: null, tags: [], sids: [], aids: [], aid: null };
         sits.push(sit);
         this.situations = sits;
         //
@@ -201,6 +204,10 @@ class GameData {
         }
     }
 
+    getSituationOfMessageTo = (sits: Array<ISituation>, msg: IMessageTo) => {
+        var aid = msg.parentid;
+    }
+
 //
 // scenes
 //
@@ -211,7 +218,7 @@ class GameData {
             if (scn.id > id) id = scn.id;
         }
         id++;
-        var scn: IScene = { id: id, name: null, desc: null, mids: [] };
+        var scn: IScene = { id: id, sitid: sitid, name: null, desc: null, mids: [] };
         scns.push(scn);
         this.scenes = scns;
         //
@@ -296,7 +303,7 @@ class GameData {
         }
         id++;
         var kind: AKind =  (akind == undefined ? AKind.NPC : akind);
-        var act: IActor = { id: id, kind: kind, name: null, mids: [] };
+        var act: IActor = { id: id, sitid: sitid, kind: kind, name: null, mids: [] };
         acts.push(act);
         this.actors = acts;
         //
@@ -373,7 +380,7 @@ class GameData {
             if (mom.id > id) id = mom.id;
         }
         id++;
-        var mom: IMoment = { kind: Kind.Moment, id: id, scnid: scnid, when: null, text: null };
+        var mom: IMoment = { kind: Kind.Moment, id: id, parentid: scnid, when: null, text: null };
         moms.push(mom);
         this.moments = moms;
         //
@@ -473,7 +480,7 @@ class GameData {
             if (mom.id > id) id = mom.id;
         }
         id++;
-        var act: IAction = { kind: Kind.Action, id: id, scnid: scnid, when: null, text: null, name: null };
+        var act: IAction = { kind: Kind.Action, id: id, parentid: scnid, when: null, text: null, name: null };
         moms.push(act);
         this.moments = moms;
         //
@@ -531,7 +538,7 @@ class GameData {
             if (mom.id > id) id = mom.id;
         }
         id++;
-        var msg: IMessageTo = { kind: Kind.MessageTo, id: id, scnid: actid, when: null, text: null, name: null, to: null };
+        var msg: IMessageTo = { kind: Kind.MessageTo, id: id, parentid: actid, when: null, text: null, name: null, to: null };
         moms.push(msg);
         this.moments = moms;
         //
@@ -561,6 +568,13 @@ class GameData {
         this.saveMomentText(text, id);
     }
 
+    saveMessageToActorTo = (to: number, id: number) => {
+        var moms = <Array<IMessageTo>>this.moments;
+        var msg = this.getMessageTo(moms, id);
+        msg.to = to;
+        this.moments = moms;
+    }
+
     getMessageTo = (msgs: Array<IMoment>, id: number) => {
         return <IMessageTo>this.getMoment(msgs, id);
     }
@@ -579,6 +593,23 @@ class GameData {
         return <Array<IMessageTo>>moms;
     }
 
+    getActorsForMessageTo = (data: IGameData, msg: IMessageTo) => {
+        var player = this.getActor(data.actors, msg.parentid);
+        var sit = this.getSituation(data.situations, player.sitid);
+
+        var actors = data.actors;
+        var acts: Array<IActor> = [];
+        for (var aid of sit.aids) {
+            for (var actor of actors) {
+                if (actor.id == aid && actor.id != sit.aid) {
+                    acts.push(actor);
+                    break;
+                }
+            }
+        }
+        return acts;
+    }
+
 //
 // messages FROM
 //
@@ -589,7 +620,7 @@ class GameData {
             if (mom.id > id) id = mom.id;
         }
         id++;
-        var msg: IMessageFrom = { kind: Kind.MessageFrom, id: id, scnid: actid, when: null, text: null };
+        var msg: IMessageFrom = { kind: Kind.MessageFrom, id: id, parentid: actid, when: null, text: null };
         moms.push(msg);
         this.moments = moms;
         //

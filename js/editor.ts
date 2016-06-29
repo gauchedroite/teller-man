@@ -22,7 +22,7 @@ class Editor {
         for (var sit of data.situations) {
             (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : "");
         }
-        var gameinfo = document.getElementById("ted-game-info");
+        var gameinfo = document.querySelector("div.pages");
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
         gameinfo.innerHTML = template(data);
@@ -120,6 +120,10 @@ class Editor {
                     var me = gdata.getMessageTo(gdata.moments, id);
                     data.me = me;
                     data.meid = id;
+                    data.me.actors = gdata.getActorsForMessageTo(data, me);
+                    for (var act of data.me.actors) {
+                        act.selected = (act.id == me.to ? "selected" : null);
+                    }
                     return data;
                 }
             },
@@ -237,7 +241,8 @@ class Editor {
         });
 
         $(document).on("click", "#ted-add-situation", (e: any) => {
-            var id = this.gdata.addSituation();
+            var gameid = Editor.getMeId(e.target);
+            var id = this.gdata.addSituation(gameid);
             var li = '<li class="ted-selected">'
                    +    '<a href="page/situation.html?id=' + id + '" class="item-link">'
                    +        '<div class="item-content">'
@@ -459,10 +464,20 @@ class Editor {
         $(document).on("click", "input[name^='radio-']", (e: any) => {
             var $ssp = $(e.target).closest("div.smart-select-popup");
             if ($ssp.length == 0) return;
+            //
             var $dp = $ssp.find("div[data-page]");
+            var $dsn = $dp.find("div[data-select-name]");
             var $pc = $dp.find("div.page-content input:checked");
             var $it = $pc.next("div.item-inner").find("div.item-title");
-            this.gdata.saveGameStartSituation($it.text());
+            //
+            var name = <string>$dsn[0].getAttribute("data-select-name");
+            if (name == "situations") {
+                this.gdata.saveGameStartSituation($it.text());
+            } else if (name.startsWith("actors-for-")) {
+                var toid = parseInt($pc.val());
+                var meid = parseInt(name.substr("actors-for-".length));
+                this.gdata.saveMessageToActorTo(toid, meid);
+            }
         });
 
         $(document).on("change", "#ted-situation-name", (e: any) => {

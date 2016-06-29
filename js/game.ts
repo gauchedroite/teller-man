@@ -241,7 +241,7 @@ class Game {
     getSceneOf = (moment: IMoment): IScene => {
         var scenes = this.data.scenes;
         for (var scene of scenes) {
-            if (scene.id == moment.scnid) {
+            if (scene.id == moment.parentid) {
                 return scene;
             }
         }

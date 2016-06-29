@@ -31,6 +31,21 @@
                             </div>
                         </div>
                     </li>
+                    <li>
+                        <a href="#" class="item-link smart-select" data-open-in="popup" data-page-title="Actor to talk to" data-searchbar="true" data-searchbar-placeholder="Search">
+                            <select name="actors-for-{{meid}}">
+                                {{#each me.actors}}
+                                <option value="{{this.id}}" {{this.selected}}>{{this.name}}</option>
+                                {{/each}}
+                            </select>
+                            <div class="item-content">
+                                <div class="item-inner">
+                                    <div class="item-title">To</div>
+                                    <div id="ted-message-to-actor" class="item-after"></div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
                 </ul>
             </div>
 
