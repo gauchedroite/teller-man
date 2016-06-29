@@ -16,6 +16,10 @@ class Game {
 
         this.ui = new UI(this.update);
         this.update(Op.INIT);
+
+        document.body.addEventListener("click", (e) => {
+            if (window != window.top) (<any>window.parent).gameClicked();
+        });
     }
 
     update = (op: Op, param?: any): void => {

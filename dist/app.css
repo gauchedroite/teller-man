@@ -145,7 +145,6 @@ table {
   position: absolute;
   width: calc(100% - 4px);
   height: 490px;
-  z-index: 10;
   bottom: 3px;
   border: 1px solid #b2b2b2;
   margin-left: 2px;

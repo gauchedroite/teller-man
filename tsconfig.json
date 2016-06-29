@@ -14,6 +14,7 @@
     "js/igame.ts",
     "js/ui.ts",
     "js/game.ts",
+    "js/tide.ts",
     "app.ts"
   ]
 }

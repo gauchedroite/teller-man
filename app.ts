@@ -21,7 +21,8 @@ namespace TellerMan {
     }
     else if (document.title === "Teller IDE")
     {
-        //console.log("i.d.e");
+        //console.log("t.i.d.e");
+        var ide = new Tide();
     }
     else {
         //console.log("g.a.m.e");
