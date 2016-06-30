@@ -15,7 +15,8 @@
     "less": "lessc --strict-math=on app.less dist/app.css",
     "less:w": "nodemon -e less -w ./ -x \"npm run less\"",
     "http": "http-server",
-    "dev": "concurrently \"npm run tsc:w\" \"npm run less:w\" \"npm run http\" "
+    "dev": "concurrently \"npm run tsc:w\" \"npm run less:w\" \"npm run http\" ",
+    "pages": "git checkout gh-pages && git merge master && git push origin gh-pages && git checkout master"
   },
   "dependencies": {
     "systemjs": "^0.19.29"

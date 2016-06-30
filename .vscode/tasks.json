@@ -28,6 +28,10 @@
         {
             "taskName": "dev loop",
             "args": ["run", "dev"]
+        },
+        {
+            "taskName": "update gh-pages",
+            "args": ["run", "pages"]
         }
     ]
 }
