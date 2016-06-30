@@ -3,7 +3,6 @@ class Game {
     gdata: GameData;
     ui: UI;
     data: IGameData;
-    currentScene: IScene;
     currentMoment: IMoment;
     forbiddenSceneId: number;
     chunks: Array<IMomentData>;
@@ -28,15 +27,21 @@ class Game {
 
         if (op == Op.MOMENT) {
             if (this.currentMoment == null) { 
-                ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment."); 
+                ui.alert(Op.INIT, "Il ne se passe plus rien pour le moment."); 
                 return null;
             }
 
             this.chunks = this.parseAndExecuteMoment(this.currentMoment);
             this.cix = 0;
 
-            this.currentScene = this.getSceneOf(this.currentMoment);
-            ui.setTitle(this.currentScene.name);
+            let kind = this.currentMoment.kind; 
+            if (kind == Kind.Moment || kind == Kind.Action) {
+                let scene = this.getSceneOf(this.currentMoment);
+                ui.setTitle(scene.name);
+            }
+            else {
+                ui.setTitle("Message");
+            }
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
 
@@ -54,12 +59,13 @@ class Game {
                     this.gdata.state = state;
                 }
                 let moments = this.getAllPossibleMoments();
-                let choices = this.buildChoices(moments);
+                let messages = this.getAllPossibleMessages();
+                let choices = this.buildChoices(moments, messages);
                 if (choices.length > 0) {
                     ui.showChoices(Op.CHOICES, choices);
                 }
                 else {
-                    ui.alert(Op.RETRY, "Il ne se passe plus rien pour le moment.");
+                    ui.alert(Op.INIT, "Il ne se passe plus rien pour le moment.");
                 }
             }
         }
@@ -73,54 +79,70 @@ class Game {
             this.currentMoment = this.selectOne(this.getAllPossibleMoments());
             this.update(Op.MOMENT);
         }
-        else if (op == Op.RETRY) {
-            console.log("TODO: retrying");
-        }
         else {
-            ui.alert(Op.RETRY, "Game Over?");
+            ui.alert(Op.INIT, "Game Over?");
         }
     };
 
-    getAllPossibleMoments = (targetScene?: IScene): Array<IMoment> => {
+    getAllPossibleMoments = (): Array<IMoment> => {
         var data = this.data;
-        var scenes = Array<IScene>();
 
-        if (targetScene == undefined) {
+        // todo - filter situations
+        let situation = data.situations[0];
 
-            // todo - filter situations
-            let situation = data.situations[0];
-
-            for (var sid of situation.sids) {
-                for (var scene of data.scenes) {
-                    if (scene.id == sid) {
-                        scenes.push(scene);
-                        break;
-                    }
-                }
+        var sids = Array<number>();
+        //
+        for (var scene of data.scenes) {
+            if (scene.sitid == situation.id) {
+                sids.push(scene.id);
             }
-        }
-        else {
-            scenes.push(targetScene);
         }
 
         var moments = Array<IMoment>();
         //
-        for (var scene of scenes) {
-            for (var mid of scene.mids) {
-                for (var moment of data.moments) {
-                    if (moment.id == mid) {
-                        if (this.isValidMoment(moment)) {
-                            moments.push(moment);
-                        }
+        for (var moment of data.moments) {
+            if (moment.kind == Kind.Moment || moment.kind == Kind.Action) {
+                if (sids.indexOf(moment.parentid) != -1) {
+                    if (this.isValidMoment(moment)) {
+                        moments.push(moment);
                     }
                 }
             }
         }
-
+        //
         return moments;
     };
 
-    buildChoices = (moments: Array<IMoment>): Array<IChoice> => {
+    getAllPossibleMessages = (): Array<IMoment> => {
+        var data = this.data;
+
+        // todo - filter situations
+        let situation = data.situations[0];
+
+        var aids = Array<number>();
+        //
+        for (var actor of data.actors) {
+            if (actor.sitid == situation.id) {
+                aids.push(actor.id);
+            }
+        }
+
+        var messages = Array<IMoment>();
+        //
+        for (var moment of data.moments) {
+            if (moment.kind == Kind.MessageTo || moment.kind == Kind.MessageFrom) {
+                if (aids.indexOf(moment.parentid) != -1) {
+                    if (this.isValidMoment(moment)) {
+                        messages.push(moment);
+                    }
+                }
+            }
+        }
+        //
+        return messages;
+    };
+
+    buildChoices = (moments: Array<IMoment>, messages: Array<IMoment>): Array<IChoice> => {
         let scenes = Array<IScene>();
         let actions = Array<IAction>();
         
@@ -140,7 +162,7 @@ class Game {
         let choices = Array<IChoice>();
         choices = scenes.map((obj) => { 
             return <IChoice> { 
-                kind: "scene",
+                kind: CKind.scene,
                 id: obj.id,
                 text: obj.name 
             }; 
@@ -148,19 +170,39 @@ class Game {
         let choices2 = Array<IChoice>();
         choices2 = actions.map((obj) => { 
             return <IChoice> { 
-                kind: "action",
+                kind: CKind.action,
                 id: obj.id,
                 text: obj.name 
             }; 
         });
         choices = choices.concat(choices2);
+
+
+        for (var message of messages) {
+            if (message.kind == Kind.MessageFrom) {
+                choices.push(<IChoice> {
+                    kind: CKind.messageFrom,
+                    id: message.id,
+                    text: "Message de " + this.getActorOf(message).name
+                });
+            }
+            else {
+                let msg = (<IMessageTo>message);
+                choices.push(<IChoice> {
+                    kind: CKind.messageTo,
+                    id: msg.id,
+                    text: "Contacter " + this.getActorById(msg.to).name,
+                    subtext: msg.name
+                });
+            }
+        }
         
         this.forbiddenSceneId = null;
         return choices;
     };
 
     getChosenMoment = (choice: IChoice): IMoment => {
-        if (choice.kind == "scene") {
+        if (choice.kind == CKind.scene) {
             let data = this.data;
             let scene: IScene;
             for (scene of data.scenes) {
@@ -178,7 +220,7 @@ class Game {
             }
             return this.selectOne(moments);
         }
-        else if (choice.kind == "action") {
+        else {
             let id = choice.id;
             for (var moment of this.data.moments) {
                 if (moment.id == id)
@@ -215,27 +257,15 @@ class Game {
         for (var cond of conds) {
             let parts = cond.replace("=", ":").split(":");
             let name = parts[0].trim();
-            if (name.startsWith("/")) {
-                if (name.startsWith("/here")) {
-                    let sceneid = this.getSceneOf(moment).id;
-                    if (this.currentScene.id != sceneid) ok = false;
-                }
-                else {
-                    ok = false;
-                }
+            let value: any = (parts.length == 2 ? parts[1].trim() : "true");
+            if (value == "true" || value == "false") value = (value == "true");
+            let statevalue = state[name];
+            if (value === "undef") {
+                if (typeof statevalue !== "undefined") ok = false;
             }
-            else
-            {
-                let value: any = (parts.length == 2 ? parts[1].trim() : "true");
-                if (value == "true" || value == "false") value = (value == "true");
-                let statevalue = state[name];
-                if (value === "undef") {
-                    if (typeof statevalue !== "undefined") ok = false;
-                }
-                else {
-                    if (typeof statevalue === "undefined") ok = false;
-                    else if (statevalue !== value) ok = false;
-                }
+            else {
+                if (typeof statevalue === "undefined") ok = false;
+                else if (statevalue !== value) ok = false;
             }
             if (ok == false) break;
         }
@@ -251,6 +281,24 @@ class Game {
         }
     };
 
+    getActorOf = (message: IMoment): IActor => {
+        var actors = this.data.actors;
+        for (var actor of actors) {
+            if (actor.id == message.parentid) {
+                return actor;
+            }
+        }
+    };
+
+    getActorById = (id: number): IActor => {
+        var actors = this.data.actors;
+        for (var actor of actors) {
+            if (actor.id == id) {
+                return actor;
+            }
+        }
+    };
+
     parseAndExecuteMoment = (moment: IMoment): Array<IMomentData> => {
         var parsed = Array<IMomentData>();
         var current = <IMomentData>{};
@@ -258,6 +306,9 @@ class Game {
         var inComment = false
         var canRepeat = false;
 
+        if (moment.text == null)
+            return parsed;
+            
         var parts = moment.text.split("\n");
         for (var part of parts) {
             if (part.length > 0) {

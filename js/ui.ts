@@ -1,7 +1,15 @@
+enum CKind {
+    scene,
+    action,
+    messageTo,
+    messageFrom
+}
+
 interface IChoice {
-    kind: string
+    kind: CKind
     id: number
     text: string
+    subtext?: string
 }
 
 class UI {
@@ -33,7 +41,12 @@ class UI {
         let me = this;
         modal.addEventListener("click", function onClick(e) {
             modal.removeEventListener("click", onClick);
-            me.update(op);
+            modal.classList.remove("show");
+            setTimeout(function() { 
+                content.classList.remove("overlay");
+                content.style.pointerEvents = "";
+                me.update(op); 
+            }, 250);
         });
     };
 
@@ -43,13 +56,22 @@ class UI {
         let ul = document.createElement("ul");
         for (var i = 0; i < sceneChoices.length; i++) {
             let choice = sceneChoices[i];
-            var icon = (choice.kind == "scene" ? "ion-ios-location" : "ion-flash");
+
+            var icon: string = "ion-ios-location";
+            if (choice.kind == CKind.action) icon = "ion-flash";
+            if (choice.kind == CKind.messageTo) icon = "ion-android-person";
+            if (choice.kind == CKind.messageFrom) icon = "ion-chatbubble-working";
+
             let li = <HTMLLIElement>document.createElement("li");
-            li.setAttribute("data-kind", choice.kind);
+            li.setAttribute("data-kind", choice.kind.toString());
             li.setAttribute("data-id", choice.id.toString());
-            li.innerHTML = `
+            let html = `
                 <div class="kind"><div><i class="icon ${icon}"></i></div></div>
                 <div class="choice">${choice.text}</div>`;
+            if (choice.subtext != undefined) {
+                html = `${html}<div class="choice subtext">${choice.subtext}</div>`;                
+            }
+            li.innerHTML = html;
             ul.appendChild(li);
         }
         panel.appendChild(ul);
@@ -76,7 +98,7 @@ class UI {
                 li = li.parentElement;
             }
             me.update(op, <IChoice> {
-                kind: li.getAttribute("data-kind"),
+                kind: parseInt(li.getAttribute("data-kind")),
                 id: parseInt(li.getAttribute("data-id")),
                 text: ""
             });

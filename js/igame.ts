@@ -16,6 +16,5 @@ enum Op {
     INIT,
     MOMENT,
     BLURB,
-    CHOICES,
-    RETRY
+    CHOICES
 }
