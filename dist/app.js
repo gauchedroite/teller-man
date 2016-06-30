@@ -1732,27 +1732,26 @@ var Game = (function () {
             }
             return parsed;
         };
-        this.gdata = new GameData();
-        this.gdata.state = { intro: true }; //clear and init state
-        this.gdata.history = []; //init the list of showned moments
-        this.ui = new UI(this.update);
-        this.update(Op.INIT);
         document.body.addEventListener("click", function (e) {
             if (window != window.top)
                 window.parent.gameClicked();
         });
-        // test ajax json
-        var getData = function (url, callback) {
+        var getDataFile = function (url, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200)
-                    callback(JSON.parse(xhr.responseText));
+                    callback(xhr.responseText);
             };
             xhr.send();
         };
-        getData("package.json", function (data) {
-            console.log(data);
+        getDataFile("dist/app.json", function (text) {
+            _this.gdata = new GameData();
+            _this.gdata.saveData(text);
+            _this.gdata.state = { intro: true }; //clear and init state
+            _this.gdata.history = []; //init the list of showned moments
+            _this.ui = new UI(_this.update);
+            _this.update(Op.INIT);
         });
     }
     return Game;

@@ -9,30 +9,29 @@ class Game {
     cix: number;
 
     constructor() {
-        this.gdata = new GameData();
-                                        this.gdata.state = { intro: true };  //clear and init state
-                                        this.gdata.history = [];             //init the list of showned moments
-
-        this.ui = new UI(this.update);
-        this.update(Op.INIT);
 
         document.body.addEventListener("click", (e) => {
             if (window != window.top) (<any>window.parent).gameClicked();
         });
 
 
-        // test ajax json
-        var getData = (url: string, callback: (data: any) => any) => {
+        var getDataFile = (url: string, callback: (text: any) => void) => {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4 && xhr.status == 200)
-                    callback(JSON.parse(xhr.responseText));
+                    callback(xhr.responseText);
             }
             xhr.send();
         };
-        getData("package.json", (data: any) => {
-            console.log(data);
+
+        getDataFile("dist/app.json", (text: any) => {
+            this.gdata = new GameData();
+            this.gdata.saveData(text);
+                                            this.gdata.state = { intro: true };  //clear and init state
+                                            this.gdata.history = [];             //init the list of showned moments
+            this.ui = new UI(this.update);
+            this.update(Op.INIT);
         });
     }
 
