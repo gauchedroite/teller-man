@@ -1313,7 +1313,8 @@ var UI = (function () {
                     var ispan = 0;
                     var show_1 = function () {
                         var span = spans[ispan++];
-                        span.style = null;
+                        // fail in safari //span.style = null;
+                        span.removeAttribute("style");
                         if (ispan < spans.length)
                             setTimeout(show_1, 25);
                     };

@@ -141,7 +141,8 @@ class UI {
                 var ispan = 0;
                 const show = () => {
                     var span = <HTMLElement>spans[ispan++];
-                    span.style = null;
+                    // fail in safari //span.style = null;
+                    span.removeAttribute("style");
                     if (ispan < spans.length) setTimeout(show, 25);
                 };
                 setTimeout(show, 100);
