@@ -1741,6 +1741,19 @@ var Game = (function () {
             if (window != window.top)
                 window.parent.gameClicked();
         });
+        // test ajax json
+        var getData = function (url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200)
+                    callback(JSON.parse(xhr.responseText));
+            };
+            xhr.send();
+        };
+        getData("package.json", function (data) {
+            console.log(data);
+        });
     }
     return Game;
 }());

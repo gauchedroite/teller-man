@@ -19,6 +19,21 @@ class Game {
         document.body.addEventListener("click", (e) => {
             if (window != window.top) (<any>window.parent).gameClicked();
         });
+
+
+        // test ajax json
+        var getData = (url: string, callback: (data: any) => any) => {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200)
+                    callback(JSON.parse(xhr.responseText));
+            }
+            xhr.send();
+        };
+        getData("package.json", (data: any) => {
+            console.log(data);
+        });
     }
 
     update = (op: Op, param?: any): void => {
