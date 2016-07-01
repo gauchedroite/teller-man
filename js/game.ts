@@ -1,3 +1,4 @@
+declare var FastClick: any;
 
 class Game {
     gdata: GameData;
@@ -9,6 +10,12 @@ class Game {
     cix: number;
 
     constructor() {
+
+        if ('addEventListener' in document) {
+            document.addEventListener('DOMContentLoaded', function() {
+                FastClick.attach(document.body);
+            }, false);
+        }
 
         document.body.addEventListener("click", (e) => {
             if (window != window.top) (<any>window.parent).gameClicked();
