@@ -1313,7 +1313,6 @@ var UI = (function () {
                     var ispan = 0;
                     var show_1 = function () {
                         var span = spans[ispan++];
-                        // fail in safari //span.style = null;
                         span.removeAttribute("style");
                         if (ispan < spans.length)
                             setTimeout(show_1, 25);
@@ -1733,6 +1732,11 @@ var Game = (function () {
             }
             return parsed;
         };
+        if ('addEventListener' in document) {
+            document.addEventListener('DOMContentLoaded', function () {
+                FastClick.attach(document.body);
+            }, false);
+        }
         document.body.addEventListener("click", function (e) {
             if (window != window.top)
                 window.parent.gameClicked();
