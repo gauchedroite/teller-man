@@ -176,6 +176,14 @@ body {
   width: 100%;
   height: 100%;
 }
+.shell.top15 {
+  height: calc(100% - 15px);
+  margin-top: 15px;
+  bottom: 0;
+}
+.shell.top15 .navbar {
+  top: 15px;
+}
 .navbar {
   position: fixed;
   top: 0;
