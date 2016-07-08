@@ -752,6 +752,13 @@ var Editor = (function () {
                 var text = JSON.stringify(data);
                 $("#ted-game-data").val(text);
             });
+            $(document).on("click", "#ted-load-game2", function (e) {
+                var data = _this.gdata.loadGame();
+                delete data.me;
+                delete data.meid;
+                var text = JSON.stringify(data);
+                $("#ted-game-data2").val(text);
+            });
             $(document).on("click", "#ted-save-game", function (e) {
                 app.confirm("This will ovewrite the current game data. A manual refresh of the game will be required. Is this ok?", "Save Game Data", function () {
                     var text = $("#ted-game-data").val();
@@ -1288,6 +1295,7 @@ var UI = (function () {
             var content = document.querySelector(".content");
             content.classList.remove("overlay");
             content.style.pointerEvents = "auto";
+            content.scrollIntoView();
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
             var text = document.querySelector(".content-text");
@@ -1377,9 +1385,6 @@ var Game = (function () {
                     var scene = _this.getSceneOf(_this.currentMoment);
                     ui.setTitle(scene.name);
                 }
-                else {
-                    ui.setTitle("Message");
-                }
                 ui.clearBlurb();
                 ui.onBlurbTap(Op.BLURB);
                 _this.update(Op.BLURB);
@@ -1410,10 +1415,12 @@ var Game = (function () {
                 ui.hideChoices();
                 var choice = param;
                 _this.currentMoment = _this.getChosenMoment(choice);
+                _this.updateTimedState();
                 _this.update(Op.MOMENT);
             }
             else if (op == Op.INIT) {
-                _this.currentMoment = _this.selectOne(_this.getAllPossibleMoments());
+                _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
+                _this.updateTimedState();
                 _this.update(Op.MOMENT);
             }
             else {
@@ -1473,6 +1480,11 @@ var Game = (function () {
             }
             //
             return messages;
+        };
+        this.getAllPossibleEverything = function () {
+            var all = _this.getAllPossibleMoments();
+            Array.prototype.push.apply(all, _this.getAllPossibleMessages());
+            return all;
         };
         this.buildChoices = function (moments, messages) {
             var scenes = Array();
@@ -1732,6 +1744,29 @@ var Game = (function () {
             }
             return parsed;
         };
+        this.updateTimedState = function () {
+            var state = _this.gdata.state;
+            var change = false;
+            for (var prop in state) {
+                var parts = prop.split("/");
+                if (parts.length == 2) {
+                    var value = state[prop];
+                    var name = parts[0];
+                    var countdown = parseInt(parts[1]) - 1;
+                    if (countdown == 0) {
+                        state[name] = value;
+                    }
+                    else {
+                        state[(name + "/" + countdown)] = value;
+                    }
+                    delete state[prop];
+                    change = true;
+                }
+            }
+            if (change) {
+                _this.gdata.state = state;
+            }
+        };
         if ('addEventListener' in document) {
             document.addEventListener('DOMContentLoaded', function () {
                 FastClick.attach(document.body);
@@ -1753,6 +1788,7 @@ var Game = (function () {
         getDataFile("dist/app.json", function (text) {
             _this.gdata = new GameData();
             _this.gdata.saveData(text);
+            //this.gdata.loadGame();
             _this.gdata.state = { intro: true }; //clear and init state
             _this.gdata.history = []; //init the list of showned moments
             _this.ui = new UI(_this.update);

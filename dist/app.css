@@ -176,39 +176,32 @@ body {
   width: 100%;
   height: 100%;
 }
-.shell.top15 {
-  height: calc(100% - 15px);
-  margin-top: 15px;
-  bottom: 0;
-}
-.shell.top15 .navbar {
-  top: 15px;
-}
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
-  height: 36px;
+  height: 44px;
   width: 100%;
   z-index: 10;
   background-color: black;
   color: #f0f0f0;
 }
 .navbar .navbar-inner {
+  position: absolute;
   width: 100%;
-  height: 100%;
-  padding: 8px 0 0 12px;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
 }
 .navbar .navbar-inner div.title {
-  display: inline-block;
-  width: calc(100% - 44px);
+  padding: 0 0 8px 16px;
 }
 .navbar .navbar-inner div.title i:after {
   content: " ";
 }
 .navbar .navbar-inner div.menu {
+  padding: 0 16px 8px 0;
   font-size: 16px;
-  display: inline-block;
   color: orange;
 }
 .navbar .navbar-inner div.title i {
@@ -217,10 +210,15 @@ body {
 .content {
   background-color: white;
   min-height: 100%;
+  cursor: default;
   transition: opacity 0.25s ease;
 }
+.content .content-spacer {
+  height: 44px;
+  width: 100%;
+}
 .content .content-text {
-  margin: 36px 10px 0 10px;
+  margin: 0 10px 0 10px;
   padding: 16px 8px;
   transition: margin-bottom 0.25 ease;
 }

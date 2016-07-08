@@ -237,6 +237,14 @@ class Editor {
             $("#ted-game-data").val(text);
         });
 
+        $(document).on("click", "#ted-load-game2", (e: any) => {
+            var data = this.gdata.loadGame();
+            delete data.me;
+            delete data.meid;
+            var text = JSON.stringify(data);
+            $("#ted-game-data2").val(text);
+        });
+
         $(document).on("click", "#ted-save-game", (e: any) => {
             app.confirm("This will ovewrite the current game data. A manual refresh of the game will be required. Is this ok?", "Save Game Data", () => {
                 var text = $("#ted-game-data").val();

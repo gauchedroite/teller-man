@@ -112,6 +112,7 @@ class UI {
         var content = <HTMLElement>document.querySelector(".content");
         content.classList.remove("overlay");
         content.style.pointerEvents = "auto";
+        content.scrollIntoView();
 
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";

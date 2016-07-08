@@ -34,7 +34,8 @@ class Game {
 
         getDataFile("dist/app.json", (text: any) => {
             this.gdata = new GameData();
-            this.gdata.saveData(text);
+                    this.gdata.saveData(text);
+                    //this.gdata.loadGame();
                                             this.gdata.state = { intro: true };  //clear and init state
                                             this.gdata.history = [];             //init the list of showned moments
             this.ui = new UI(this.update);
@@ -59,9 +60,6 @@ class Game {
             if (kind == Kind.Moment || kind == Kind.Action) {
                 let scene = this.getSceneOf(this.currentMoment);
                 ui.setTitle(scene.name);
-            }
-            else {
-                ui.setTitle("Message");
             }
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
@@ -94,10 +92,12 @@ class Game {
             ui.hideChoices();
             let choice = <IChoice>param;
             this.currentMoment = this.getChosenMoment(choice);
+            this.updateTimedState();
             this.update(Op.MOMENT);
         }
         else if (op == Op.INIT) {
-            this.currentMoment = this.selectOne(this.getAllPossibleMoments());
+            this.currentMoment = this.selectOne(this.getAllPossibleEverything());
+            this.updateTimedState();
             this.update(Op.MOMENT);
         }
         else {
@@ -161,6 +161,12 @@ class Game {
         }
         //
         return messages;
+    };
+
+    getAllPossibleEverything = (): Array<IMoment> => {
+        let all = this.getAllPossibleMoments();
+        Array.prototype.push.apply(all, this.getAllPossibleMessages());
+        return all;
     };
 
     buildChoices = (moments: Array<IMoment>, messages: Array<IMoment>): Array<IChoice> => {
@@ -413,5 +419,29 @@ class Game {
             this.gdata.history = history;
         }
         return parsed;
+    };
+
+    updateTimedState = () => {
+        let state = this.gdata.state;
+        var change = false;
+        for (var prop in state) {
+            var parts = prop.split("/");
+            if (parts.length == 2) {
+                var value = state[prop];
+                var name = parts[0];
+                var countdown = parseInt(parts[1]) - 1;
+                if (countdown == 0) {
+                    state[name] = value;
+                }
+                else {
+                    state[`${name}/${countdown}`] = value;
+                }
+                delete state[prop];
+                change = true;
+            }
+        }
+        if (change) {
+            this.gdata.state = state;
+        }
     };
 }
