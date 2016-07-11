@@ -5,42 +5,36 @@ class Game {
     ui: UI;
     data: IGameData;
     currentMoment: IMoment;
+    currentScene: IScene;
     forbiddenSceneId: number;
     chunks: Array<IMomentData>;
     cix: number;
 
     constructor() {
-
         if ('addEventListener' in document) {
             document.addEventListener('DOMContentLoaded', function() {
                 FastClick.attach(document.body);
             }, false);
         }
 
-        document.body.addEventListener("click", (e) => {
-            if (window != window.top) (<any>window.parent).gameClicked();
+        var menu = <HTMLElement>document.querySelector(".goto-menu");
+        menu.addEventListener("click", (e) => {
+            this.update(Op.MENU, { ingame: true });
         });
 
 
-        var getDataFile = (url: string, callback: (text: any) => void) => {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200)
-                    callback(xhr.responseText);
-            }
-            xhr.send();
-        };
+        this.gdata = new GameData();
 
-        getDataFile("dist/app.json", (text: any) => {
-            this.gdata = new GameData();
-                    this.gdata.saveData(text);
-                    //this.gdata.loadGame();
-                                            this.gdata.state = { intro: true };  //clear and init state
-                                            this.gdata.history = [];             //init the list of showned moments
-            this.ui = new UI(this.update);
-            this.update(Op.INIT);
-        });
+        let options = this.gdata.options;
+        if (options == undefined) {
+            this.gdata.options = <IdeOptions> {
+                useGameFile: false,
+                startingNewGame: false
+            };
+        }
+
+        this.ui = new UI(this.update);
+        this.update(Op.MENU);
     }
 
     update = (op: Op, param?: any): void => {
@@ -48,8 +42,10 @@ class Game {
         var ui = this.ui;
 
         if (op == Op.MOMENT) {
+            this.saveContinueState();
+
             if (this.currentMoment == null) { 
-                ui.alert(Op.INIT, "Il ne se passe plus rien pour le moment."); 
+                ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment."); 
                 return null;
             }
 
@@ -58,9 +54,9 @@ class Game {
 
             let kind = this.currentMoment.kind; 
             if (kind == Kind.Moment || kind == Kind.Action) {
-                let scene = this.getSceneOf(this.currentMoment);
-                ui.setTitle(scene.name);
+                this.currentScene = this.getSceneOf(this.currentMoment);
             }
+            ui.setTitle(this.currentScene.name);
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
 
@@ -84,7 +80,7 @@ class Game {
                     ui.showChoices(Op.CHOICES, choices);
                 }
                 else {
-                    ui.alert(Op.INIT, "Il ne se passe plus rien pour le moment.");
+                    ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
                 }
             }
         }
@@ -95,13 +91,74 @@ class Game {
             this.updateTimedState();
             this.update(Op.MOMENT);
         }
-        else if (op == Op.INIT) {
+        else if (op == Op.MENU) {
+            if (param != undefined/*ingame*/) {
+                ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
+            }
+            else {
+                let options = this.gdata.options;
+                if (options.startingNewGame) {
+                    options.startingNewGame = false;
+                    this.gdata.options = options;
+                    this.update(Op.WAITING);
+                }
+                else {
+                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
+                }
+            }
+        }
+        else if (op == Op.CONTINUE_SAVEDGAME) {
+            if (this.gdata.options.useGameFile) {
+                this.getDataFile("dist/app.json", (text: any) => {
+                    this.gdata.saveData(text);
+                    this.restoreContinueState();
+                    this.update(Op.MOMENT);
+                });
+            }
+            else {
+                this.restoreContinueState();
+                this.update(Op.MOMENT);
+            }
+        }
+        else if (op == Op.CONTINUE_INGAME) {
+        }
+        else if (op == Op.NEWGAME) {
+            this.gdata.state = { intro: true };  //clear and init state
+            this.gdata.history = [];             //init the list of showned moments
+            this.gdata.continueState = null;
+            let options = this.gdata.options;
+            options.startingNewGame = true;
+            this.gdata.options = options;
+            location.href = "index.html";
+        }
+        else if (op == Op.WAITING) {
             this.currentMoment = this.selectOne(this.getAllPossibleEverything());
             this.updateTimedState();
             this.update(Op.MOMENT);
         }
         else {
-            ui.alert(Op.INIT, "Game Over?");
+            ui.alert(Op.WAITING, "Game Over?");
+        }
+    };
+
+    saveContinueState = () => {
+        this.gdata.continueState = {
+            moment: this.currentMoment,
+            scene: this.currentScene,
+            forbiddenSceneId: this.forbiddenSceneId,
+            state: this.gdata.state,
+            history: this.gdata.history
+        };
+    };
+
+    restoreContinueState = () => {
+        let cstate = this.gdata.continueState;
+        if (cstate != undefined) {
+            this.currentMoment = cstate.moment;
+            this.currentScene = cstate.scene;
+            this.forbiddenSceneId = cstate.forbiddenSceneId;
+            this.gdata.state = cstate.state; 
+            this.gdata.history = cstate.history;
         }
     };
 
@@ -443,5 +500,15 @@ class Game {
         if (change) {
             this.gdata.state = state;
         }
+    };
+
+    getDataFile = (url: string, callback: (text: any) => void) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4 && xhr.status == 200)
+                callback(xhr.responseText);
+        }
+        xhr.send();
     };
 }

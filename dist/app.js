@@ -676,6 +676,32 @@ var GameData = (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(GameData.prototype, "options", {
+        //
+        // options
+        //
+        get: function () {
+            return JSON.parse(localStorage.getItem("options"));
+        },
+        set: function (options) {
+            localStorage.setItem("options", JSON.stringify(options));
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(GameData.prototype, "continueState", {
+        //
+        // continue state
+        //
+        get: function () {
+            return JSON.parse(localStorage.getItem("continueState"));
+        },
+        set: function (moms) {
+            localStorage.setItem("continueState", JSON.stringify(moms));
+        },
+        enumerable: true,
+        configurable: true
+    });
     return GameData;
 }());
 var Editor = (function () {
@@ -1061,10 +1087,6 @@ var Editor = (function () {
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
         gameinfo.innerHTML = template(data);
-        document.body.addEventListener("click", function (e) {
-            if (window != window.top)
-                window.parent.editorClicked();
-        });
     }
     Editor.prototype.preprocess = function (content, url, next) {
         var gdata = this.gdata;
@@ -1200,10 +1222,14 @@ var Editor = (function () {
 }());
 var Op;
 (function (Op) {
-    Op[Op["INIT"] = 0] = "INIT";
+    Op[Op["WAITING"] = 0] = "WAITING";
     Op[Op["MOMENT"] = 1] = "MOMENT";
     Op[Op["BLURB"] = 2] = "BLURB";
     Op[Op["CHOICES"] = 3] = "CHOICES";
+    Op[Op["MENU"] = 4] = "MENU";
+    Op[Op["NEWGAME"] = 5] = "NEWGAME";
+    Op[Op["CONTINUE_SAVEDGAME"] = 6] = "CONTINUE_SAVEDGAME";
+    Op[Op["CONTINUE_INGAME"] = 7] = "CONTINUE_INGAME";
 })(Op || (Op = {}));
 var CKind;
 (function (CKind) {
@@ -1228,8 +1254,8 @@ var UI = (function () {
             var modal = document.querySelector(".modal");
             modal.classList.add("show");
             var me = _this;
-            modal.addEventListener("click", function onClick(e) {
-                modal.removeEventListener("click", onClick);
+            modal.addEventListener("click", function click(e) {
+                modal.removeEventListener("click", click);
                 modal.classList.remove("show");
                 setTimeout(function () {
                     content.classList.remove("overlay");
@@ -1264,7 +1290,6 @@ var UI = (function () {
             panel.appendChild(ul);
             var content = document.querySelector(".content");
             content.classList.add("overlay");
-            content.style.pointerEvents = "none";
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var text = document.querySelector(".content-text");
             text.style.marginBottom = panel.offsetHeight + "px";
@@ -1295,7 +1320,9 @@ var UI = (function () {
             var content = document.querySelector(".content");
             content.classList.remove("overlay");
             content.style.pointerEvents = "auto";
-            content.scrollIntoView();
+            // make sure the first blurb will be visible
+            var shell = document.querySelector(".shell");
+            shell.scrollTop = content.offsetTop;
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
             var text = document.querySelector(".content-text");
@@ -1360,6 +1387,27 @@ var UI = (function () {
             }
             return html.join("");
         };
+        this.showMenu = function (opNewGame, opContinue) {
+            var menu = document.querySelector(".menu");
+            menu.style.right = "0";
+            var me = _this;
+            var continu = menu.querySelector("button#continue");
+            continu.addEventListener("click", function click(e) {
+                continu.removeEventListener("click", click);
+                menu.style.right = "100%";
+                setTimeout(function () {
+                    me.update(opContinue);
+                }, 250);
+            });
+            var newgame = menu.querySelector("button#new-game");
+            newgame.addEventListener("click", function click(e) {
+                newgame.removeEventListener("click", click);
+                menu.style.right = "100%";
+                setTimeout(function () {
+                    me.update(opNewGame);
+                }, 250);
+            });
+        };
         var me = this;
         document.querySelector(".content").addEventListener("click", function (e) {
             me.update(me.blurbOp);
@@ -1374,17 +1422,18 @@ var Game = (function () {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
             if (op == Op.MOMENT) {
+                _this.saveContinueState();
                 if (_this.currentMoment == null) {
-                    ui.alert(Op.INIT, "Il ne se passe plus rien pour le moment.");
+                    ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
                     return null;
                 }
                 _this.chunks = _this.parseAndExecuteMoment(_this.currentMoment);
                 _this.cix = 0;
                 var kind = _this.currentMoment.kind;
                 if (kind == Kind.Moment || kind == Kind.Action) {
-                    var scene = _this.getSceneOf(_this.currentMoment);
-                    ui.setTitle(scene.name);
+                    _this.currentScene = _this.getSceneOf(_this.currentMoment);
                 }
+                ui.setTitle(_this.currentScene.name);
                 ui.clearBlurb();
                 ui.onBlurbTap(Op.BLURB);
                 _this.update(Op.BLURB);
@@ -1407,7 +1456,7 @@ var Game = (function () {
                         ui.showChoices(Op.CHOICES, choices);
                     }
                     else {
-                        ui.alert(Op.INIT, "Il ne se passe plus rien pour le moment.");
+                        ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
                     }
                 }
             }
@@ -1418,13 +1467,72 @@ var Game = (function () {
                 _this.updateTimedState();
                 _this.update(Op.MOMENT);
             }
-            else if (op == Op.INIT) {
+            else if (op == Op.MENU) {
+                if (param != undefined /*ingame*/) {
+                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
+                }
+                else {
+                    var options = _this.gdata.options;
+                    if (options.startingNewGame) {
+                        options.startingNewGame = false;
+                        _this.gdata.options = options;
+                        _this.update(Op.WAITING);
+                    }
+                    else {
+                        ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
+                    }
+                }
+            }
+            else if (op == Op.CONTINUE_SAVEDGAME) {
+                if (_this.gdata.options.useGameFile) {
+                    _this.getDataFile("dist/app.json", function (text) {
+                        _this.gdata.saveData(text);
+                        _this.restoreContinueState();
+                        _this.update(Op.MOMENT);
+                    });
+                }
+                else {
+                    _this.restoreContinueState();
+                    _this.update(Op.MOMENT);
+                }
+            }
+            else if (op == Op.CONTINUE_INGAME) {
+            }
+            else if (op == Op.NEWGAME) {
+                _this.gdata.state = { intro: true }; //clear and init state
+                _this.gdata.history = []; //init the list of showned moments
+                _this.gdata.continueState = null;
+                var options = _this.gdata.options;
+                options.startingNewGame = true;
+                _this.gdata.options = options;
+                location.href = "index.html";
+            }
+            else if (op == Op.WAITING) {
                 _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
                 _this.updateTimedState();
                 _this.update(Op.MOMENT);
             }
             else {
-                ui.alert(Op.INIT, "Game Over?");
+                ui.alert(Op.WAITING, "Game Over?");
+            }
+        };
+        this.saveContinueState = function () {
+            _this.gdata.continueState = {
+                moment: _this.currentMoment,
+                scene: _this.currentScene,
+                forbiddenSceneId: _this.forbiddenSceneId,
+                state: _this.gdata.state,
+                history: _this.gdata.history
+            };
+        };
+        this.restoreContinueState = function () {
+            var cstate = _this.gdata.continueState;
+            if (cstate != undefined) {
+                _this.currentMoment = cstate.moment;
+                _this.currentScene = cstate.scene;
+                _this.forbiddenSceneId = cstate.forbiddenSceneId;
+                _this.gdata.state = cstate.state;
+                _this.gdata.history = cstate.history;
             }
         };
         this.getAllPossibleMoments = function () {
@@ -1767,16 +1875,7 @@ var Game = (function () {
                 _this.gdata.state = state;
             }
         };
-        if ('addEventListener' in document) {
-            document.addEventListener('DOMContentLoaded', function () {
-                FastClick.attach(document.body);
-            }, false);
-        }
-        document.body.addEventListener("click", function (e) {
-            if (window != window.top)
-                window.parent.gameClicked();
-        });
-        var getDataFile = function (url, callback) {
+        this.getDataFile = function (url, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.onreadystatechange = function () {
@@ -1785,15 +1884,25 @@ var Game = (function () {
             };
             xhr.send();
         };
-        getDataFile("dist/app.json", function (text) {
-            _this.gdata = new GameData();
-            _this.gdata.saveData(text);
-            //this.gdata.loadGame();
-            _this.gdata.state = { intro: true }; //clear and init state
-            _this.gdata.history = []; //init the list of showned moments
-            _this.ui = new UI(_this.update);
-            _this.update(Op.INIT);
+        if ('addEventListener' in document) {
+            document.addEventListener('DOMContentLoaded', function () {
+                FastClick.attach(document.body);
+            }, false);
+        }
+        var menu = document.querySelector(".goto-menu");
+        menu.addEventListener("click", function (e) {
+            _this.update(Op.MENU, { ingame: true });
         });
+        this.gdata = new GameData();
+        var options = this.gdata.options;
+        if (options == undefined) {
+            this.gdata.options = {
+                useGameFile: false,
+                startingNewGame: false
+            };
+        }
+        this.ui = new UI(this.update);
+        this.update(Op.MENU);
     }
     return Game;
 }());
@@ -1801,28 +1910,32 @@ var Tide = (function () {
     function Tide() {
         var ied = document.querySelector("div.ide-editor");
         var igame = document.querySelector("div.ide-game");
-        window.gameClicked = function () {
-            //console.log("from game");
-            ied.style.zIndex = "1";
-            igame.style.zIndex = "2";
-        };
-        window.editorClicked = function () {
-            //console.log("from editor");
-            ied.style.zIndex = "2";
-            igame.style.zIndex = "1";
-        };
-        document.addEventListener("click", function (e) {
-            //console.log("tide");
-            ied.style.zIndex = "1";
-            igame.style.zIndex = "2";
+        var gameFile = document.getElementById("ide-gamefile");
+        var startClean = document.getElementById("ide-start");
+        document.getElementById("ide-play-edit").addEventListener("click", function (e) {
+            if (ied.classList.contains("show"))
+                ied.classList.remove("show");
+            else
+                ied.classList.add("show");
         });
+        // (<any>document).getQaz = () => { return qaz; }; //from tide
+        //
+        // if (window != window.top) { //from embedded iframe
+        //	 qaz = (<any>window.parent.document).getQaz();
+        var gdata = new GameData();
+        gdata.options = {
+            useGameFile: false,
+            startingNewGame: false
+        };
+        // Load the iframes at run time to make sure the ide is fully loaded first.
+        igame.querySelector("iframe").setAttribute("src", "index.html");
+        ied.querySelector("iframe").setAttribute("src", "index-edit.html");
     }
     return Tide;
 }());
 var TellerMan;
 (function (TellerMan) {
     if (document.title === "Teller Editor") {
-        //console.log("t.e.l.l.e.r");
         var editor = new Editor();
         var app = new Framework7({
             cache: false,
@@ -1834,11 +1947,9 @@ var TellerMan;
         editor.init(app, leftView, centerView, rightView);
     }
     else if (document.title === "Teller IDE") {
-        //console.log("t.i.d.e");
         var ide = new Tide();
     }
     else {
-        //console.log("g.a.m.e");
         var game = new Game();
     }
 })(TellerMan || (TellerMan = {}));

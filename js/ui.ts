@@ -39,8 +39,8 @@ class UI {
         modal.classList.add("show");
 
         let me = this;
-        modal.addEventListener("click", function onClick(e) {
-            modal.removeEventListener("click", onClick);
+        modal.addEventListener("click", function click(e) {
+            modal.removeEventListener("click", click);
             modal.classList.remove("show");
             setTimeout(function() { 
                 content.classList.remove("overlay");
@@ -78,7 +78,6 @@ class UI {
 
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
-        content.style.pointerEvents = "none";
 
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
@@ -112,7 +111,10 @@ class UI {
         var content = <HTMLElement>document.querySelector(".content");
         content.classList.remove("overlay");
         content.style.pointerEvents = "auto";
-        content.scrollIntoView();
+
+        // make sure the first blurb will be visible
+        let shell = <HTMLElement>document.querySelector(".shell");
+        shell.scrollTop = content.offsetTop;
 
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";
@@ -184,4 +186,28 @@ class UI {
 
         return html.join("");
     };
+
+    showMenu = (opNewGame: Op, opContinue: Op) => {
+        let menu = <HTMLElement>document.querySelector(".menu");
+        menu.style.right = "0";
+
+        let me = this;
+        let continu = menu.querySelector("button#continue");
+        continu.addEventListener("click", function click(e) {
+            continu.removeEventListener("click", click);
+            menu.style.right = "100%";
+            setTimeout(function() { 
+                me.update(opContinue); 
+            }, 250);
+        });
+
+        let newgame = menu.querySelector("button#new-game");
+        newgame.addEventListener("click", function click(e) {
+            newgame.removeEventListener("click", click);
+            menu.style.right = "100%";
+            setTimeout(function() { 
+                me.update(opNewGame); 
+            }, 250);
+        });
+    }
 }

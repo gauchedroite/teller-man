@@ -13,8 +13,17 @@ interface IText {
 type IMomentData = IDialog | IText;
 
 enum Op {
-    INIT,
+    WAITING,
     MOMENT,
     BLURB,
-    CHOICES
+    CHOICES,
+    MENU,
+    NEWGAME,
+    CONTINUE_SAVEDGAME,
+    CONTINUE_INGAME
+}
+
+interface IdeOptions {
+    useGameFile: boolean,
+    startingNewGame: boolean
 }

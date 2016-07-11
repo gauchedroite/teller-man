@@ -6,17 +6,76 @@
     <title>Teller IDE</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="dist/app.css">
+    <style>
+        * { padding: 0; margin: 0; }
+        html, body {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 14px;
+        }
+        button {
+            padding: 2px 12px;
+            margin: 4px 0 0 8px;
+        }
+        label {
+            margin-left: 8px;
+        }
+        .toolbar {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 32px;
+            background: #c6d6ec;
+        }
+        .ide-game {
+            position: absolute;
+            top: 32px;
+            width: 100%;
+            height: calc(100% - 36px);
+        }
+        .ide-game iframe {
+            width: 100%;
+            height: 100%;
+        }
+        .iphone5 {
+            margin: 4px auto;
+            width: 320px;
+            height: 568px;
+            border: 1px solid rgb(178, 178, 178);
+        }
+        .ide-editor {
+            position: absolute;
+            top: 100%;
+            width: 100%;
+            height: calc(100% - 36px);
+            transition: top 0.25s ease; 
+        }
+        .ide-editor iframe {
+            width: 100%;
+            height: 100%;
+        }
+        .show { top: 32px; }
+    </style>
 </head>
 
-<body class="ide-body">
+<body>
 
-    <div class="ide-game iphone5">
-        <iframe src="index.html" frameborder="0" scrolling="off"></iframe>
+    <div class="toolbar">
+        <button id="ide-play-edit">Play / Edit</button>
+        <button id="ide-orientation" disabled>Landscape / Portrait</button>
+        <!--<label><input id="ide-gamefile" type="checkbox">Use game file</label>-->
+        <!--<label><input id="ide-start" type="checkbox" checked disabled>Start clean</label>-->
+    </div>
+
+    <div class="ide-game">
+        <iframe frameborder="0" scrolling="off"></iframe>
     </div>
 
     <div class="ide-editor">
-        <iframe src="index-edit.html" frameborder="0" scrolling="off"></iframe>
+        <iframe frameborder="0" scrolling="off"></iframe>
     </div>
 
     <script src="dist/app.js"></script>

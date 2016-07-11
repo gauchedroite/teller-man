@@ -122,36 +122,6 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-.ide-body {
-  background-color: #efeff4;
-}
-.ide-game {
-  position: relative;
-  width: 100%;
-  margin: 0 auto;
-}
-.ide-game iframe {
-  width: 100%;
-  height: 100%;
-}
-.iphone5 {
-  margin: 4px auto;
-  width: 320px;
-  height: 568px;
-  border: 1px solid #b2b2b2;
-}
-.ide-editor {
-  position: absolute;
-  width: calc(100% - 4px);
-  height: 490px;
-  bottom: 3px;
-  border: 1px solid #b2b2b2;
-  margin-left: 2px;
-}
-.ide-editor iframe {
-  width: 100%;
-  height: 100%;
-}
 ::-webkit-scrollbar {
   display: none;
 }
@@ -182,6 +152,7 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 .navbar {
   position: absolute;
@@ -206,7 +177,7 @@ body {
 .navbar .navbar-inner div.title i:after {
   content: " ";
 }
-.navbar .navbar-inner div.menu {
+.navbar .navbar-inner div.goto-menu {
   padding: 0 16px 8px 0;
   font-size: 16px;
   color: orange;
@@ -215,9 +186,13 @@ body {
   color: orange;
 }
 .content {
+  position: absolute;
+  top: 44px;
+  height: calc(100% - 44px);
+  width: 100%;
   background-color: white;
-  min-height: 100%;
   cursor: default;
+  overflow: scroll;
   transition: opacity 0.25s ease;
 }
 .content .content-spacer {
@@ -233,6 +208,7 @@ body {
   padding-bottom: 12px;
 }
 .content.overlay {
+  pointer-events: none;
   opacity: 0.5;
   transition: opacity 0.25s ease;
 }
@@ -333,4 +309,14 @@ section.dialog p {
   transform: scale(1);
   transition: all 0.15s ease;
   cursor: pointer;
+}
+.menu {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  background: yellow;
+  transition: right 0.25s ease;
 }

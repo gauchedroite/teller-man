@@ -4,24 +4,29 @@ class Tide {
 
         var ied = <HTMLElement>document.querySelector("div.ide-editor");
         var igame = <HTMLElement>document.querySelector("div.ide-game");
-        
-        (<any>window).gameClicked = function () {
-            //console.log("from game");
-            ied.style.zIndex = "1";
-            igame.style.zIndex = "2";
-        };
+        var gameFile = <HTMLInputElement>document.getElementById("ide-gamefile");
+        var startClean = <HTMLInputElement>document.getElementById("ide-start");
 
-        (<any>window).editorClicked = function () {
-            //console.log("from editor");
-            ied.style.zIndex = "2";
-            igame.style.zIndex = "1";
-        };
-
-        document.addEventListener("click", (e) => {
-            //console.log("tide");
-            ied.style.zIndex = "1";
-            igame.style.zIndex = "2";
+        document.getElementById("ide-play-edit").addEventListener("click", (e) => {
+            if (ied.classList.contains("show"))
+                ied.classList.remove("show");
+            else
+                ied.classList.add("show");
         });
 
+        // (<any>document).getQaz = () => { return qaz; }; //from tide
+        //
+        // if (window != window.top) { //from embedded iframe
+        //	 qaz = (<any>window.parent.document).getQaz();
+
+        var gdata = new GameData();
+        gdata.options = <IdeOptions> {
+            useGameFile: false,
+            startingNewGame: false
+        };
+
+        // Load the iframes at run time to make sure the ide is fully loaded first.
+        igame.querySelector("iframe").setAttribute("src", "index.html");
+        ied.querySelector("iframe").setAttribute("src", "index-edit.html");
     }
 }

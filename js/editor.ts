@@ -26,10 +26,6 @@ class Editor {
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
         gameinfo.innerHTML = template(data);
-
-        document.body.addEventListener("click", (e) => {
-            if (window != window.top) (<any>window.parent).editorClicked();
-        });
     }
 
     preprocess(content: string, url: any, next: any) {

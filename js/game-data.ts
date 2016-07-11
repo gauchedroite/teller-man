@@ -745,4 +745,26 @@ class GameData {
     set history(mids: Array<number>) {
         localStorage.setItem("history", JSON.stringify(mids));
     }
+
+    //
+    // options
+    //
+    get options() : IdeOptions {
+        return JSON.parse(localStorage.getItem("options"));
+    }
+
+    set options(options: IdeOptions) {
+        localStorage.setItem("options", JSON.stringify(options));
+    }
+
+    //
+    // continue state
+    //
+    get continueState() : any {
+        return JSON.parse(localStorage.getItem("continueState"));
+    }
+
+    set continueState(moms: any) {
+        localStorage.setItem("continueState", JSON.stringify(moms));
+    }
 }
