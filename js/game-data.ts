@@ -100,7 +100,6 @@ class GameData {
 
     saveData = (text: string) => {
         var gdata = <IGameData> JSON.parse(text);
-        this.clearStorage();
         this.game = gdata.game;
         this.situations = gdata.situations;
         this.scenes = gdata.scenes;
@@ -749,11 +748,11 @@ class GameData {
     //
     // options
     //
-    get options() : IdeOptions {
+    get options() : IOptions {
         return JSON.parse(localStorage.getItem("options"));
     }
 
-    set options(options: IdeOptions) {
+    set options(options: IOptions) {
         localStorage.setItem("options", JSON.stringify(options));
     }
 

@@ -23,7 +23,7 @@ enum Op {
     CONTINUE_INGAME
 }
 
-interface IdeOptions {
-    useGameFile: boolean,
-    startingNewGame: boolean
+interface IOptions {
+    skipFileLoad: boolean,
+    skipMenu: boolean
 }

@@ -33,7 +33,8 @@
         .ide-game {
             position: absolute;
             top: 32px;
-            width: 100%;
+            left: 150px;
+            width: calc(100% - 150px);
             height: calc(100% - 36px);
         }
         .ide-game iframe {
@@ -49,7 +50,8 @@
         .ide-editor {
             position: absolute;
             top: 100%;
-            width: 100%;
+            left: 150px;
+            width: calc(100% - 150px);
             height: calc(100% - 36px);
             transition: top 0.25s ease; 
         }
@@ -58,22 +60,52 @@
             height: 100%;
         }
         .show { top: 32px; }
+        .debug {
+            position: absolute;
+            width: 150px;
+            height: calc(100% - 36px);
+            top: 32px;
+            background: #c6d6ec;
+        }
+        .debug-content {
+            padding: 8px;
+        }
+        table, caption, tbody, tfoot, thead, tr, th, td {
+            border: 0;
+            outline: 0;
+        }
+        .debug-content table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .debug-content table thead td {
+            text-align: left;
+            font-weight: bold;
+        }
+        .debug-content table tr:nth-child(even) {
+            background: #d7dfea;
+        }
+        .debug-content table td {
+        }
     </style>
 </head>
 
 <body>
-
     <div class="toolbar">
         <button id="ide-play-edit">Play / Edit</button>
-        <button id="ide-orientation" disabled>Landscape / Portrait</button>
-        <!--<label><input id="ide-gamefile" type="checkbox">Use game file</label>-->
-        <!--<label><input id="ide-start" type="checkbox" checked disabled>Start clean</label>-->
+        <!--<button id="ide-orientation" disabled>Landscape / Portrait</button>-->
+        <label><input id="ide-gamefile" type="checkbox">Skip file load</label>
+    </div>
+
+    <div class="debug">
+        <div class="debug-content">
+            <table></table>
+        </div>
     </div>
 
     <div class="ide-game">
         <iframe frameborder="0" scrolling="off"></iframe>
     </div>
-
     <div class="ide-editor">
         <iframe frameborder="0" scrolling="off"></iframe>
     </div>

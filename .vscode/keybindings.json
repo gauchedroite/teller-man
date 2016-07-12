@@ -1,4 +1,8 @@
-// This is only for references as the actual keybindings.json is in C:\Users\<you>\AppData\Roaming\Code\User
+//
+// NOTE: The key binding must be created manually.
+// This is only for references.
+// The actual keybindings.json is in C:\Users\<you>\AppData\Roaming\Code\User
+//
 [
     {
         "key": "ctrl+shift+r",

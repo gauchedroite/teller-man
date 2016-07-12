@@ -24,17 +24,18 @@ class Game {
 
 
         this.gdata = new GameData();
+        this.ui = new UI(this.update);
 
         let options = this.gdata.options;
-        if (options == undefined) {
-            this.gdata.options = <IdeOptions> {
-                useGameFile: false,
-                startingNewGame: false
-            };
+        let skipMenu = (options != undefined && options.skipMenu);
+        if (skipMenu) {
+            options.skipMenu = false;
+            this.gdata.options = options;
+            this.update(Op.WAITING);
         }
-
-        this.ui = new UI(this.update);
-        this.update(Op.MENU);
+        else {
+            this.update(Op.MENU);
+        }
     }
 
     update = (op: Op, param?: any): void => {
@@ -60,7 +61,7 @@ class Game {
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
 
-            this.update(Op.BLURB);
+            setTimeout(() => { this.update(Op.BLURB); }, 0);
         }
         else if (op == Op.BLURB) {
             if (this.cix < this.chunks.length) {
@@ -89,52 +90,41 @@ class Game {
             let choice = <IChoice>param;
             this.currentMoment = this.getChosenMoment(choice);
             this.updateTimedState();
-            this.update(Op.MOMENT);
+            setTimeout(() => { this.update(Op.MOMENT); }, 0);
         }
         else if (op == Op.MENU) {
             if (param != undefined/*ingame*/) {
                 ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
             }
             else {
-                let options = this.gdata.options;
-                if (options.startingNewGame) {
-                    options.startingNewGame = false;
-                    this.gdata.options = options;
-                    this.update(Op.WAITING);
-                }
-                else {
+                if (this.gdata.options == undefined)
+                    ui.showMenu(Op.NEWGAME);
+                else
                     ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
-                }
             }
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
-            if (this.gdata.options.useGameFile) {
+            if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
                 this.getDataFile("dist/app.json", (text: any) => {
                     this.gdata.saveData(text);
                     this.restoreContinueState();
-                    this.update(Op.MOMENT);
+                    setTimeout(() => { this.update(Op.MOMENT); }, 0);
                 });
             }
             else {
                 this.restoreContinueState();
-                this.update(Op.MOMENT);
+                setTimeout(() => { this.update(Op.MOMENT); }, 0);
             }
         }
         else if (op == Op.CONTINUE_INGAME) {
         }
         else if (op == Op.NEWGAME) {
-            this.gdata.state = { intro: true };  //clear and init state
-            this.gdata.history = [];             //init the list of showned moments
-            this.gdata.continueState = null;
-            let options = this.gdata.options;
-            options.startingNewGame = true;
-            this.gdata.options = options;
-            location.href = "index.html";
+            this.newGame();
         }
         else if (op == Op.WAITING) {
             this.currentMoment = this.selectOne(this.getAllPossibleEverything());
             this.updateTimedState();
-            this.update(Op.MOMENT);
+            setTimeout(() => { this.update(Op.MOMENT); }, 0);
         }
         else {
             ui.alert(Op.WAITING, "Game Over?");
@@ -161,6 +151,27 @@ class Game {
             this.gdata.history = cstate.history;
         }
     };
+
+    newGame = () => {
+        this.gdata.state = { intro: true };  //clear and init state
+        this.gdata.history = [];             //init the list of showned moments
+        this.gdata.continueState = null;
+
+        let options = this.gdata.options;
+        if (options == undefined) options = <IOptions>{ skipFileLoad: false };
+        options.skipMenu = true;
+        this.gdata.options = options;
+
+        if (options.skipFileLoad == false) {
+            this.getDataFile("dist/app.json", (text: any) => {
+                this.gdata.saveData(text);
+                setTimeout(function() { location.href = "index.html"; }, 0);
+            });
+        }
+        else {
+            setTimeout(function() { location.href = "index.html"; }, 0);
+        }
+    }
 
     getAllPossibleMoments = (): Array<IMoment> => {
         var data = this.data;

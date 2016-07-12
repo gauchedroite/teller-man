@@ -187,19 +187,26 @@ class UI {
         return html.join("");
     };
 
-    showMenu = (opNewGame: Op, opContinue: Op) => {
+    showMenu = (opNewGame: Op, opContinue?: Op) => {
         let menu = <HTMLElement>document.querySelector(".menu");
         menu.style.right = "0";
 
         let me = this;
-        let continu = menu.querySelector("button#continue");
-        continu.addEventListener("click", function click(e) {
-            continu.removeEventListener("click", click);
-            menu.style.right = "100%";
-            setTimeout(function() { 
-                me.update(opContinue); 
-            }, 250);
-        });
+        if (opContinue != undefined) {
+            let continu = menu.querySelector("button#continue");
+            continu.removeAttribute("disabled");
+            continu.addEventListener("click", function click(e) {
+                continu.removeEventListener("click", click);
+                menu.style.right = "100%";
+                setTimeout(function() { 
+                    me.update(opContinue); 
+                }, 250);
+            });
+        }
+        else {
+            let continu = menu.querySelector("button#continue");
+            continu.setAttribute("disabled", "disabled");
+        }
 
         let newgame = menu.querySelector("button#new-game");
         newgame.addEventListener("click", function click(e) {

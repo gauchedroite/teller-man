@@ -36,7 +36,6 @@ var GameData = (function () {
         };
         this.saveData = function (text) {
             var gdata = JSON.parse(text);
-            _this.clearStorage();
             _this.game = gdata.game;
             _this.situations = gdata.situations;
             _this.scenes = gdata.scenes;
@@ -1391,14 +1390,21 @@ var UI = (function () {
             var menu = document.querySelector(".menu");
             menu.style.right = "0";
             var me = _this;
-            var continu = menu.querySelector("button#continue");
-            continu.addEventListener("click", function click(e) {
-                continu.removeEventListener("click", click);
-                menu.style.right = "100%";
-                setTimeout(function () {
-                    me.update(opContinue);
-                }, 250);
-            });
+            if (opContinue != undefined) {
+                var continu_1 = menu.querySelector("button#continue");
+                continu_1.removeAttribute("disabled");
+                continu_1.addEventListener("click", function click(e) {
+                    continu_1.removeEventListener("click", click);
+                    menu.style.right = "100%";
+                    setTimeout(function () {
+                        me.update(opContinue);
+                    }, 250);
+                });
+            }
+            else {
+                var continu = menu.querySelector("button#continue");
+                continu.setAttribute("disabled", "disabled");
+            }
             var newgame = menu.querySelector("button#new-game");
             newgame.addEventListener("click", function click(e) {
                 newgame.removeEventListener("click", click);
@@ -1436,7 +1442,7 @@ var Game = (function () {
                 ui.setTitle(_this.currentScene.name);
                 ui.clearBlurb();
                 ui.onBlurbTap(Op.BLURB);
-                _this.update(Op.BLURB);
+                setTimeout(function () { _this.update(Op.BLURB); }, 0);
             }
             else if (op == Op.BLURB) {
                 if (_this.cix < _this.chunks.length) {
@@ -1465,52 +1471,41 @@ var Game = (function () {
                 var choice = param;
                 _this.currentMoment = _this.getChosenMoment(choice);
                 _this.updateTimedState();
-                _this.update(Op.MOMENT);
+                setTimeout(function () { _this.update(Op.MOMENT); }, 0);
             }
             else if (op == Op.MENU) {
                 if (param != undefined /*ingame*/) {
                     ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
                 }
                 else {
-                    var options = _this.gdata.options;
-                    if (options.startingNewGame) {
-                        options.startingNewGame = false;
-                        _this.gdata.options = options;
-                        _this.update(Op.WAITING);
-                    }
-                    else {
+                    if (_this.gdata.options == undefined)
+                        ui.showMenu(Op.NEWGAME);
+                    else
                         ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
-                    }
                 }
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
-                if (_this.gdata.options.useGameFile) {
+                if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
                     _this.getDataFile("dist/app.json", function (text) {
                         _this.gdata.saveData(text);
                         _this.restoreContinueState();
-                        _this.update(Op.MOMENT);
+                        setTimeout(function () { _this.update(Op.MOMENT); }, 0);
                     });
                 }
                 else {
                     _this.restoreContinueState();
-                    _this.update(Op.MOMENT);
+                    setTimeout(function () { _this.update(Op.MOMENT); }, 0);
                 }
             }
             else if (op == Op.CONTINUE_INGAME) {
             }
             else if (op == Op.NEWGAME) {
-                _this.gdata.state = { intro: true }; //clear and init state
-                _this.gdata.history = []; //init the list of showned moments
-                _this.gdata.continueState = null;
-                var options = _this.gdata.options;
-                options.startingNewGame = true;
-                _this.gdata.options = options;
-                location.href = "index.html";
+                _this.newGame();
             }
             else if (op == Op.WAITING) {
                 _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
                 _this.updateTimedState();
-                _this.update(Op.MOMENT);
+                setTimeout(function () { _this.update(Op.MOMENT); }, 0);
             }
             else {
                 ui.alert(Op.WAITING, "Game Over?");
@@ -1533,6 +1528,25 @@ var Game = (function () {
                 _this.forbiddenSceneId = cstate.forbiddenSceneId;
                 _this.gdata.state = cstate.state;
                 _this.gdata.history = cstate.history;
+            }
+        };
+        this.newGame = function () {
+            _this.gdata.state = { intro: true }; //clear and init state
+            _this.gdata.history = []; //init the list of showned moments
+            _this.gdata.continueState = null;
+            var options = _this.gdata.options;
+            if (options == undefined)
+                options = { skipFileLoad: false };
+            options.skipMenu = true;
+            _this.gdata.options = options;
+            if (options.skipFileLoad == false) {
+                _this.getDataFile("dist/app.json", function (text) {
+                    _this.gdata.saveData(text);
+                    setTimeout(function () { location.href = "index.html"; }, 0);
+                });
+            }
+            else {
+                setTimeout(function () { location.href = "index.html"; }, 0);
             }
         };
         this.getAllPossibleMoments = function () {
@@ -1894,15 +1908,17 @@ var Game = (function () {
             _this.update(Op.MENU, { ingame: true });
         });
         this.gdata = new GameData();
-        var options = this.gdata.options;
-        if (options == undefined) {
-            this.gdata.options = {
-                useGameFile: false,
-                startingNewGame: false
-            };
-        }
         this.ui = new UI(this.update);
-        this.update(Op.MENU);
+        var options = this.gdata.options;
+        var skipMenu = (options != undefined && options.skipMenu);
+        if (skipMenu) {
+            options.skipMenu = false;
+            this.gdata.options = options;
+            this.update(Op.WAITING);
+        }
+        else {
+            this.update(Op.MENU);
+        }
     }
     return Game;
 }());
@@ -1910,23 +1926,45 @@ var Tide = (function () {
     function Tide() {
         var ied = document.querySelector("div.ide-editor");
         var igame = document.querySelector("div.ide-game");
-        var gameFile = document.getElementById("ide-gamefile");
-        var startClean = document.getElementById("ide-start");
+        var gdata = new GameData();
+        var options = gdata.options;
+        if (options == undefined) {
+            options = { skipFileLoad: false };
+            gdata.options = options;
+        }
         document.getElementById("ide-play-edit").addEventListener("click", function (e) {
             if (ied.classList.contains("show"))
                 ied.classList.remove("show");
             else
                 ied.classList.add("show");
         });
-        // (<any>document).getQaz = () => { return qaz; }; //from tide
-        //
-        // if (window != window.top) { //from embedded iframe
-        //	 qaz = (<any>window.parent.document).getQaz();
-        var gdata = new GameData();
-        gdata.options = {
-            useGameFile: false,
-            startingNewGame: false
-        };
+        document.getElementById("ide-gamefile").addEventListener("click", function (e) {
+            var checked = e.target.checked;
+            var options = gdata.options;
+            options.skipFileLoad = checked;
+            gdata.options = options;
+        });
+        document.getElementById("ide-gamefile").checked = options.skipFileLoad;
+        window.addEventListener("storage", function (e) {
+            if (e.key == "state") {
+                var table = document.querySelector("div.debug-content table");
+                for (var i = table.rows.length - 1; i >= 0; i--)
+                    table.deleteRow(i);
+                var thead = table.createTHead();
+                var row = thead.insertRow(0);
+                row.insertCell(0).innerText = "Name";
+                row.insertCell(1).innerText = "Value";
+                var nv = JSON.parse(e.newValue);
+                console.log(nv);
+                var tbody = table.createTBody();
+                var rownum = 0;
+                for (var property in nv) {
+                    row = tbody.insertRow(rownum++);
+                    row.insertCell(0).innerText = property;
+                    row.insertCell(1).innerText = nv[property];
+                }
+            }
+        });
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");
