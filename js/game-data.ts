@@ -40,6 +40,7 @@ interface IActor {
     id: number
     sitid: number
     name: string
+    desc: string
     mids: Array<number>
 }
 
@@ -302,7 +303,7 @@ class GameData {
         }
         id++;
         var kind: AKind =  (akind == undefined ? AKind.NPC : akind);
-        var act: IActor = { id: id, sitid: sitid, kind: kind, name: null, mids: [] };
+        var act: IActor = { id: id, sitid: sitid, kind: kind, name: null, desc: null, mids: [] };
         acts.push(act);
         this.actors = acts;
         //
@@ -341,6 +342,13 @@ class GameData {
         var acts = this.actors;
         var act = this.getActor(acts, id);
         act.name = name;
+        this.actors = acts;
+    }
+
+    saveActorDesc = (desc: string, id: number) => {
+        var acts = this.actors;
+        var act = this.getActor(acts, id);
+        act.desc = desc;
         this.actors = acts;
     }
 

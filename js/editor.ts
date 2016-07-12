@@ -514,9 +514,17 @@ class Editor {
             this.gdata.saveActorName(e.target.value, Editor.getMeId(e.target));
         });
 
+        $(document).on("change", "#ted-player-desc", (e: any) => {
+            this.gdata.saveActorDesc(e.target.value, Editor.getMeId(e.target));
+        });
+
         $(document).on("change", "#ted-actor-name", (e: any) => {
             this.gdata.saveActorName(e.target.value, Editor.getMeId(e.target));
             $("#ted-actors li.ted-selected div.item-title").text(e.target.value);
+        });
+
+        $(document).on("change", "#ted-actor-desc", (e: any) => {
+            this.gdata.saveActorDesc(e.target.value, Editor.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-moment-when", (e: any) => {
