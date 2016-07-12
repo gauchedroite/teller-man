@@ -172,6 +172,7 @@ body {
   justify-content: space-between;
 }
 .navbar .navbar-inner div.title {
+  cursor: default;
   padding: 0 0 8px 16px;
 }
 .navbar .navbar-inner div.title i:after {
@@ -181,6 +182,7 @@ body {
   padding: 0 16px 8px 0;
   font-size: 16px;
   color: orange;
+  cursor: pointer;
 }
 .navbar .navbar-inner div.title i {
   color: orange;
@@ -199,12 +201,12 @@ body {
   height: 44px;
   width: 100%;
 }
-.content .content-text {
+.content .content-inner {
   margin: 0 10px 0 10px;
   padding: 16px 8px;
   transition: margin-bottom 0.25 ease;
 }
-.content .content-text p {
+.content .content-inner p {
   padding-bottom: 12px;
 }
 .content.overlay {

@@ -41,7 +41,6 @@ class Tide {
                 row.insertCell(1).innerText = "Value";
 
                 var nv = JSON.parse(<any>e.newValue);
-                console.log(nv);
 
                 var tbody = table.createTBody();
                 var rownum = 0;

@@ -11,20 +11,8 @@ class Game {
     cix: number;
 
     constructor() {
-        if ('addEventListener' in document) {
-            document.addEventListener('DOMContentLoaded', function() {
-                FastClick.attach(document.body);
-            }, false);
-        }
-
-        var menu = <HTMLElement>document.querySelector(".goto-menu");
-        menu.addEventListener("click", (e) => {
-            this.update(Op.MENU, { ingame: true });
-        });
-
-
         this.gdata = new GameData();
-        this.ui = new UI(this.update);
+        this.ui = new UI(this.update, Op.MENU_INGAME);
 
         let options = this.gdata.options;
         let skipMenu = (options != undefined && options.skipMenu);
@@ -34,7 +22,7 @@ class Game {
             this.update(Op.WAITING);
         }
         else {
-            this.update(Op.MENU);
+            this.update(Op.MENU_BOOT);
         }
     }
 
@@ -92,16 +80,14 @@ class Game {
             this.updateTimedState();
             setTimeout(() => { this.update(Op.MOMENT); }, 0);
         }
-        else if (op == Op.MENU) {
-            if (param != undefined/*ingame*/) {
-                ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
-            }
-            else {
-                if (this.gdata.options == undefined)
-                    ui.showMenu(Op.NEWGAME);
-                else
-                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
-            }
+        else if (op == Op.MENU_BOOT) {
+            if (this.gdata.options == undefined)
+                ui.showMenu(Op.NEWGAME);
+            else
+                ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
+        }
+        else if (op == Op.MENU_INGAME) {
+            ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {

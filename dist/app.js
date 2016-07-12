@@ -1237,10 +1237,11 @@ var Op;
     Op[Op["MOMENT"] = 1] = "MOMENT";
     Op[Op["BLURB"] = 2] = "BLURB";
     Op[Op["CHOICES"] = 3] = "CHOICES";
-    Op[Op["MENU"] = 4] = "MENU";
-    Op[Op["NEWGAME"] = 5] = "NEWGAME";
-    Op[Op["CONTINUE_SAVEDGAME"] = 6] = "CONTINUE_SAVEDGAME";
-    Op[Op["CONTINUE_INGAME"] = 7] = "CONTINUE_INGAME";
+    Op[Op["MENU_BOOT"] = 4] = "MENU_BOOT";
+    Op[Op["MENU_INGAME"] = 5] = "MENU_INGAME";
+    Op[Op["NEWGAME"] = 6] = "NEWGAME";
+    Op[Op["CONTINUE_SAVEDGAME"] = 7] = "CONTINUE_SAVEDGAME";
+    Op[Op["CONTINUE_INGAME"] = 8] = "CONTINUE_INGAME";
 })(Op || (Op = {}));
 var CKind;
 (function (CKind) {
@@ -1250,7 +1251,7 @@ var CKind;
     CKind[CKind["messageFrom"] = 3] = "messageFrom";
 })(CKind || (CKind = {}));
 var UI = (function () {
-    function UI(update) {
+    function UI(update, opmenu) {
         var _this = this;
         this.update = update;
         this.onBlurbTap = function (op) {
@@ -1260,8 +1261,8 @@ var UI = (function () {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
             content.style.pointerEvents = "none";
-            var panel = document.querySelector(".modal-inner p");
-            panel.innerHTML = text;
+            var panel = document.querySelector(".modal-inner");
+            panel.innerHTML = "<p>" + text + "</p>";
             var modal = document.querySelector(".modal");
             modal.classList.add("show");
             var me = _this;
@@ -1302,7 +1303,7 @@ var UI = (function () {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
-            var text = document.querySelector(".content-text");
+            var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
             var me = _this;
             var lis = document.querySelectorAll(".choice-panel li");
@@ -1336,7 +1337,7 @@ var UI = (function () {
             shell.scrollTop = content.offsetTop;
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
-            var text = document.querySelector(".content-text");
+            var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
         };
         this.setTitle = function (text) {
@@ -1345,7 +1346,7 @@ var UI = (function () {
         };
         this.addBlurb = function (chunk) {
             var html = _this.markupChunk(chunk);
-            var content = document.querySelector(".content-text");
+            var content = document.querySelector(".content-inner");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
@@ -1368,7 +1369,7 @@ var UI = (function () {
             }, 0);
         };
         this.clearBlurb = function () {
-            var content = document.querySelector(".content-text");
+            var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
         this.markupChunk = function (chunk) {
@@ -1426,10 +1427,17 @@ var UI = (function () {
                 }, 250);
             });
         };
-        var me = this;
         document.querySelector(".content").addEventListener("click", function (e) {
-            me.update(me.blurbOp);
+            _this.update(_this.blurbOp);
         });
+        document.querySelector(".goto-menu").addEventListener("click", function (e) {
+            _this.update(opmenu);
+        });
+        if ('addEventListener' in document) {
+            document.addEventListener('DOMContentLoaded', function () {
+                FastClick.attach(document.body);
+            }, false);
+        }
     }
     return UI;
 }());
@@ -1485,16 +1493,14 @@ var Game = (function () {
                 _this.updateTimedState();
                 setTimeout(function () { _this.update(Op.MOMENT); }, 0);
             }
-            else if (op == Op.MENU) {
-                if (param != undefined /*ingame*/) {
-                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
-                }
-                else {
-                    if (_this.gdata.options == undefined)
-                        ui.showMenu(Op.NEWGAME);
-                    else
-                        ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
-                }
+            else if (op == Op.MENU_BOOT) {
+                if (_this.gdata.options == undefined)
+                    ui.showMenu(Op.NEWGAME);
+                else
+                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
+            }
+            else if (op == Op.MENU_INGAME) {
+                ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
@@ -1910,17 +1916,8 @@ var Game = (function () {
             };
             xhr.send();
         };
-        if ('addEventListener' in document) {
-            document.addEventListener('DOMContentLoaded', function () {
-                FastClick.attach(document.body);
-            }, false);
-        }
-        var menu = document.querySelector(".goto-menu");
-        menu.addEventListener("click", function (e) {
-            _this.update(Op.MENU, { ingame: true });
-        });
         this.gdata = new GameData();
-        this.ui = new UI(this.update);
+        this.ui = new UI(this.update, Op.MENU_INGAME);
         var options = this.gdata.options;
         var skipMenu = (options != undefined && options.skipMenu);
         if (skipMenu) {
@@ -1929,7 +1926,7 @@ var Game = (function () {
             this.update(Op.WAITING);
         }
         else {
-            this.update(Op.MENU);
+            this.update(Op.MENU_BOOT);
         }
     }
     return Game;
@@ -1967,7 +1964,6 @@ var Tide = (function () {
                 row.insertCell(0).innerText = "Name";
                 row.insertCell(1).innerText = "Value";
                 var nv = JSON.parse(e.newValue);
-                console.log(nv);
                 var tbody = table.createTBody();
                 var rownum = 0;
                 for (var property in nv) {

@@ -54,6 +54,7 @@ body {
         display: flex;
         justify-content: space-between;
         div.title {
+            cursor: default;
             padding: 0 0 8px 16px;
             i:after {
                 content: " ";
@@ -63,6 +64,7 @@ body {
             padding: 0 16px 8px 0;
             font-size: 16px;
             color: @accent-color;
+            cursor: pointer;
         }
         div.title i {
             color: @accent-color;
@@ -82,7 +84,7 @@ body {
         height: @navbar-height;
         width: 100%;
     }
-    .content-text {
+    .content-inner {
         margin: 0 10px 0 10px;
         padding: 16px 8px;
         p {

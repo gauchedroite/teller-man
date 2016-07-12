@@ -17,7 +17,8 @@ enum Op {
     MOMENT,
     BLURB,
     CHOICES,
-    MENU,
+    MENU_BOOT,
+    MENU_INGAME,
     NEWGAME,
     CONTINUE_SAVEDGAME,
     CONTINUE_INGAME

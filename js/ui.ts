@@ -16,11 +16,20 @@ class UI {
     sections: Array<string>;
     blurbOp: Op;
 
-    constructor (private update: (op: Op, param?: any) => void) {
-        let me = this;
+    constructor (private update: (op: Op, param?: any) => void, opmenu: Op) {
         document.querySelector(".content").addEventListener("click", (e) => {
-            me.update(me.blurbOp);
+            this.update(this.blurbOp);
         });
+
+        document.querySelector(".goto-menu").addEventListener("click", (e) => {
+            this.update(opmenu);
+        });
+
+        if ('addEventListener' in document) {
+            document.addEventListener('DOMContentLoaded', function() {
+                FastClick.attach(document.body);
+            }, false);
+        }
     }
 
     onBlurbTap = (op: Op) => {
@@ -32,8 +41,8 @@ class UI {
         content.classList.add("overlay");
         content.style.pointerEvents = "none";
 
-        let panel = <HTMLElement>document.querySelector(".modal-inner p");
-        panel.innerHTML = text;
+        let panel = <HTMLElement>document.querySelector(".modal-inner");
+        panel.innerHTML = "<p>" + text + "</p>";
 
         let modal = <HTMLElement>document.querySelector(".modal");
         modal.classList.add("show");
@@ -81,7 +90,7 @@ class UI {
 
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
-        let text = <HTMLElement>document.querySelector(".content-text");
+        let text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = panel.offsetHeight + "px";
 
         let me = this;
@@ -119,7 +128,7 @@ class UI {
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";
 
-        var text = <HTMLElement>document.querySelector(".content-text");
+        var text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = "0";
     };
 
@@ -130,7 +139,7 @@ class UI {
 
     addBlurb = (chunk: IMomentData) => {
         var html = this.markupChunk(chunk);
-        var content = document.querySelector(".content-text");
+        var content = document.querySelector(".content-inner");
         var div = document.createElement("div");
         div.innerHTML = html;
         var section = <HTMLDivElement>div.firstChild;
@@ -153,7 +162,7 @@ class UI {
     };
 
     clearBlurb = () => {
-        var content = document.querySelector(".content-text");
+        var content = document.querySelector(".content-inner");
         content.innerHTML = "";
     };
 
