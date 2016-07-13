@@ -13,11 +13,14 @@
     <link rel="stylesheet" href="dist/app.css">
 </head>
 
-<body>
+<body class="landscape">
+
+    <div class="graphics">
+    </div>
 
     <div class="shell">
 
-        <div class="navbar">
+        <div class="navbar retracted">
             <div class="navbar-inner">
                 <div class="title"><i class="icon ion-ios-location"></i><span></span></div>
                 <div class="goto-menu"><i class="icon ion-navicon-round"></i></div>
@@ -37,12 +40,14 @@
             </div>
         </div>
 
-        <div class="menu">
-            <button id="new-game">New Game</button>
-            <button id="continue">Continue</button>
-            <button id="options" disabled>Options</button>
-        </div>
+    </div>
 
+    <div class="menu">
+        <div class="menu-inner">
+            <div><button id="new-game">New Game</button></div>
+            <div><button id="continue">Continue</button></div>
+            <div><button id="options" disabled>Options</button></div>
+        </div>
     </div>
 
     <script src='dist/fastclick.js'></script>

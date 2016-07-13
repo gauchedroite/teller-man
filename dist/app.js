@@ -1431,8 +1431,19 @@ var UI = (function () {
             _this.update(_this.blurbOp);
         });
         document.querySelector(".goto-menu").addEventListener("click", function (e) {
+            e.stopPropagation();
             _this.update(opmenu);
         });
+        if (document.querySelector("body").classList.contains("landscape")) {
+            var navbar = document.querySelector(".navbar");
+            var shell = document.querySelector(".shell");
+            navbar.addEventListener("click", function (e) {
+                if (shell.classList.contains("retracted"))
+                    shell.classList.remove("retracted");
+                else
+                    shell.classList.add("retracted");
+            });
+        }
         if ('addEventListener' in document) {
             document.addEventListener('DOMContentLoaded', function () {
                 FastClick.attach(document.body);

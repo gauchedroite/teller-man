@@ -22,8 +22,20 @@ class UI {
         });
 
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
+            e.stopPropagation();
             this.update(opmenu);
         });
+
+        if (document.querySelector("body").classList.contains("landscape")) {
+            var navbar = <HTMLDivElement>document.querySelector(".navbar"); 
+            var shell = <HTMLDivElement>document.querySelector(".shell"); 
+            navbar.addEventListener("click", (e) => {
+                if (shell.classList.contains("retracted"))
+                    shell.classList.remove("retracted");
+                else
+                    shell.classList.add("retracted");
+            });
+        }
 
         if ('addEventListener' in document) {
             document.addEventListener('DOMContentLoaded', function() {

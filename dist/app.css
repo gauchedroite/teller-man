@@ -140,7 +140,6 @@ body {
   overflow-x: hidden;
 }
 body {
-  background-color: black;
   font-family: monospace;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -153,6 +152,10 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  background-color: black;
+}
+.graphics {
+  display: none;
 }
 .navbar {
   position: absolute;
@@ -319,6 +322,46 @@ section.dialog p {
   width: 100%;
   height: 100%;
   z-index: 20;
-  background: yellow;
+  background: url(assets/menu.jpg) no-repeat center center fixed;
+  background-size: cover;
   transition: right 0.25s ease;
+}
+.menu .menu-inner {
+  position: absolute;
+  left: 30%;
+  top: 50%;
+}
+.menu .menu-inner div {
+  margin-top: 20px;
+  width: 120px;
+}
+.menu .menu-inner div button {
+  width: 100%;
+  padding: 8px;
+}
+.landscape .shell {
+  width: 35%;
+  height: 90%;
+  left: 60%;
+  top: 5%;
+  border: 5px solid #333;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  transition: height 0.15s ease;
+}
+.landscape .shell.retracted {
+  height: 44px;
+  opacity: 0.4;
+}
+.landscape .shell .navbar {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+.landscape .graphics {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: url(assets/spacecraft.jpg) no-repeat center center fixed;
+  background-size: cover;
 }

@@ -25,7 +25,6 @@ html, body {
     overflow-x: hidden;
 }
 body {
-    background-color: black;
     font-family: monospace;
     .noselect
 }
@@ -35,6 +34,11 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background-color: black;
+}
+
+.graphics {
+    display: none;
 }
 
 .navbar {
@@ -210,6 +214,54 @@ section.dialog {
     width: 100%;
     height: 100%;
     z-index: 20;
-    background: yellow;
+    background: url(assets/menu.jpg) no-repeat center center fixed;
+    background-size: cover;
     transition: right 0.25s ease;
+
+    .menu-inner {
+        position: absolute;
+        left: 30%;
+        top: 50%;
+
+        div {
+            margin-top: 20px;
+            width: 120px;
+
+            button {
+                width: 100%;
+                padding: 8px;
+            }
+        }
+    }
+}
+
+
+.landscape {
+    .shell {
+        width: 35%;
+        height: 90%;
+        left: 60%;
+        top: 5%;
+        border: 5px solid @seperator-color;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
+        transition: height 0.15s ease;
+        &.retracted {
+            height: @navbar-height;
+            opacity: 0.4;
+        }
+        .navbar {
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+    }
+
+    .graphics {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: url(assets/spacecraft.jpg) no-repeat center center fixed;
+        background-size: cover;
+    }
 }
