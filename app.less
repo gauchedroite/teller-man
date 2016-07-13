@@ -214,10 +214,9 @@ section.dialog {
     width: 100%;
     height: 100%;
     z-index: 20;
-    background: url(assets/menu.jpg) no-repeat center center fixed;
+    background: no-repeat center center fixed;
     background-size: cover;
-    transition: right 0.25s ease;
-
+    transition: right 0.25s ease, opacity 0.25s ease;
     .menu-inner {
         position: absolute;
         left: 30%;
@@ -230,6 +229,7 @@ section.dialog {
             button {
                 width: 100%;
                 padding: 8px;
+                cursor: pointer;
             }
         }
     }
@@ -261,7 +261,53 @@ section.dialog {
         width: 100%;
         height: 100%;
         display: block;
-        background: url(assets/spacecraft.jpg) no-repeat center center fixed;
-        background-size: cover;
+        .back, .front {
+            background: no-repeat center center fixed;
+            background-size: cover;
+        }
+        .front.show {
+            transition: opacity 0.5s ease;
+        }
     }
+}
+
+.preloader {
+    z-index: 30;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    background-color: white;
+    transition: opacity 0.5s ease;
+    .preloader-inner {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: auto;
+        margin-top: 10%;
+    }
+}
+
+.bounce1, .bounce2 {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: @accent-color;
+    opacity: 0.6;
+    position: absolute;
+    top: 0;
+    left: 0;
+    animation: gd-bounce 2.0s infinite ease-in-out;
+}
+.bounce2 {
+    animation-delay: -1.0s;
+}
+@keyframes gd-bounce {
+    0%, 100% { transform: scale(0.0); }
+    50% { transform: scale(1.0); }
+}
+
+.back-inner {
+    width: 80px;
+    height: 80px;
 }

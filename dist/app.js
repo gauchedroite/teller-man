@@ -1251,7 +1251,7 @@ var CKind;
     CKind[CKind["messageFrom"] = 3] = "messageFrom";
 })(CKind || (CKind = {}));
 var UI = (function () {
-    function UI(update, opmenu) {
+    function UI(update, opmenu, skipMenu) {
         var _this = this;
         this.update = update;
         this.onBlurbTap = function (op) {
@@ -1340,9 +1340,22 @@ var UI = (function () {
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
         };
-        this.setTitle = function (text) {
+        this.initScene = function (data) {
             var title = document.querySelector(".title span");
-            title.textContent = text;
+            title.textContent = data.title;
+            var back = document.querySelector(".graphics .back");
+            var front = document.querySelector(".graphics .front");
+            back.style.backgroundImage = front.style.backgroundImage;
+            front.style.opacity = "0";
+            front.classList.remove("show");
+            var assetName = "dist/assets/" + data.image;
+            var image = new Image();
+            image.onload = function () {
+                front.style.backgroundImage = "url(" + assetName + ")";
+                front.style.opacity = "1";
+                front.classList.add("show");
+            };
+            setTimeout(function () { image.src = assetName; }, 50);
         };
         this.addBlurb = function (chunk) {
             var html = _this.markupChunk(chunk);
@@ -1421,10 +1434,12 @@ var UI = (function () {
             var newgame = menu.querySelector("button#new-game");
             newgame.addEventListener("click", function click(e) {
                 newgame.removeEventListener("click", click);
-                menu.style.right = "100%";
+                document.querySelector(".graphics").style.display = "none";
+                document.querySelector(".shell").style.display = "none";
+                menu.style.opacity = "0";
                 setTimeout(function () {
                     me.update(opNewGame);
-                }, 250);
+                }, 500);
             });
         };
         document.querySelector(".content").addEventListener("click", function (e) {
@@ -1449,6 +1464,21 @@ var UI = (function () {
                 FastClick.attach(document.body);
             }, false);
         }
+        var assetName = "dist/assets/menu.jpg";
+        var image = new Image();
+        image.onload = function () {
+            var menu = document.querySelector(".menu");
+            menu.style.backgroundImage = "url(" + assetName + ")";
+            var preloader = document.querySelector(".preloader");
+            setTimeout(function () {
+                preloader.style.opacity = "0";
+                preloader.addEventListener("transitionend", function done() {
+                    preloader.style.display = "none";
+                    preloader.removeEventListener("transitionend", done);
+                });
+            }, 750);
+        };
+        image.src = assetName;
     }
     return UI;
 }());
@@ -1470,7 +1500,7 @@ var Game = (function () {
                 if (kind == Kind.Moment || kind == Kind.Action) {
                     _this.currentScene = _this.getSceneOf(_this.currentMoment);
                 }
-                ui.setTitle(_this.currentScene.name);
+                ui.initScene(_this.parseScene(_this.currentScene));
                 ui.clearBlurb();
                 ui.onBlurbTap(Op.BLURB);
                 setTimeout(function () { _this.update(Op.BLURB); }, 0);
@@ -1515,7 +1545,7 @@ var Game = (function () {
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
-                    _this.getDataFile("dist/app.json", function (text) {
+                    _this.getDataFile("dist/assets/app.json", function (text) {
                         _this.gdata.saveData(text);
                         _this.restoreContinueState();
                         setTimeout(function () { _this.update(Op.MOMENT); }, 0);
@@ -1569,7 +1599,7 @@ var Game = (function () {
             options.skipMenu = true;
             _this.gdata.options = options;
             if (options.skipFileLoad == false) {
-                _this.getDataFile("dist/app.json", function (text) {
+                _this.getDataFile("dist/assets/app.json", function (text) {
                     _this.gdata.saveData(text);
                     setTimeout(function () { location.href = "index.html"; }, 0);
                 });
@@ -1895,6 +1925,12 @@ var Game = (function () {
             }
             return parsed;
         };
+        this.parseScene = function (scene) {
+            var data = {};
+            data.title = scene.name;
+            data.image = scene.desc;
+            return data;
+        };
         this.updateTimedState = function () {
             var state = _this.gdata.state;
             var change = false;
@@ -1928,9 +1964,9 @@ var Game = (function () {
             xhr.send();
         };
         this.gdata = new GameData();
-        this.ui = new UI(this.update, Op.MENU_INGAME);
         var options = this.gdata.options;
         var skipMenu = (options != undefined && options.skipMenu);
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu);
         if (skipMenu) {
             options.skipMenu = false;
             this.gdata.options = options;

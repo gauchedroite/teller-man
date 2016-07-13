@@ -12,10 +12,11 @@ class Game {
 
     constructor() {
         this.gdata = new GameData();
-        this.ui = new UI(this.update, Op.MENU_INGAME);
-
         let options = this.gdata.options;
         let skipMenu = (options != undefined && options.skipMenu);
+
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu);
+
         if (skipMenu) {
             options.skipMenu = false;
             this.gdata.options = options;
@@ -45,7 +46,7 @@ class Game {
             if (kind == Kind.Moment || kind == Kind.Action) {
                 this.currentScene = this.getSceneOf(this.currentMoment);
             }
-            ui.setTitle(this.currentScene.name);
+            ui.initScene(this.parseScene(this.currentScene));
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
 
@@ -91,7 +92,7 @@ class Game {
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
-                this.getDataFile("dist/app.json", (text: any) => {
+                this.getDataFile("dist/assets/app.json", (text: any) => {
                     this.gdata.saveData(text);
                     this.restoreContinueState();
                     setTimeout(() => { this.update(Op.MOMENT); }, 0);
@@ -149,7 +150,7 @@ class Game {
         this.gdata.options = options;
 
         if (options.skipFileLoad == false) {
-            this.getDataFile("dist/app.json", (text: any) => {
+            this.getDataFile("dist/assets/app.json", (text: any) => {
                 this.gdata.saveData(text);
                 setTimeout(function() { location.href = "index.html"; }, 0);
             });
@@ -473,6 +474,13 @@ class Game {
             this.gdata.history = history;
         }
         return parsed;
+    };
+
+    parseScene = (scene: IScene) => {
+        var data = <ISceneData>{};
+        data.title = scene.name;
+        data.image = scene.desc;
+        return data;
     };
 
     updateTimedState = () => {

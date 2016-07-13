@@ -28,3 +28,8 @@ interface IOptions {
     skipFileLoad: boolean,
     skipMenu: boolean
 }
+
+interface ISceneData {
+    title: string,
+    image: string
+}

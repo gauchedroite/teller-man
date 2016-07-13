@@ -16,7 +16,7 @@ class UI {
     sections: Array<string>;
     blurbOp: Op;
 
-    constructor (private update: (op: Op, param?: any) => void, opmenu: Op) {
+    constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean) {
         document.querySelector(".content").addEventListener("click", (e) => {
             this.update(this.blurbOp);
         });
@@ -42,6 +42,22 @@ class UI {
                 FastClick.attach(document.body);
             }, false);
         }
+
+        var assetName = `dist/assets/menu.jpg`;
+        var image = new Image();
+        image.onload = () => {
+            var menu = <HTMLDivElement>document.querySelector(".menu");
+            menu.style.backgroundImage = `url(${assetName})`;
+            var preloader = <HTMLDivElement>document.querySelector(".preloader");
+            setTimeout(() => { 
+                preloader.style.opacity = "0";
+                preloader.addEventListener("transitionend", function done() {
+                    preloader.style.display = "none";
+                    preloader.removeEventListener("transitionend", done);
+                });
+            }, 750);
+        };
+        image.src = assetName;
     }
 
     onBlurbTap = (op: Op) => {
@@ -144,9 +160,23 @@ class UI {
         text.style.marginBottom = "0";
     };
 
-    setTitle = (text: string) => {
+    initScene = (data: ISceneData) => {
         var title = document.querySelector(".title span");
-        title.textContent = text;
+        title.textContent = data.title;
+
+        var back = <HTMLDivElement>document.querySelector(".graphics .back");
+        var front = <HTMLDivElement>document.querySelector(".graphics .front");
+        back.style.backgroundImage = front.style.backgroundImage;
+        front.style.opacity = "0";
+        front.classList.remove("show");
+        var assetName = `dist/assets/${data.image}`;
+        var image = new Image();
+        image.onload = () => {
+            front.style.backgroundImage = `url(${assetName})`;
+            front.style.opacity = "1";
+            front.classList.add("show");
+        };
+        setTimeout(() => { image.src = assetName; }, 50);
     };
 
     addBlurb = (chunk: IMomentData) => {
@@ -232,10 +262,12 @@ class UI {
         let newgame = menu.querySelector("button#new-game");
         newgame.addEventListener("click", function click(e) {
             newgame.removeEventListener("click", click);
-            menu.style.right = "100%";
+            (<HTMLDivElement>document.querySelector(".graphics")).style.display = "none";
+            (<HTMLDivElement>document.querySelector(".shell")).style.display = "none";
+            menu.style.opacity = "0";
             setTimeout(function() { 
                 me.update(opNewGame); 
-            }, 250);
+            }, 500);
         });
     }
 }
