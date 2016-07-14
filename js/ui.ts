@@ -166,17 +166,20 @@ class UI {
 
         var back = <HTMLDivElement>document.querySelector(".graphics .back");
         var front = <HTMLDivElement>document.querySelector(".graphics .front");
-        back.style.backgroundImage = front.style.backgroundImage;
-        front.style.opacity = "0";
-        front.classList.remove("show");
-        var assetName = `dist/assets/${data.image}`;
-        var image = new Image();
-        image.onload = () => {
-            front.style.backgroundImage = `url(${assetName})`;
-            front.style.opacity = "1";
-            front.classList.add("show");
-        };
-        setTimeout(() => { image.src = assetName; }, 50);
+
+        if (front.style.backgroundImage.indexOf(`dist/assets/${data.image}`) == -1) {
+            back.style.backgroundImage = front.style.backgroundImage;
+            back.classList.add("loading");
+            front.style.opacity = "0";
+            var assetName = `dist/assets/${data.image}`;
+            var image = new Image();
+            image.onload = () => {
+                back.classList.remove("loading");
+                front.style.backgroundImage = `url(${assetName})`;
+                front.style.opacity = "1";
+            };
+            setTimeout(() => { image.src = assetName; }, 200);
+        }
     };
 
     addBlurb = (chunk: IMomentData) => {

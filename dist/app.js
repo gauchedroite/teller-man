@@ -1345,17 +1345,19 @@ var UI = (function () {
             title.textContent = data.title;
             var back = document.querySelector(".graphics .back");
             var front = document.querySelector(".graphics .front");
-            back.style.backgroundImage = front.style.backgroundImage;
-            front.style.opacity = "0";
-            front.classList.remove("show");
-            var assetName = "dist/assets/" + data.image;
-            var image = new Image();
-            image.onload = function () {
-                front.style.backgroundImage = "url(" + assetName + ")";
-                front.style.opacity = "1";
-                front.classList.add("show");
-            };
-            setTimeout(function () { image.src = assetName; }, 50);
+            if (front.style.backgroundImage.indexOf("dist/assets/" + data.image) == -1) {
+                back.style.backgroundImage = front.style.backgroundImage;
+                back.classList.add("loading");
+                front.style.opacity = "0";
+                var assetName = "dist/assets/" + data.image;
+                var image = new Image();
+                image.onload = function () {
+                    back.classList.remove("loading");
+                    front.style.backgroundImage = "url(" + assetName + ")";
+                    front.style.opacity = "1";
+                };
+                setTimeout(function () { image.src = assetName; }, 200);
+            }
         };
         this.addBlurb = function (chunk) {
             var html = _this.markupChunk(chunk);
