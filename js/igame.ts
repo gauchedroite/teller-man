@@ -33,3 +33,8 @@ interface ISceneData {
     title: string,
     image: string
 }
+
+enum OpAction {
+    SHOWING_CHOICES,
+    GAME_START
+}

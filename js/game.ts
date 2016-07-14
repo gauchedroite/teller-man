@@ -63,6 +63,7 @@ class Game {
                     delete state.intro;
                     this.gdata.state = state;
                 }
+                this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 let moments = this.getAllPossibleMoments();
                 let messages = this.getAllPossibleMessages();
                 let choices = this.buildChoices(moments, messages);
@@ -109,6 +110,7 @@ class Game {
             this.newGame();
         }
         else if (op == Op.WAITING) {
+            this.raiseActionEvent(OpAction.SHOWING_CHOICES);
             this.currentMoment = this.selectOne(this.getAllPossibleEverything());
             this.updateTimedState();
             setTimeout(() => { this.update(Op.MOMENT); }, 0);
@@ -149,6 +151,8 @@ class Game {
         options.skipMenu = true;
         this.gdata.options = options;
 
+        this.raiseActionEvent(OpAction.GAME_START);
+
         if (options.skipFileLoad == false) {
             this.getDataFile("dist/assets/app.json", (text: any) => {
                 this.gdata.saveData(text);
@@ -158,7 +162,12 @@ class Game {
         else {
             setTimeout(function() { location.href = "index.html"; }, 0);
         }
-    }
+    };
+
+    raiseActionEvent = (op: OpAction, param?: any) => {
+        if (window != window.top) 
+            (<any>window.parent).onAction(op, param);
+    };
 
     getAllPossibleMoments = (): Array<IMoment> => {
         var data = this.data;

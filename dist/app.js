@@ -1243,6 +1243,11 @@ var Op;
     Op[Op["CONTINUE_SAVEDGAME"] = 7] = "CONTINUE_SAVEDGAME";
     Op[Op["CONTINUE_INGAME"] = 8] = "CONTINUE_INGAME";
 })(Op || (Op = {}));
+var OpAction;
+(function (OpAction) {
+    OpAction[OpAction["SHOWING_CHOICES"] = 0] = "SHOWING_CHOICES";
+    OpAction[OpAction["GAME_START"] = 1] = "GAME_START";
+})(OpAction || (OpAction = {}));
 var CKind;
 (function (CKind) {
     CKind[CKind["scene"] = 0] = "scene";
@@ -1518,6 +1523,7 @@ var Game = (function () {
                         delete state.intro;
                         _this.gdata.state = state;
                     }
+                    _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                     var moments = _this.getAllPossibleMoments();
                     var messages = _this.getAllPossibleMessages();
                     var choices = _this.buildChoices(moments, messages);
@@ -1564,6 +1570,7 @@ var Game = (function () {
                 _this.newGame();
             }
             else if (op == Op.WAITING) {
+                _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
                 _this.updateTimedState();
                 setTimeout(function () { _this.update(Op.MOMENT); }, 0);
@@ -1600,6 +1607,7 @@ var Game = (function () {
                 options = { skipFileLoad: false };
             options.skipMenu = true;
             _this.gdata.options = options;
+            _this.raiseActionEvent(OpAction.GAME_START);
             if (options.skipFileLoad == false) {
                 _this.getDataFile("dist/assets/app.json", function (text) {
                     _this.gdata.saveData(text);
@@ -1609,6 +1617,10 @@ var Game = (function () {
             else {
                 setTimeout(function () { location.href = "index.html"; }, 0);
             }
+        };
+        this.raiseActionEvent = function (op, param) {
+            if (window != window.top)
+                window.parent.onAction(op, param);
         };
         this.getAllPossibleMoments = function () {
             var data = _this.data;
@@ -1982,6 +1994,32 @@ var Game = (function () {
 }());
 var Tide = (function () {
     function Tide() {
+        var _this = this;
+        this.action = function (op, param) {
+            if (op == OpAction.SHOWING_CHOICES) {
+                var table = document.querySelector("div.debug-content table");
+                for (var i = table.rows.length - 1; i >= 0; i--)
+                    table.deleteRow(i);
+                var thead = table.createTHead();
+                var row = thead.insertRow(0);
+                row.insertCell(0).innerText = "Name";
+                row.insertCell(1).innerText = "Value";
+                var nv = new GameData().state;
+                var tbody = table.createTBody();
+                var rownum = 0;
+                for (var property in nv) {
+                    row = tbody.insertRow(rownum++);
+                    row.insertCell(0).innerText = property;
+                    row.insertCell(1).innerText = nv[property];
+                }
+            }
+            else if (op == OpAction.GAME_START) {
+                _this.prevState = {};
+                var table = document.querySelector("div.debug-content table");
+                for (var i = table.rows.length - 1; i >= 0; i--)
+                    table.deleteRow(i);
+            }
+        };
         var ied = document.querySelector("div.ide-editor");
         var igame = document.querySelector("div.ide-game");
         var gdata = new GameData();
@@ -2002,26 +2040,8 @@ var Tide = (function () {
             options.skipFileLoad = checked;
             gdata.options = options;
         });
+        window.onAction = this.action;
         document.getElementById("ide-gamefile").checked = options.skipFileLoad;
-        window.addEventListener("storage", function (e) {
-            if (e.key == "state") {
-                var table = document.querySelector("div.debug-content table");
-                for (var i = table.rows.length - 1; i >= 0; i--)
-                    table.deleteRow(i);
-                var thead = table.createTHead();
-                var row = thead.insertRow(0);
-                row.insertCell(0).innerText = "Name";
-                row.insertCell(1).innerText = "Value";
-                var nv = JSON.parse(e.newValue);
-                var tbody = table.createTBody();
-                var rownum = 0;
-                for (var property in nv) {
-                    row = tbody.insertRow(rownum++);
-                    row.insertCell(0).innerText = property;
-                    row.insertCell(1).innerText = nv[property];
-                }
-            }
-        });
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");

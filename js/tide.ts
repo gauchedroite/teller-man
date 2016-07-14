@@ -1,5 +1,8 @@
 
 class Tide {
+
+    prevState: any;
+
     constructor () {
 
         var ied = <HTMLElement>document.querySelector("div.ide-editor");
@@ -26,34 +29,43 @@ class Tide {
             gdata.options = options;
         });
 
+        (<any>window).onAction = this.action;
+
         (<any>document.getElementById("ide-gamefile")).checked = options.skipFileLoad;
-
-        window.addEventListener("storage", (e: StorageEvent) => {
-            if (e.key == "state") {
-                var table = <HTMLTableElement>document.querySelector("div.debug-content table");
-
-                for (var i = table.rows.length - 1; i >= 0; i--)
-                    table.deleteRow(i);
-
-                var thead = table.createTHead();
-                var row = thead.insertRow(0);
-                row.insertCell(0).innerText = "Name";
-                row.insertCell(1).innerText = "Value";
-
-                var nv = JSON.parse(<any>e.newValue);
-
-                var tbody = table.createTBody();
-                var rownum = 0;
-                for (var property in nv) {
-                    row = tbody.insertRow(rownum++);
-                    row.insertCell(0).innerText = property;
-                    row.insertCell(1).innerText = nv[property];
-                }
-            }
-        });
 
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");
     }
+
+
+    action = (op: OpAction, param?: any) => {
+        if (op == OpAction.SHOWING_CHOICES) {
+            var table = <HTMLTableElement>document.querySelector("div.debug-content table");
+
+            for (var i = table.rows.length - 1; i >= 0; i--)
+                table.deleteRow(i);
+
+            var thead = table.createTHead();
+            var row = thead.insertRow(0);
+            row.insertCell(0).innerText = "Name";
+            row.insertCell(1).innerText = "Value";
+
+            var nv = new GameData().state;
+
+            var tbody = table.createTBody();
+            var rownum = 0;
+            for (var property in nv) {
+                row = tbody.insertRow(rownum++);
+                row.insertCell(0).innerText = property;
+                row.insertCell(1).innerText = nv[property];
+            }
+        }
+        else if (op == OpAction.GAME_START) {
+            this.prevState = {};
+            var table = <HTMLTableElement>document.querySelector("div.debug-content table");
+            for (var i = table.rows.length - 1; i >= 0; i--)
+                table.deleteRow(i);
+        }
+    };
 }
