@@ -41,8 +41,28 @@ class Tide {
 
     action = (op: OpAction, param?: any) => {
         if (op == OpAction.SHOWING_CHOICES) {
-            var table = <HTMLTableElement>document.querySelector("div.debug-content table");
+            var state = new GameData().state;
 
+            interface IProp { name: string, prev: any, now: any };
+            var all = new Array<IProp>();
+            for (var property in this.prevState) {
+                all.push({ name: property, prev: this.prevState[property], now: undefined });
+            }
+            for (var property in state) {
+                var found = false;
+                for (var prev of all) {
+                    if (prev.name == property) {
+                        prev.now = state[property];
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) continue;
+                all.push({ name: property, prev: undefined, now: state[property] });
+            }
+            all.sort((a: IProp, b: IProp) => { return a.name.localeCompare(b.name); });
+
+            var table = <HTMLTableElement>document.querySelector("div.debug-content table");
             for (var i = table.rows.length - 1; i >= 0; i--)
                 table.deleteRow(i);
 
@@ -51,18 +71,31 @@ class Tide {
             row.insertCell(0).innerText = "Name";
             row.insertCell(1).innerText = "Value";
 
-            var nv = new GameData().state;
-
             var tbody = table.createTBody();
             var rownum = 0;
-            for (var property in nv) {
+            for (var one of all) {
                 row = tbody.insertRow(rownum++);
-                row.insertCell(0).innerText = property;
-                row.insertCell(1).innerText = nv[property];
+                row.insertCell(0).innerText = one.name;
+                var cell = row.insertCell(1);
+                cell.innerText = one.now;
+                if (one.prev == undefined) {
+                    row.className = "new";
+                }
+                else if (one.now == undefined) {
+                    cell.innerText = one.prev;
+                    row.className = "deleted";
+                }
+                else if (one.prev != one.now) {
+                    row.className = "changed";
+                    cell.title = `previous value: ${one.prev}`;
+                }
             }
+
+            this.prevState = JSON.parse(JSON.stringify(state));
         }
         else if (op == OpAction.GAME_START) {
             this.prevState = {};
+
             var table = <HTMLTableElement>document.querySelector("div.debug-content table");
             for (var i = table.rows.length - 1; i >= 0; i--)
                 table.deleteRow(i);
