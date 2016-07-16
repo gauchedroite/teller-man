@@ -25,6 +25,8 @@ class Game {
         else {
             this.update(Op.MENU_BOOT);
         }
+
+        (<any>window).GameInstance = this;
     }
 
     update = (op: Op, param?: any): void => {
@@ -49,6 +51,8 @@ class Game {
             ui.initScene(this.parseScene(this.currentScene));
             ui.clearBlurb();
             ui.onBlurbTap(Op.BLURB);
+
+            this.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
 
             setTimeout(() => { this.update(Op.BLURB); }, 0);
         }

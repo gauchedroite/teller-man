@@ -721,6 +721,8 @@ var Editor = (function () {
             app.onPageInit("*", function (page) {
                 if (page.url == undefined)
                     return;
+                if (page.query.hasOwnProperty("direct"))
+                    return;
                 if (page.url.startsWith("page/scene.html")) {
                     rightView.router.back({ url: rightView.history[0], force: true });
                 }
@@ -734,7 +736,6 @@ var Editor = (function () {
             app.onPageBack("*", function (page) {
                 if (page.url == undefined)
                     return;
-                console.log(page.url);
                 if (page.url.startsWith("page/scene.html")) {
                     rightView.router.back({ url: rightView.history[0], force: true });
                 }
@@ -747,6 +748,17 @@ var Editor = (function () {
                 if (page.url.startsWith("page/situation.html")) {
                     centerView.router.back({ url: centerView.history[0], force: true });
                 }
+            });
+            app.onPageAfterAnimation("*", function (page) {
+                if (page.url == undefined)
+                    return;
+                if (page.query.select == undefined)
+                    return;
+                var $view = $(page.view.selector);
+                $view.find(".ted-selected").removeClass("ted-selected");
+                var $a = $view.find(".page-on-center").find("a[href='" + page.query.select + "']");
+                var $li = $a.closest("li");
+                $li.addClass("ted-selected");
             });
             $(document).on("click", "div#ted-situations li", function (e) {
                 $(e.target.closest(".page")).find("li").removeClass("ted-selected");
@@ -797,7 +809,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-situation", function (e) {
-                var gameid = Editor.getMeId(e.target);
+                var gameid = _this.getMeId(e.target);
                 var id = _this.gdata.addSituation(gameid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/situation.html?id=' + id + '" class="item-link">'
@@ -815,7 +827,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-situation", function (e) {
                 app.confirm("Are you sure?", "Delete Situation", function () {
-                    _this.gdata.deleteSituation(Editor.getMeId(e.target));
+                    _this.gdata.deleteSituation(_this.getMeId(e.target));
                     var history = _this.leftView.history;
                     _this.leftView.router.back({
                         url: history[history.length - 2],
@@ -825,7 +837,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-scene", function (e) {
-                var sitid = Editor.getMeId(e.target);
+                var sitid = _this.getMeId(e.target);
                 var id = _this.gdata.addScene(sitid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/scene.html?id=' + id + '" data-view=".view-center" class="item-link">'
@@ -843,7 +855,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-scene", function (e) {
                 app.confirm("Are you sure?", "Delete Scene", function () {
-                    _this.gdata.deleteScene(Editor.getMeId(e.target));
+                    _this.gdata.deleteScene(_this.getMeId(e.target));
                     var history = _this.centerView.history;
                     _this.centerView.router.back({
                         url: history[0],
@@ -854,7 +866,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-actor", function (e) {
-                var sitid = Editor.getMeId(e.target);
+                var sitid = _this.getMeId(e.target);
                 var id = _this.gdata.addActor(sitid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/actor.html?id=' + id + '" data-view=".view-center" class="item-link">'
@@ -872,7 +884,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-actor", function (e) {
                 app.confirm("Are you sure?", "Delete Actor", function () {
-                    _this.gdata.deleteActor(Editor.getMeId(e.target));
+                    _this.gdata.deleteActor(_this.getMeId(e.target));
                     var history = _this.centerView.history;
                     _this.centerView.router.back({
                         url: history[0],
@@ -883,7 +895,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-moment", function (e) {
-                var momid = Editor.getMeId(e.target);
+                var momid = _this.getMeId(e.target);
                 var id = _this.gdata.addMoment(momid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link">'
@@ -901,7 +913,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-moment", function (e) {
                 app.confirm("Are you sure?", "Delete Moment", function () {
-                    _this.gdata.deleteSceneMoment(Editor.getMeId(e.target));
+                    _this.gdata.deleteSceneMoment(_this.getMeId(e.target));
                     var history = _this.rightView.history;
                     _this.rightView.router.back({
                         url: history[0],
@@ -912,7 +924,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-action", function (e) {
-                var actid = Editor.getMeId(e.target);
+                var actid = _this.getMeId(e.target);
                 var id = _this.gdata.addAction(actid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/action.html?id=' + id + '" data-view=".view-right" class="item-link">'
@@ -930,7 +942,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-action", function (e) {
                 app.confirm("Are you sure?", "Delete Action", function () {
-                    _this.gdata.deleteAction(Editor.getMeId(e.target));
+                    _this.gdata.deleteAction(_this.getMeId(e.target));
                     var history = _this.rightView.history;
                     _this.rightView.router.back({
                         url: history[0],
@@ -941,7 +953,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-message-to", function (e) {
-                var actid = Editor.getMeId(e.target);
+                var actid = _this.getMeId(e.target);
                 var id = _this.gdata.addMessageTo(actid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/message-to.html?id=' + id + '" data-view=".view-right" class="item-link">'
@@ -959,7 +971,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-message-to", function (e) {
                 app.confirm("Are you sure?", "Delete Message", function () {
-                    _this.gdata.deleteMessageTo(Editor.getMeId(e.target));
+                    _this.gdata.deleteMessageTo(_this.getMeId(e.target));
                     var history = _this.rightView.history;
                     _this.rightView.router.back({
                         url: history[0],
@@ -970,7 +982,7 @@ var Editor = (function () {
                 });
             });
             $(document).on("click", "#ted-add-message-from", function (e) {
-                var actid = Editor.getMeId(e.target);
+                var actid = _this.getMeId(e.target);
                 var id = _this.gdata.addMessageFrom(actid);
                 var li = '<li class="ted-selected">'
                     + '<a href="page/message-from.html?id=' + id + '" data-view=".view-right" class="item-link">'
@@ -988,7 +1000,7 @@ var Editor = (function () {
             });
             $(document).on("click", "#ted-delete-message-from", function (e) {
                 app.confirm("Are you sure?", "Delete Message", function () {
-                    _this.gdata.deleteMessageTo(Editor.getMeId(e.target));
+                    _this.gdata.deleteMessageTo(_this.getMeId(e.target));
                     var history = _this.rightView.history;
                     _this.rightView.router.back({
                         url: history[0],
@@ -1022,69 +1034,72 @@ var Editor = (function () {
                 }
             });
             $(document).on("change", "#ted-situation-name", function (e) {
-                _this.gdata.saveSituationName(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveSituationName(e.target.value, _this.getMeId(e.target));
                 $("#ted-situations li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-situation-when", function (e) {
-                _this.gdata.saveSituationWhen(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveSituationWhen(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-situation-tags", function (e) {
-                _this.gdata.saveSituationTags(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveSituationTags(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-scene-name", function (e) {
-                _this.gdata.saveSceneName(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveSceneName(e.target.value, _this.getMeId(e.target));
                 $("#ted-scenes li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-scene-desc", function (e) {
-                _this.gdata.saveSceneDesc(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveSceneDesc(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-player-name", function (e) {
-                _this.gdata.saveActorName(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActorName(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-player-desc", function (e) {
-                _this.gdata.saveActorDesc(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActorDesc(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-actor-name", function (e) {
-                _this.gdata.saveActorName(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActorName(e.target.value, _this.getMeId(e.target));
                 $("#ted-actors li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-actor-desc", function (e) {
-                _this.gdata.saveActorDesc(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActorDesc(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-moment-when", function (e) {
-                _this.gdata.saveMomentWhen(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMomentWhen(e.target.value, _this.getMeId(e.target));
                 $("#ted-moments li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-moment-text", function (e) {
-                _this.gdata.saveMomentText(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMomentText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-action-name", function (e) {
-                _this.gdata.saveActionName(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActionName(e.target.value, _this.getMeId(e.target));
                 $("#ted-actions li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-action-when", function (e) {
-                _this.gdata.saveActionWhen(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActionWhen(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-action-text", function (e) {
-                _this.gdata.saveActionText(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveActionText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-message-to-name", function (e) {
-                _this.gdata.saveMessageToName(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMessageToName(e.target.value, _this.getMeId(e.target));
                 $("#ted-messages-to li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-message-to-when", function (e) {
-                _this.gdata.saveMessageToWhen(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMessageToWhen(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-message-to-text", function (e) {
-                _this.gdata.saveMessageToText(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMessageToText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-message-from-when", function (e) {
-                _this.gdata.saveMessageFromWhen(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMessageFromWhen(e.target.value, _this.getMeId(e.target));
                 $("#ted-messages-from li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-message-from-text", function (e) {
-                _this.gdata.saveMessageFromText(e.target.value, Editor.getMeId(e.target));
+                _this.gdata.saveMessageFromText(e.target.value, _this.getMeId(e.target));
             });
+        };
+        this.getMeId = function (target) {
+            return parseInt(target.closest("div.page").getAttribute("data-ted-meid"));
         };
         this.gdata = new GameData();
         this.$ = Dom7;
@@ -1098,6 +1113,7 @@ var Editor = (function () {
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
         gameinfo.innerHTML = template(data);
+        window.EditorInstance = this;
     }
     Editor.prototype.preprocess = function (content, url, next) {
         var gdata = this.gdata;
@@ -1226,8 +1242,43 @@ var Editor = (function () {
         return (content);
     };
     ;
-    Editor.getMeId = function (target) {
-        return parseInt(target.closest("div.page").getAttribute("data-ted-meid"));
+    Editor.prototype.gotoMoment = function (moment) {
+        if (moment.kind == Kind.Moment || moment.kind == Kind.Action) {
+            var scenes = this.gdata.scenes;
+            var scene = this.gdata.getScene(scenes, moment.parentid);
+            var sits = this.gdata.situations;
+            var sit = this.gdata.getSituation(sits, scene.sitid);
+            var rightUrl = null;
+            if (moment.kind == Kind.Moment)
+                rightUrl = "page/moment.html?id=" + moment.id;
+            else
+                rightUrl = "page/action.html?id=" + moment.id;
+            var centerUrl = "page/scene.html?id=" + moment.parentid;
+            var leftUrl = "page/situation.html?id=" + sit.id;
+            this.rightView.router.load({ url: rightUrl, animatePages: false, ignoreCache: true, query: { direct: true } });
+            this.centerView.router.load({ url: centerUrl + "&mid=" + moment.id, animatePages: false, ignoreCache: true, query: { direct: true, select: rightUrl } });
+            this.leftView.router.load({ url: leftUrl + "&mpid=" + moment.parentid, animatePages: false, ignoreCache: true, query: { direct: true, select: centerUrl } });
+        }
+        else {
+            var acts = this.gdata.actors;
+            var actor = this.gdata.getActor(acts, moment.parentid);
+            var sits = this.gdata.situations;
+            var sit = this.gdata.getSituation(sits, actor.sitid);
+            var rightUrl = null;
+            if (moment.kind == Kind.MessageTo)
+                rightUrl = "page/message-to.html?id=" + moment.id;
+            else
+                rightUrl = "page/message-from.html?id=" + moment.id;
+            var centerUrl = null;
+            if (actor.id == sit.aid)
+                centerUrl = "page/player.html?id=" + moment.parentid;
+            else
+                centerUrl = "page/actor.html?id=" + moment.parentid;
+            var leftUrl = "page/situation.html?id=" + sit.id;
+            this.rightView.router.load({ url: rightUrl, animatePages: false, ignoreCache: true, query: { direct: true } });
+            this.centerView.router.load({ url: centerUrl + "&mid=" + moment.id, animatePages: false, ignoreCache: true, query: { direct: true, select: rightUrl } });
+            this.leftView.router.load({ url: leftUrl + "&mpid=" + moment.parentid, animatePages: false, ignoreCache: true, query: { direct: true, select: centerUrl } });
+        }
     };
     return Editor;
 }());
@@ -1247,6 +1298,7 @@ var OpAction;
 (function (OpAction) {
     OpAction[OpAction["SHOWING_CHOICES"] = 0] = "SHOWING_CHOICES";
     OpAction[OpAction["GAME_START"] = 1] = "GAME_START";
+    OpAction[OpAction["SHOWING_MOMENT"] = 2] = "SHOWING_MOMENT";
 })(OpAction || (OpAction = {}));
 var CKind;
 (function (CKind) {
@@ -1510,6 +1562,7 @@ var Game = (function () {
                 ui.initScene(_this.parseScene(_this.currentScene));
                 ui.clearBlurb();
                 ui.onBlurbTap(Op.BLURB);
+                _this.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
                 setTimeout(function () { _this.update(Op.BLURB); }, 0);
             }
             else if (op == Op.BLURB) {
@@ -1989,6 +2042,7 @@ var Game = (function () {
         else {
             this.update(Op.MENU_BOOT);
         }
+        window.GameInstance = this;
     }
     return Game;
 }());
@@ -2052,6 +2106,11 @@ var Tide = (function () {
                 var table = document.querySelector("div.debug-content table");
                 for (var i = table.rows.length - 1; i >= 0; i--)
                     table.deleteRow(i);
+            }
+            else if (op == OpAction.SHOWING_MOMENT) {
+                var iframe = document.querySelector("div.ide-editor iframe");
+                var editor = iframe.contentWindow.EditorInstance;
+                editor.gotoMoment(param);
             }
         };
         var ied = document.querySelector("div.ide-editor");

@@ -36,5 +36,6 @@ interface ISceneData {
 
 enum OpAction {
     SHOWING_CHOICES,
-    GAME_START
+    GAME_START,
+    SHOWING_MOMENT
 }
