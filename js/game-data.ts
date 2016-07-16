@@ -13,7 +13,8 @@ enum AKind {
 interface IGame {
     id: number
     name: string
-    startsid: number
+    initialstate: string
+    desc: string
 }
 
 interface ISituation {
@@ -84,7 +85,7 @@ class GameData {
         var acts = this.actors;
         var moms = this.moments;
         var gdata = <IGameData> { 
-            game: game || <IGame>{id:0, name: null, startsid:0}, 
+            game: game || <IGame>{ id:0, name: null, initialstate: null, desc: null }, 
             situations: sits,
             scenes: scns,
             actors: acts,
@@ -117,16 +118,16 @@ class GameData {
         this.game = game;
     }
 
-    saveGameStartSituation = (text: string) => {
+    saveGameInitialState = (text: string) => {
         var game = this.game;
-        var sits = this.situations;
-        for (var sit of sits) {
-            if (sit.name == text) {
-                game.startsid = sit.id;
-                this.game = game;
-                return;
-            }
-        }
+        game.initialstate = text;
+        this.game = game;
+    }
+
+    saveGameDesc = (text: string) => {
+        var game = this.game;
+        game.desc = text;
+        this.game = game;
     }
 
 //

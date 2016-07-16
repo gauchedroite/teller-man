@@ -26,7 +26,8 @@ enum Op {
 
 interface IOptions {
     skipFileLoad: boolean,
-    skipMenu: boolean
+    skipMenu: boolean,
+    syncEditor: boolean
 }
 
 interface ISceneData {

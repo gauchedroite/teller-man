@@ -11,7 +11,7 @@ class Tide {
         var gdata = new GameData();
         var options = gdata.options;
         if (options == undefined) {
-            options = <IOptions> { skipFileLoad: false };
+            options = <IOptions> { skipFileLoad: false, syncEditor: true };
             gdata.options = options;
         }
 
@@ -29,9 +29,17 @@ class Tide {
             gdata.options = options;
         });
 
+        document.getElementById("ide-sync").addEventListener("click", (e) => {
+            var checked = (<any>e.target).checked;
+            var options = gdata.options;
+            options.syncEditor = checked;
+            gdata.options = options;
+        });
+
         (<any>window).onAction = this.action;
 
         (<any>document.getElementById("ide-gamefile")).checked = options.skipFileLoad;
+        (<any>document.getElementById("ide-sync")).checked = options.syncEditor;
 
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");
@@ -101,9 +109,11 @@ class Tide {
                 table.deleteRow(i);
         }
         else if (op == OpAction.SHOWING_MOMENT) {
-            var iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
-            var editor = <Editor>(<any>iframe.contentWindow).EditorInstance;
-            editor.gotoMoment(<IMoment>param);
+            if ((<any>document.getElementById("ide-sync")).checked) {
+                var iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
+                var editor = <Editor>(<any>iframe.contentWindow).EditorInstance;
+                editor.gotoMoment(<IMoment>param);
+            }
         }
     };
 }

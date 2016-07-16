@@ -20,7 +20,7 @@ var GameData = (function () {
             var acts = _this.actors;
             var moms = _this.moments;
             var gdata = {
-                game: game || { id: 0, name: null, startsid: 0 },
+                game: game || { id: 0, name: null, initialstate: null, desc: null },
                 situations: sits,
                 scenes: scns,
                 actors: acts,
@@ -50,17 +50,15 @@ var GameData = (function () {
             game.name = name;
             _this.game = game;
         };
-        this.saveGameStartSituation = function (text) {
+        this.saveGameInitialState = function (text) {
             var game = _this.game;
-            var sits = _this.situations;
-            for (var _i = 0, sits_1 = sits; _i < sits_1.length; _i++) {
-                var sit = sits_1[_i];
-                if (sit.name == text) {
-                    game.startsid = sit.id;
-                    _this.game = game;
-                    return;
-                }
-            }
+            game.initialstate = text;
+            _this.game = game;
+        };
+        this.saveGameDesc = function (text) {
+            var game = _this.game;
+            game.desc = text;
+            _this.game = game;
         };
         //
         // situations
@@ -68,8 +66,8 @@ var GameData = (function () {
         this.addSituation = function (gameid) {
             var id = -1;
             var sits = _this.situations;
-            for (var _i = 0, sits_2 = sits; _i < sits_2.length; _i++) {
-                var sit = sits_2[_i];
+            for (var _i = 0, sits_1 = sits; _i < sits_1.length; _i++) {
+                var sit = sits_1[_i];
                 if (sit.id > id)
                     id = sit.id;
             }
@@ -172,8 +170,8 @@ var GameData = (function () {
             _this.scenes = scns;
             //
             var sits = _this.situations;
-            for (var _b = 0, sits_3 = sits; _b < sits_3.length; _b++) {
-                var sit = sits_3[_b];
+            for (var _b = 0, sits_2 = sits; _b < sits_2.length; _b++) {
+                var sit = sits_2[_b];
                 for (var i = 0; i < sit.sids.length; i++) {
                     if (sit.sids[i] == id) {
                         sit.sids.splice(i, 1);
@@ -256,8 +254,8 @@ var GameData = (function () {
             _this.actors = acts;
             //
             var sits = _this.situations;
-            for (var _b = 0, sits_4 = sits; _b < sits_4.length; _b++) {
-                var sit = sits_4[_b];
+            for (var _b = 0, sits_3 = sits; _b < sits_3.length; _b++) {
+                var sit = sits_3[_b];
                 for (var i = 0; i < sit.aids.length; i++) {
                     if (sit.aids[i] == id) {
                         sit.aids.splice(i, 1);
@@ -825,6 +823,10 @@ var Editor = (function () {
                 $ul.append(li);
                 leftView.router.load({ url: "page/situation.html?id=" + id });
             });
+            $(document).on("click", "#ted-back-situations", function (e) {
+                //if the editor is synced with the game this page might not have history, so go to home page 
+                leftView.router.back({ url: leftView.history[0], force: true });
+            });
             $(document).on("click", "#ted-delete-situation", function (e) {
                 app.confirm("Are you sure?", "Delete Situation", function () {
                     _this.gdata.deleteSituation(_this.getMeId(e.target));
@@ -852,6 +854,10 @@ var Editor = (function () {
                 $ul.find("li").removeClass("ted-selected");
                 $ul.append(li);
                 centerView.router.load({ url: "page/scene.html?id=" + id });
+            });
+            $(document).on("click", "#ted-back-situation", function (e) {
+                //if the editor is synced with the game we will have a lot of pages in the history, so bypass them
+                leftView.router.back({ url: "page/situation-index.html", force: true });
             });
             $(document).on("click", "#ted-delete-scene", function (e) {
                 app.confirm("Are you sure?", "Delete Scene", function () {
@@ -1013,25 +1019,11 @@ var Editor = (function () {
             $(document).on("change", "#ted-game-name", function (e) {
                 _this.gdata.saveGameName(e.target.value);
             });
-            $(document).on("click", "input[name^='radio-']", function (e) {
-                var $ssp = $(e.target).closest("div.smart-select-popup");
-                if ($ssp.length == 0)
-                    return;
-                //
-                var $dp = $ssp.find("div[data-page]");
-                var $dsn = $dp.find("div[data-select-name]");
-                var $pc = $dp.find("div.page-content input:checked");
-                var $it = $pc.next("div.item-inner").find("div.item-title");
-                //
-                var name = $dsn[0].getAttribute("data-select-name");
-                if (name == "situations") {
-                    _this.gdata.saveGameStartSituation($it.text());
-                }
-                else if (name.startsWith("actors-for-")) {
-                    var toid = parseInt($pc.val());
-                    var meid = parseInt(name.substr("actors-for-".length));
-                    _this.gdata.saveMessageToActorTo(toid, meid);
-                }
+            $(document).on("change", "#ted-game-initialstate", function (e) {
+                _this.gdata.saveGameInitialState(e.target.value);
+            });
+            $(document).on("change", "#ted-game-desc", function (e) {
+                _this.gdata.saveGameDesc(e.target.value);
             });
             $(document).on("change", "#ted-situation-name", function (e) {
                 _this.gdata.saveSituationName(e.target.value, _this.getMeId(e.target));
@@ -1087,6 +1079,23 @@ var Editor = (function () {
             $(document).on("change", "#ted-message-to-when", function (e) {
                 _this.gdata.saveMessageToWhen(e.target.value, _this.getMeId(e.target));
             });
+            $(document).on("click", "input[name^='radio-']", function (e) {
+                var $ssp = $(e.target).closest("div.smart-select-popup");
+                if ($ssp.length == 0)
+                    return;
+                //
+                var $dp = $ssp.find("div[data-page]");
+                var $dsn = $dp.find("div[data-select-name]");
+                var $pc = $dp.find("div.page-content input:checked");
+                var $it = $pc.next("div.item-inner").find("div.item-title");
+                //
+                var name = $dsn[0].getAttribute("data-select-name");
+                if (name.startsWith("actors-for-")) {
+                    var toid = parseInt($pc.val());
+                    var meid = parseInt(name.substr("actors-for-".length));
+                    _this.gdata.saveMessageToActorTo(toid, meid);
+                }
+            });
             $(document).on("change", "#ted-message-to-text", function (e) {
                 _this.gdata.saveMessageToText(e.target.value, _this.getMeId(e.target));
             });
@@ -1105,10 +1114,6 @@ var Editor = (function () {
         this.$ = Dom7;
         var $ = Dom7;
         var data = this.gdata.loadGame();
-        for (var _i = 0, _a = data.situations; _i < _a.length; _i++) {
-            var sit = _a[_i];
-            sit.selected = (sit.id == data.game.startsid ? "selected" : "");
-        }
         var gameinfo = document.querySelector("div.pages");
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
@@ -1122,10 +1127,6 @@ var Editor = (function () {
                 url: "http://",
                 getData: function (id) {
                     var data = gdata.loadGame();
-                    for (var _i = 0, _a = data.situations; _i < _a.length; _i++) {
-                        var sit = _a[_i];
-                        sit.selected = (sit.id == data.game.startsid ? "selected" : null);
-                    }
                     return data;
                 }
             },
@@ -1308,7 +1309,7 @@ var CKind;
     CKind[CKind["messageFrom"] = 3] = "messageFrom";
 })(CKind || (CKind = {}));
 var UI = (function () {
-    function UI(update, opmenu, skipMenu) {
+    function UI(update, opmenu, skipMenu, imageName) {
         var _this = this;
         this.update = update;
         this.onBlurbTap = function (op) {
@@ -1523,7 +1524,7 @@ var UI = (function () {
                 FastClick.attach(document.body);
             }, false);
         }
-        var assetName = "dist/assets/menu.jpg";
+        var assetName = "dist/assets/" + imageName;
         var image = new Image();
         image.onload = function () {
             var menu = document.querySelector(".menu");
@@ -1553,7 +1554,7 @@ var Game = (function () {
                     ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
                     return null;
                 }
-                _this.chunks = _this.parseAndExecuteMoment(_this.currentMoment);
+                _this.chunks = _this.parseMoment(_this.currentMoment);
                 _this.cix = 0;
                 var kind = _this.currentMoment.kind;
                 if (kind == Kind.Moment || kind == Kind.Action) {
@@ -1576,6 +1577,7 @@ var Game = (function () {
                         delete state.intro;
                         _this.gdata.state = state;
                     }
+                    _this.executeMoment(_this.currentMoment.id);
                     _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                     var moments = _this.getAllPossibleMoments();
                     var messages = _this.getAllPossibleMessages();
@@ -1652,7 +1654,9 @@ var Game = (function () {
             }
         };
         this.newGame = function () {
-            _this.gdata.state = { intro: true }; //clear and init state
+            var state = { intro: true };
+            state[_this.gdata.game.initialstate] = true;
+            _this.gdata.state = state; //clear and init state
             _this.gdata.history = []; //init the list of showned moments
             _this.gdata.continueState = null;
             var options = _this.gdata.options;
@@ -1677,20 +1681,27 @@ var Game = (function () {
         };
         this.getAllPossibleMoments = function () {
             var data = _this.data;
-            // todo - filter situations
-            var situation = data.situations[0];
+            var sits = data.situations;
+            var situation;
+            for (var _i = 0, sits_4 = sits; _i < sits_4.length; _i++) {
+                var sit = sits_4[_i];
+                if (_this.isValidSituation(sit)) {
+                    situation = sit;
+                    break;
+                }
+            }
             var sids = Array();
             //
-            for (var _i = 0, _a = data.scenes; _i < _a.length; _i++) {
-                var scene = _a[_i];
+            for (var _a = 0, _b = data.scenes; _a < _b.length; _a++) {
+                var scene = _b[_a];
                 if (scene.sitid == situation.id) {
                     sids.push(scene.id);
                 }
             }
             var moments = Array();
             //
-            for (var _b = 0, _c = data.moments; _b < _c.length; _b++) {
-                var moment = _c[_b];
+            for (var _c = 0, _d = data.moments; _c < _d.length; _c++) {
+                var moment = _d[_c];
                 if (moment.kind == Kind.Moment || moment.kind == Kind.Action) {
                     if (sids.indexOf(moment.parentid) != -1) {
                         if (_this.isValidMoment(moment)) {
@@ -1704,20 +1715,27 @@ var Game = (function () {
         };
         this.getAllPossibleMessages = function () {
             var data = _this.data;
-            // todo - filter situations
-            var situation = data.situations[0];
+            var sits = data.situations;
+            var situation;
+            for (var _i = 0, sits_5 = sits; _i < sits_5.length; _i++) {
+                var sit = sits_5[_i];
+                if (_this.isValidSituation(sit)) {
+                    situation = sit;
+                    break;
+                }
+            }
             var aids = Array();
             //
-            for (var _i = 0, _a = data.actors; _i < _a.length; _i++) {
-                var actor = _a[_i];
+            for (var _a = 0, _b = data.actors; _a < _b.length; _a++) {
+                var actor = _b[_a];
                 if (actor.sitid == situation.id) {
                     aids.push(actor.id);
                 }
             }
             var messages = Array();
             //
-            for (var _b = 0, _c = data.moments; _b < _c.length; _b++) {
-                var moment = _c[_b];
+            for (var _c = 0, _d = data.moments; _c < _d.length; _c++) {
+                var moment = _d[_c];
                 if (moment.kind == Kind.MessageTo || moment.kind == Kind.MessageFrom) {
                     if (aids.indexOf(moment.parentid) != -1) {
                         if (_this.isValidMoment(moment)) {
@@ -1844,6 +1862,15 @@ var Game = (function () {
             if (history.indexOf(moment.id) != -1)
                 return false;
             //
+            return _this.isValidCondition(state, when);
+        };
+        this.isValidSituation = function (situation) {
+            var when = situation.when || "";
+            if (when == "")
+                return false;
+            return _this.isValidCondition(_this.gdata.state, when);
+        };
+        this.isValidCondition = function (state, when) {
             var ok = true;
             var conds = when.split(",");
             for (var _i = 0, conds_1 = conds; _i < conds_1.length; _i++) {
@@ -1896,12 +1923,11 @@ var Game = (function () {
                 }
             }
         };
-        this.parseAndExecuteMoment = function (moment) {
+        this.parseMoment = function (moment) {
             var parsed = Array();
             var current = {};
             var fsm = "";
             var inComment = false;
-            var canRepeat = false;
             if (moment.text == null)
                 return parsed;
             var parts = moment.text.split("\n");
@@ -1932,13 +1958,60 @@ var Game = (function () {
                     else if (part.startsWith("(")) {
                         current.parenthetical = part;
                     }
+                    else if (part.startsWith(".")) {
+                    }
+                    else {
+                        if (fsm == "DIALOG") {
+                            var lines = part.split("/");
+                            var my = current;
+                            my.lines = Array();
+                            for (var _a = 0, lines_1 = lines; _a < lines_1.length; _a++) {
+                                var line = lines_1[_a];
+                                my.lines.push(line);
+                            }
+                            parsed.push(current);
+                            fsm = "";
+                        }
+                        else {
+                            var lines = part.split("/");
+                            var my = {};
+                            my.lines = Array();
+                            for (var _b = 0, lines_2 = lines; _b < lines_2.length; _b++) {
+                                var line = lines_2[_b];
+                                my.lines.push(line);
+                            }
+                            parsed.push(my);
+                        }
+                    }
+                }
+            }
+            return parsed;
+        };
+        this.executeMoment = function (id) {
+            var moment = _this.gdata.getMoment(_this.gdata.moments, id); //we might have edited the moment
+            var current = {};
+            var fsm = "";
+            var inComment = false;
+            var canRepeat = false;
+            var parts = moment.text.split("\n");
+            for (var _i = 0, parts_2 = parts; _i < parts_2.length; _i++) {
+                var part = parts_2[_i];
+                if (part.length > 0) {
+                    if (part.startsWith("/*")) {
+                        inComment = true;
+                    }
+                    else if (inComment) {
+                        inComment = (part.startsWith("*/") == false);
+                    }
+                    else if (part.startsWith("//")) {
+                    }
                     else if (part.startsWith(".r ")) {
                         var rems = part.substring(2).split(",");
                         for (var _a = 0, rems_1 = rems; _a < rems_1.length; _a++) {
                             var rem = rems_1[_a];
-                            var parts_2 = rem.replace("=", ":").split(":");
-                            var name_2 = parts_2[0].trim();
-                            var value = (parts_2.length == 2 ? parts_2[1].trim() : "true");
+                            var parts_3 = rem.replace("=", ":").split(":");
+                            var name_2 = parts_3[0].trim();
+                            var value = (parts_3.length == 2 ? parts_3[1].trim() : "true");
                             if (value == "true" || value == "false")
                                 value = (value == "true");
                             var state = _this.gdata.state;
@@ -1960,29 +2033,6 @@ var Game = (function () {
                                 _this.forbiddenSceneId = _this.getSceneOf(moment).id;
                         }
                     }
-                    else {
-                        if (fsm == "DIALOG") {
-                            var lines = part.split("/");
-                            var my = current;
-                            my.lines = Array();
-                            for (var _c = 0, lines_1 = lines; _c < lines_1.length; _c++) {
-                                var line = lines_1[_c];
-                                my.lines.push(line);
-                            }
-                            parsed.push(current);
-                            fsm = "";
-                        }
-                        else {
-                            var lines = part.split("/");
-                            var my = {};
-                            my.lines = Array();
-                            for (var _d = 0, lines_2 = lines; _d < lines_2.length; _d++) {
-                                var line = lines_2[_d];
-                                my.lines.push(line);
-                            }
-                            parsed.push(my);
-                        }
-                    }
                 }
             }
             if (canRepeat == false) {
@@ -1990,7 +2040,6 @@ var Game = (function () {
                 history_1.push(moment.id);
                 _this.gdata.history = history_1;
             }
-            return parsed;
         };
         this.parseScene = function (scene) {
             var data = {};
@@ -2033,7 +2082,7 @@ var Game = (function () {
         this.gdata = new GameData();
         var options = this.gdata.options;
         var skipMenu = (options != undefined && options.skipMenu);
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu);
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc);
         if (skipMenu) {
             options.skipMenu = false;
             this.gdata.options = options;
@@ -2108,9 +2157,11 @@ var Tide = (function () {
                     table.deleteRow(i);
             }
             else if (op == OpAction.SHOWING_MOMENT) {
-                var iframe = document.querySelector("div.ide-editor iframe");
-                var editor = iframe.contentWindow.EditorInstance;
-                editor.gotoMoment(param);
+                if (document.getElementById("ide-sync").checked) {
+                    var iframe = document.querySelector("div.ide-editor iframe");
+                    var editor = iframe.contentWindow.EditorInstance;
+                    editor.gotoMoment(param);
+                }
             }
         };
         var ied = document.querySelector("div.ide-editor");
@@ -2118,7 +2169,7 @@ var Tide = (function () {
         var gdata = new GameData();
         var options = gdata.options;
         if (options == undefined) {
-            options = { skipFileLoad: false };
+            options = { skipFileLoad: false, syncEditor: true };
             gdata.options = options;
         }
         document.getElementById("ide-play-edit").addEventListener("click", function (e) {
@@ -2133,8 +2184,15 @@ var Tide = (function () {
             options.skipFileLoad = checked;
             gdata.options = options;
         });
+        document.getElementById("ide-sync").addEventListener("click", function (e) {
+            var checked = e.target.checked;
+            var options = gdata.options;
+            options.syncEditor = checked;
+            gdata.options = options;
+        });
         window.onAction = this.action;
         document.getElementById("ide-gamefile").checked = options.skipFileLoad;
+        document.getElementById("ide-sync").checked = options.syncEditor;
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");

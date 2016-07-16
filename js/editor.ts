@@ -20,9 +20,6 @@ class Editor {
         this.$ = Dom7;
         var $ = Dom7;
         var data = this.gdata.loadGame();
-        for (var sit of data.situations) {
-            (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : "");
-        }
         var gameinfo = document.querySelector("div.pages");
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
@@ -38,9 +35,6 @@ class Editor {
                 url: "http://", 
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
-                    for (var sit of data.situations) {
-                        (<any>sit).selected = (sit.id == data.game.startsid ? "selected" : null);
-                    }
                     return data;
                 }
             },
@@ -279,6 +273,11 @@ class Editor {
             leftView.router.load({ url: "page/situation.html?id=" + id });
         });
 
+        $(document).on("click", "#ted-back-situations", (e: any) => {
+            //if the editor is synced with the game this page might not have history, so go to home page 
+            leftView.router.back({ url: leftView.history[0], force: true });
+        });
+
         $(document).on("click", "#ted-delete-situation", (e: Event) => {
             app.confirm("Are you sure?", "Delete Situation", () => {
                 this.gdata.deleteSituation(this.getMeId(e.target));
@@ -307,6 +306,11 @@ class Editor {
             $ul.find("li").removeClass("ted-selected");
             $ul.append(li);
             centerView.router.load({ url: "page/scene.html?id=" + id });
+        });
+
+        $(document).on("click", "#ted-back-situation", (e: any) => {
+            //if the editor is synced with the game we will have a lot of pages in the history, so bypass them
+            leftView.router.back({ url: "page/situation-index.html", force: true });
         });
 
         $(document).on("click", "#ted-delete-scene", (e: Event) => {
@@ -482,23 +486,12 @@ class Editor {
             this.gdata.saveGameName(e.target.value);
         });
 
-        $(document).on("click", "input[name^='radio-']", (e: any) => {
-            var $ssp = $(e.target).closest("div.smart-select-popup");
-            if ($ssp.length == 0) return;
-            //
-            var $dp = $ssp.find("div[data-page]");
-            var $dsn = $dp.find("div[data-select-name]");
-            var $pc = $dp.find("div.page-content input:checked");
-            var $it = $pc.next("div.item-inner").find("div.item-title");
-            //
-            var name = <string>$dsn[0].getAttribute("data-select-name");
-            if (name == "situations") {
-                this.gdata.saveGameStartSituation($it.text());
-            } else if (name.startsWith("actors-for-")) {
-                var toid = parseInt($pc.val());
-                var meid = parseInt(name.substr("actors-for-".length));
-                this.gdata.saveMessageToActorTo(toid, meid);
-            }
+        $(document).on("change", "#ted-game-initialstate", (e: any) => {
+            this.gdata.saveGameInitialState(e.target.value);
+        });
+
+        $(document).on("change", "#ted-game-desc", (e: any) => {
+            this.gdata.saveGameDesc(e.target.value);
         });
 
         $(document).on("change", "#ted-situation-name", (e: any) => {
@@ -569,6 +562,23 @@ class Editor {
 
         $(document).on("change", "#ted-message-to-when", (e: any) => {
             this.gdata.saveMessageToWhen(e.target.value, this.getMeId(e.target));
+        });
+
+        $(document).on("click", "input[name^='radio-']", (e: any) => {
+            var $ssp = $(e.target).closest("div.smart-select-popup");
+            if ($ssp.length == 0) return;
+            //
+            var $dp = $ssp.find("div[data-page]");
+            var $dsn = $dp.find("div[data-select-name]");
+            var $pc = $dp.find("div.page-content input:checked");
+            var $it = $pc.next("div.item-inner").find("div.item-title");
+            //
+            var name = <string>$dsn[0].getAttribute("data-select-name");
+            if (name.startsWith("actors-for-")) {
+                var toid = parseInt($pc.val());
+                var meid = parseInt(name.substr("actors-for-".length));
+                this.gdata.saveMessageToActorTo(toid, meid);
+            }
         });
 
         $(document).on("change", "#ted-message-to-text", (e: any) => {

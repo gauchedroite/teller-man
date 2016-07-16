@@ -71,19 +71,23 @@
                                     </div>
                                 </li>
                                 <li>
-                                    <a href="#" class="item-link smart-select" data-open-in="popup" data-page-title="Situation to start game with" data-searchbar="true" data-searchbar-placeholder="Search">
-                                        <select name="situations">
-                                            {{#each situations}}
-                                            <option value="{{this.id}}" {{this.selected}}>{{this.name}}</option>
-                                            {{/each}}
-                                        </select>
-                                        <div class="item-content">
-                                            <div class="item-inner">
-                                                <div class="item-title">Start with</div>
-                                                <div id="ted-game-start-situation" class="item-after"></div>
+                                    <div class="item-content">
+                                        <div class="item-inner">
+                                            <div class="item-title label">State</div>
+                                            <div class="item-input">
+                                                <input id="ted-game-initialstate" type="text" placeholder="Initial state" value="{{game.initialstate}}">
                                             </div>
                                         </div>
-                                    </a>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="item-content">
+                                        <div class="item-inner">
+                                            <div class="item-input">
+                                                <textarea id="ted-game-desc" style="font-family: monospace; font-size: small;" spellcheck="false" placeholder="details">{{game.desc}}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </li>
                             </ul>
                         </div>

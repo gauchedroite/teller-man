@@ -16,7 +16,7 @@ class UI {
     sections: Array<string>;
     blurbOp: Op;
 
-    constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean) {
+    constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean, imageName: string) {
         document.querySelector(".content").addEventListener("click", (e) => {
             this.update(this.blurbOp);
         });
@@ -43,7 +43,7 @@ class UI {
             }, false);
         }
 
-        var assetName = `dist/assets/menu.jpg`;
+        var assetName = `dist/assets/${imageName}`;
         var image = new Image();
         image.onload = () => {
             var menu = <HTMLDivElement>document.querySelector(".menu");

@@ -15,7 +15,7 @@ class Game {
         let options = this.gdata.options;
         let skipMenu = (options != undefined && options.skipMenu);
 
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu);
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc);
 
         if (skipMenu) {
             options.skipMenu = false;
@@ -41,7 +41,7 @@ class Game {
                 return null;
             }
 
-            this.chunks = this.parseAndExecuteMoment(this.currentMoment);
+            this.chunks = this.parseMoment(this.currentMoment);
             this.cix = 0;
 
             let kind = this.currentMoment.kind; 
@@ -67,6 +67,7 @@ class Game {
                     delete state.intro;
                     this.gdata.state = state;
                 }
+                this.executeMoment(this.currentMoment.id);
                 this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 let moments = this.getAllPossibleMoments();
                 let messages = this.getAllPossibleMessages();
@@ -146,8 +147,10 @@ class Game {
     };
 
     newGame = () => {
-        this.gdata.state = { intro: true };  //clear and init state
-        this.gdata.history = [];             //init the list of showned moments
+        let state = { intro: true};
+        state[this.gdata.game.initialstate] = true;
+        this.gdata.state = state;   //clear and init state
+        this.gdata.history = [];    //init the list of showned moments
         this.gdata.continueState = null;
 
         let options = this.gdata.options;
@@ -176,8 +179,14 @@ class Game {
     getAllPossibleMoments = (): Array<IMoment> => {
         var data = this.data;
 
-        // todo - filter situations
-        let situation = data.situations[0];
+        let sits = data.situations;
+        let situation: ISituation;
+        for (var sit of sits) {
+            if (this.isValidSituation(sit)) {
+                situation = sit;
+                break;
+            }
+        }
 
         var sids = Array<number>();
         //
@@ -205,8 +214,14 @@ class Game {
     getAllPossibleMessages = (): Array<IMoment> => {
         var data = this.data;
 
-        // todo - filter situations
-        let situation = data.situations[0];
+        let sits = data.situations;
+        let situation: ISituation;
+        for (var sit of sits) {
+            if (this.isValidSituation(sit)) {
+                situation = sit;
+                break;
+            }
+        }
 
         var aids = Array<number>();
         //
@@ -346,8 +361,17 @@ class Game {
         if (history.indexOf(moment.id) != -1)
             return false;
         //
-        let ok = true;
+        return this.isValidCondition(state, when);
+    };
 
+    isValidSituation = (situation: ISituation): boolean => {
+        var when = situation.when || "";
+        if (when == "") return false;
+        return this.isValidCondition(this.gdata.state, when);
+    }
+
+    isValidCondition = (state: any, when: string) => {
+        let ok = true;
         let conds = when.split(",");
         for (var cond of conds) {
             let parts = cond.replace("=", ":").split(":");
@@ -365,7 +389,7 @@ class Game {
             if (ok == false) break;
         }
         return ok;
-    };
+    }
 
     getSceneOf = (moment: IMoment): IScene => {
         var scenes = this.data.scenes;
@@ -394,12 +418,11 @@ class Game {
         }
     };
 
-    parseAndExecuteMoment = (moment: IMoment): Array<IMomentData> => {
+    parseMoment = (moment: IMoment): Array<IMomentData> => {
         var parsed = Array<IMomentData>();
         var current = <IMomentData>{};
         var fsm = "";
         var inComment = false
-        var canRepeat = false;
 
         if (moment.text == null)
             return parsed;
@@ -432,29 +455,7 @@ class Game {
                 else if (part.startsWith("(")) {
                     (<IDialog>current).parenthetical = part;
                 }
-                else if (part.startsWith(".r ")) {
-                    let rems = part.substring(2).split(",");
-                    for (var rem of rems) {
-                        let parts = rem.replace("=", ":").split(":");
-                        let name = parts[0].trim();
-                        let value: any = (parts.length == 2 ? parts[1].trim() : "true");
-                        if (value == "true" || value == "false") value = (value == "true");
-
-                        let state = this.gdata.state;
-                        if (value === "undef")
-                            delete state[name];
-                        else
-                            state[name] = value;
-                        this.gdata.state = state;
-                    }
-                }
-                else if (part.startsWith(".f ")) {
-                    let flags = part.substring(2).split(",");
-                    for (var oneflag of flags) {
-                        let flag = oneflag.trim();
-                        if (flag == "can-repeat") canRepeat = true;
-                        if (flag == "must-leave-scene") this.forbiddenSceneId = this.getSceneOf(moment).id;
-                    }
+                else if (part.startsWith(".")) {
                 }
                 else {
                     if (fsm == "DIALOG") {
@@ -481,12 +482,58 @@ class Game {
                 }
             }
         }
+        return parsed;
+    };
+
+    executeMoment = (id: number): void => {
+        var moment = this.gdata.getMoment(this.gdata.moments, id); //we might have edited the moment
+        var current = <IMomentData>{};
+        var fsm = "";
+        var inComment = false
+        var canRepeat = false;
+
+        var parts = moment.text.split("\n");
+        for (var part of parts) {
+            if (part.length > 0) {
+                if (part.startsWith("/*")) {
+                    inComment = true;
+                }
+                else if (inComment) {
+                    inComment = (part.startsWith("*/") == false);
+                }
+                else if (part.startsWith("//")) {
+                }
+                else if (part.startsWith(".r ")) {
+                    let rems = part.substring(2).split(",");
+                    for (var rem of rems) {
+                        let parts = rem.replace("=", ":").split(":");
+                        let name = parts[0].trim();
+                        let value: any = (parts.length == 2 ? parts[1].trim() : "true");
+                        if (value == "true" || value == "false") value = (value == "true");
+
+                        let state = this.gdata.state;
+                        if (value === "undef")
+                            delete state[name];
+                        else
+                            state[name] = value;
+                        this.gdata.state = state;
+                    }
+                }
+                else if (part.startsWith(".f ")) {
+                    let flags = part.substring(2).split(",");
+                    for (var oneflag of flags) {
+                        let flag = oneflag.trim();
+                        if (flag == "can-repeat") canRepeat = true;
+                        if (flag == "must-leave-scene") this.forbiddenSceneId = this.getSceneOf(moment).id;
+                    }
+                }
+            }
+        }
         if (canRepeat == false) {
             let history = this.gdata.history;
             history.push(moment.id);
             this.gdata.history = history;
         }
-        return parsed;
     };
 
     parseScene = (scene: IScene) => {
