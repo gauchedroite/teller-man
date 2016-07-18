@@ -16,7 +16,7 @@ class UI {
     sections: Array<string>;
     blurbOp: Op;
 
-    constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean, imageName: string) {
+    constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean, menuPage: string, ready: () => void) {
         document.querySelector(".content").addEventListener("click", (e) => {
             this.update(this.blurbOp);
         });
@@ -37,27 +37,30 @@ class UI {
             });
         }
 
-        if ('addEventListener' in document) {
-            document.addEventListener('DOMContentLoaded', function() {
+        if ("addEventListener" in document) {
+            document.addEventListener("DOMContentLoaded", function() {
                 FastClick.attach(document.body);
             }, false);
         }
 
-        var assetName = `dist/assets/${imageName}`;
-        var image = new Image();
-        image.onload = () => {
-            var menu = <HTMLDivElement>document.querySelector(".menu");
-            menu.style.backgroundImage = `url(${assetName})`;
-            var preloader = <HTMLDivElement>document.querySelector(".preloader");
-            setTimeout(() => { 
-                preloader.style.opacity = "0";
-                preloader.addEventListener("transitionend", function done() {
-                    preloader.style.display = "none";
-                    preloader.removeEventListener("transitionend", done);
-                });
-            }, 750);
-        };
-        image.src = assetName;
+        localStorage.setItem("ding", null);
+        window.addEventListener("storage", function done(e: StorageEvent) {
+            if (e.key == "ding" && (JSON.parse(e.newValue).menu == "ready")) {
+                window.removeEventListener("storage", done);
+                var preloader = <HTMLDivElement>document.querySelector(".preloader");
+                setTimeout(() => { 
+                    preloader.style.opacity = "0";
+                    preloader.addEventListener("transitionend", function done() {
+                        preloader.style.display = "none";
+                        preloader.removeEventListener("transitionend", done);
+                    });
+                }, 750);
+                setTimeout(ready, 0);
+            }
+        });
+
+        var menuUrl = `dist/game/${menuPage}`;
+        document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
 
     onBlurbTap = (op: Op) => {
@@ -160,7 +163,7 @@ class UI {
         text.style.marginBottom = "0";
     };
 
-    initScene = (data: ISceneData) => {
+    __obsolete__initScene = (data: ISceneData) => {
         var title = document.querySelector(".title span");
         title.textContent = data.title;
 
@@ -179,6 +182,30 @@ class UI {
                 front.style.opacity = "1";
             };
             setTimeout(() => { image.src = assetName; }, 200);
+        }
+    };
+
+    initScene = (data: ISceneData) => {
+        var title = document.querySelector(".title span");
+        title.textContent = data.title;
+
+        var inner = <HTMLDivElement>document.querySelector(".graphics-inner");
+        var zero = <HTMLIFrameElement>inner.children[0].firstElementChild;
+        var one = <HTMLIFrameElement>inner.children[1].firstElementChild;
+        var back = (zero.style.zIndex == "0" ? zero : one); 
+        var front = (zero.style.zIndex == "0" ? one : zero); 
+
+        var sceneUrl = `dist/game/${data.image}`;
+        if (front.src.indexOf(sceneUrl) == -1) {
+            localStorage.setItem("ding", null);
+            window.addEventListener("storage", function done(e: StorageEvent) {
+                if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
+                    window.removeEventListener("storage", done);
+                    back.style.zIndex = "1";
+                    front.style.zIndex = "0";
+                }
+            });
+            back.setAttribute("src", sceneUrl);
         }
     };
 
@@ -245,32 +272,20 @@ class UI {
         let menu = <HTMLElement>document.querySelector(".menu");
         menu.style.right = "0";
 
-        let me = this;
-        if (opContinue != undefined) {
-            let continu = menu.querySelector("button#continue");
-            continu.removeAttribute("disabled");
-            continu.addEventListener("click", function click(e) {
-                continu.removeEventListener("click", click);
-                menu.style.right = "100%";
-                setTimeout(function() { 
-                    me.update(opContinue); 
-                }, 250);
-            });
-        }
-        else {
-            let continu = menu.querySelector("button#continue");
-            continu.setAttribute("disabled", "disabled");
-        }
+        var options: any = { continue: "enabled" };
+        if (opContinue != undefined) options.continue = "disabled";
 
-        let newgame = menu.querySelector("button#new-game");
-        newgame.addEventListener("click", function click(e) {
-            newgame.removeEventListener("click", click);
-            (<HTMLDivElement>document.querySelector(".graphics")).style.display = "none";
-            (<HTMLDivElement>document.querySelector(".shell")).style.display = "none";
-            menu.style.opacity = "0";
-            setTimeout(function() { 
-                me.update(opNewGame); 
-            }, 500);
+        var iframe = <HTMLIFrameElement>document.querySelector("div.menu iframe");
+        var configureMenu = (<any>iframe.contentWindow).configureMenu;
+
+        configureMenu(options, (name: string) => {
+            if (name == "continue") {
+                menu.style.right = "100%";
+                setTimeout(() => {  this.update(opContinue); }, 250);
+            }
+            else {
+                setTimeout(() => { this.update(opNewGame); }, 500);
+            }
         });
     }
 }

@@ -15,18 +15,18 @@ class Game {
         let options = this.gdata.options;
         let skipMenu = (options != undefined && options.skipMenu);
 
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc);
-
-        if (skipMenu) {
-            options.skipMenu = false;
-            this.gdata.options = options;
-            this.update(Op.WAITING);
-        }
-        else {
-            this.update(Op.MENU_BOOT);
-        }
-
         (<any>window).GameInstance = this;
+
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc, () => {
+            if (skipMenu) {
+                options.skipMenu = false;
+                this.gdata.options = options;
+                this.update(Op.WAITING);
+            }
+            else {
+                this.update(Op.MENU_BOOT);
+            }
+        });
     }
 
     update = (op: Op, param?: any): void => {
@@ -98,7 +98,7 @@ class Game {
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
-                this.getDataFile("dist/assets/app.json", (text: any) => {
+                this.getDataFile("dist/game/app.json", (text: any) => {
                     this.gdata.saveData(text);
                     this.restoreContinueState();
                     setTimeout(() => { this.update(Op.MOMENT); }, 0);
@@ -161,7 +161,7 @@ class Game {
         this.raiseActionEvent(OpAction.GAME_START);
 
         if (options.skipFileLoad == false) {
-            this.getDataFile("dist/assets/app.json", (text: any) => {
+            this.getDataFile("dist/game/app.json", (text: any) => {
                 this.gdata.saveData(text);
                 setTimeout(function() { location.href = "index.html"; }, 0);
             });

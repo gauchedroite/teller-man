@@ -1309,7 +1309,7 @@ var CKind;
     CKind[CKind["messageFrom"] = 3] = "messageFrom";
 })(CKind || (CKind = {}));
 var UI = (function () {
-    function UI(update, opmenu, skipMenu, imageName) {
+    function UI(update, opmenu, skipMenu, menuPage, ready) {
         var _this = this;
         this.update = update;
         this.onBlurbTap = function (op) {
@@ -1398,7 +1398,7 @@ var UI = (function () {
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
         };
-        this.initScene = function (data) {
+        this.__obsolete__initScene = function (data) {
             var title = document.querySelector(".title span");
             title.textContent = data.title;
             var back = document.querySelector(".graphics .back");
@@ -1415,6 +1415,27 @@ var UI = (function () {
                     front.style.opacity = "1";
                 };
                 setTimeout(function () { image.src = assetName; }, 200);
+            }
+        };
+        this.initScene = function (data) {
+            var title = document.querySelector(".title span");
+            title.textContent = data.title;
+            var inner = document.querySelector(".graphics-inner");
+            var zero = inner.children[0].firstElementChild;
+            var one = inner.children[1].firstElementChild;
+            var back = (zero.style.zIndex == "0" ? zero : one);
+            var front = (zero.style.zIndex == "0" ? one : zero);
+            var sceneUrl = "dist/game/" + data.image;
+            if (front.src.indexOf(sceneUrl) == -1) {
+                localStorage.setItem("ding", null);
+                window.addEventListener("storage", function done(e) {
+                    if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
+                        window.removeEventListener("storage", done);
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                    }
+                });
+                back.setAttribute("src", sceneUrl);
             }
         };
         this.addBlurb = function (chunk) {
@@ -1475,31 +1496,19 @@ var UI = (function () {
         this.showMenu = function (opNewGame, opContinue) {
             var menu = document.querySelector(".menu");
             menu.style.right = "0";
-            var me = _this;
-            if (opContinue != undefined) {
-                var continu_1 = menu.querySelector("button#continue");
-                continu_1.removeAttribute("disabled");
-                continu_1.addEventListener("click", function click(e) {
-                    continu_1.removeEventListener("click", click);
+            var options = { continue: "enabled" };
+            if (opContinue != undefined)
+                options.continue = "disabled";
+            var iframe = document.querySelector("div.menu iframe");
+            var configureMenu = iframe.contentWindow.configureMenu;
+            configureMenu(options, function (name) {
+                if (name == "continue") {
                     menu.style.right = "100%";
-                    setTimeout(function () {
-                        me.update(opContinue);
-                    }, 250);
-                });
-            }
-            else {
-                var continu = menu.querySelector("button#continue");
-                continu.setAttribute("disabled", "disabled");
-            }
-            var newgame = menu.querySelector("button#new-game");
-            newgame.addEventListener("click", function click(e) {
-                newgame.removeEventListener("click", click);
-                document.querySelector(".graphics").style.display = "none";
-                document.querySelector(".shell").style.display = "none";
-                menu.style.opacity = "0";
-                setTimeout(function () {
-                    me.update(opNewGame);
-                }, 500);
+                    setTimeout(function () { _this.update(opContinue); }, 250);
+                }
+                else {
+                    setTimeout(function () { _this.update(opNewGame); }, 500);
+                }
             });
         };
         document.querySelector(".content").addEventListener("click", function (e) {
@@ -1519,26 +1528,28 @@ var UI = (function () {
                     shell.classList.add("retracted");
             });
         }
-        if ('addEventListener' in document) {
-            document.addEventListener('DOMContentLoaded', function () {
+        if ("addEventListener" in document) {
+            document.addEventListener("DOMContentLoaded", function () {
                 FastClick.attach(document.body);
             }, false);
         }
-        var assetName = "dist/assets/" + imageName;
-        var image = new Image();
-        image.onload = function () {
-            var menu = document.querySelector(".menu");
-            menu.style.backgroundImage = "url(" + assetName + ")";
-            var preloader = document.querySelector(".preloader");
-            setTimeout(function () {
-                preloader.style.opacity = "0";
-                preloader.addEventListener("transitionend", function done() {
-                    preloader.style.display = "none";
-                    preloader.removeEventListener("transitionend", done);
-                });
-            }, 750);
-        };
-        image.src = assetName;
+        localStorage.setItem("ding", null);
+        window.addEventListener("storage", function done(e) {
+            if (e.key == "ding" && (JSON.parse(e.newValue).menu == "ready")) {
+                window.removeEventListener("storage", done);
+                var preloader = document.querySelector(".preloader");
+                setTimeout(function () {
+                    preloader.style.opacity = "0";
+                    preloader.addEventListener("transitionend", function done() {
+                        preloader.style.display = "none";
+                        preloader.removeEventListener("transitionend", done);
+                    });
+                }, 750);
+                setTimeout(ready, 0);
+            }
+        });
+        var menuUrl = "dist/game/" + menuPage;
+        document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
     return UI;
 }());
@@ -1608,7 +1619,7 @@ var Game = (function () {
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
-                    _this.getDataFile("dist/assets/app.json", function (text) {
+                    _this.getDataFile("dist/game/app.json", function (text) {
                         _this.gdata.saveData(text);
                         _this.restoreContinueState();
                         setTimeout(function () { _this.update(Op.MOMENT); }, 0);
@@ -1666,7 +1677,7 @@ var Game = (function () {
             _this.gdata.options = options;
             _this.raiseActionEvent(OpAction.GAME_START);
             if (options.skipFileLoad == false) {
-                _this.getDataFile("dist/assets/app.json", function (text) {
+                _this.getDataFile("dist/game/app.json", function (text) {
                     _this.gdata.saveData(text);
                     setTimeout(function () { location.href = "index.html"; }, 0);
                 });
@@ -2082,16 +2093,17 @@ var Game = (function () {
         this.gdata = new GameData();
         var options = this.gdata.options;
         var skipMenu = (options != undefined && options.skipMenu);
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc);
-        if (skipMenu) {
-            options.skipMenu = false;
-            this.gdata.options = options;
-            this.update(Op.WAITING);
-        }
-        else {
-            this.update(Op.MENU_BOOT);
-        }
         window.GameInstance = this;
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc, function () {
+            if (skipMenu) {
+                options.skipMenu = false;
+                _this.gdata.options = options;
+                _this.update(Op.WAITING);
+            }
+            else {
+                _this.update(Op.MENU_BOOT);
+            }
+        });
     }
     return Game;
 }());

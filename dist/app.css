@@ -452,20 +452,6 @@ section.dialog p {
   background-size: cover;
   transition: right 0.25s ease, opacity 0.25s ease;
 }
-.menu .menu-inner {
-  position: absolute;
-  left: 30%;
-  top: 50%;
-}
-.menu .menu-inner div {
-  margin-top: 20px;
-  width: 120px;
-}
-.menu .menu-inner div button {
-  width: 100%;
-  padding: 8px;
-  cursor: pointer;
-}
 .landscape .shell {
   width: 35%;
   height: 90%;
@@ -490,11 +476,5 @@ section.dialog p {
   width: 100%;
   height: 100%;
   display: block;
-  background: black;
   transition: opacity 0.15s ease;
-}
-.landscape .graphics .back,
-.landscape .graphics .front {
-  background: no-repeat center center fixed;
-  background-size: cover;
 }
