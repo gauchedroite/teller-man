@@ -32,11 +32,12 @@ body {
 }
 
 .shell {
+    z-index: 10;
     position: relative;
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background-color: black;
+    background-color: black;  //theme2
 }
 
 .graphics {
@@ -85,6 +86,7 @@ body {
     height: calc(100% - @navbar-height);
     width: 100%;
     background-color: white;
+    //theme2: opacity: 0.6;
     cursor: default;
     overflow: scroll;
     .content-spacer {
@@ -112,7 +114,7 @@ body {
     width: 100%;
     top: 100%;
     border-top: 3px solid @seperator-color;
-    background: url(assets/ignasi_pattern_s.png);
+    background: url(game/assets/ignasi_pattern_s.png);
     transition: top 0.25s ease; 
     z-index: 2; /*because of .content.noise*/
     ul {
@@ -213,12 +215,12 @@ section.dialog {
 }
 
 .menu {
+    z-index: 20;
     position: absolute;
     top: 0;
     right: 100%;
     width: 100%;
     height: 100%;
-    z-index: 20;
     background: no-repeat center center fixed;
     background-size: cover;
     transition: right 0.25s ease, opacity 0.25s ease;
@@ -232,18 +234,19 @@ section.dialog {
         left: 60%;
         top: 5%;
         max-width: 550px;
-        border: 5px solid @seperator-color;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
+        border: 1px solid @seperator-color;
+        //border: 5px solid @seperator-color;
+        //border-top-left-radius: 10px;
+        //border-top-right-radius: 10px;
         transition: height 0.15s ease;
         &.retracted {
             height: @navbar-height;
             opacity: 0.4;
         }
-        .navbar {
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-        }
+        //.navbar {
+        //    border-top-left-radius: 10px;
+        //    border-top-right-radius: 10px;
+        //}
     }
 
     .graphics {
@@ -251,7 +254,11 @@ section.dialog {
         width: 100%;
         height: 100%;
         display: block;
-        transition: opacity 0.15s ease;
+        transition: opacity 0.75s ease;
+    }
+
+    .fader {
+        background-color: black;
     }
 }
 

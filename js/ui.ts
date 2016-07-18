@@ -190,22 +190,35 @@ class UI {
         title.textContent = data.title;
 
         var inner = <HTMLDivElement>document.querySelector(".graphics-inner");
-        var zero = <HTMLIFrameElement>inner.children[0].firstElementChild;
-        var one = <HTMLIFrameElement>inner.children[1].firstElementChild;
+        var zero = <HTMLDivElement>inner.children[0];
+        var one = <HTMLDivElement>inner.children[1];
         var back = (zero.style.zIndex == "0" ? zero : one); 
         var front = (zero.style.zIndex == "0" ? one : zero); 
 
+        var backFrame = <HTMLIFrameElement>back.firstElementChild;
+        var frontFrame = <HTMLIFrameElement>front.firstElementChild;
+
+        var fader = <HTMLDivElement>inner.children[2];
+        fader.style.opacity = "0.25";
+
         var sceneUrl = `dist/game/${data.image}`;
-        if (front.src.indexOf(sceneUrl) == -1) {
+        if (frontFrame.src.indexOf(sceneUrl) == -1) {
             localStorage.setItem("ding", null);
             window.addEventListener("storage", function done(e: StorageEvent) {
                 if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
                     window.removeEventListener("storage", done);
-                    back.style.zIndex = "1";
-                    front.style.zIndex = "0";
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    fader.style.opacity = "0";
+                    fader.addEventListener("transitionend", function done() {
+                        fader.removeEventListener("transitionend", done);
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                    });
                 }
             });
-            back.setAttribute("src", sceneUrl);
+            back.style.opacity = "0";
+            backFrame.setAttribute("src", sceneUrl);
         }
     };
 
@@ -272,8 +285,8 @@ class UI {
         let menu = <HTMLElement>document.querySelector(".menu");
         menu.style.right = "0";
 
-        var options: any = { continue: "enabled" };
-        if (opContinue != undefined) options.continue = "disabled";
+        var options: any = { continue: "disabled" };
+        if (opContinue != undefined) options.continue = "enabled";
 
         var iframe = <HTMLIFrameElement>document.querySelector("div.menu iframe");
         var configureMenu = (<any>iframe.contentWindow).configureMenu;

@@ -1421,21 +1421,32 @@ var UI = (function () {
             var title = document.querySelector(".title span");
             title.textContent = data.title;
             var inner = document.querySelector(".graphics-inner");
-            var zero = inner.children[0].firstElementChild;
-            var one = inner.children[1].firstElementChild;
+            var zero = inner.children[0];
+            var one = inner.children[1];
             var back = (zero.style.zIndex == "0" ? zero : one);
             var front = (zero.style.zIndex == "0" ? one : zero);
+            var backFrame = back.firstElementChild;
+            var frontFrame = front.firstElementChild;
+            var fader = inner.children[2];
+            fader.style.opacity = "0.25";
             var sceneUrl = "dist/game/" + data.image;
-            if (front.src.indexOf(sceneUrl) == -1) {
+            if (frontFrame.src.indexOf(sceneUrl) == -1) {
                 localStorage.setItem("ding", null);
                 window.addEventListener("storage", function done(e) {
                     if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
                         window.removeEventListener("storage", done);
-                        back.style.zIndex = "1";
-                        front.style.zIndex = "0";
+                        back.style.opacity = "1";
+                        front.style.opacity = "0";
+                        fader.style.opacity = "0";
+                        fader.addEventListener("transitionend", function done() {
+                            fader.removeEventListener("transitionend", done);
+                            back.style.zIndex = "1";
+                            front.style.zIndex = "0";
+                        });
                     }
                 });
-                back.setAttribute("src", sceneUrl);
+                back.style.opacity = "0";
+                backFrame.setAttribute("src", sceneUrl);
             }
         };
         this.addBlurb = function (chunk) {
@@ -1496,9 +1507,9 @@ var UI = (function () {
         this.showMenu = function (opNewGame, opContinue) {
             var menu = document.querySelector(".menu");
             menu.style.right = "0";
-            var options = { continue: "enabled" };
+            var options = { continue: "disabled" };
             if (opContinue != undefined)
-                options.continue = "disabled";
+                options.continue = "enabled";
             var iframe = document.querySelector("div.menu iframe");
             var configureMenu = iframe.contentWindow.configureMenu;
             configureMenu(options, function (name) {

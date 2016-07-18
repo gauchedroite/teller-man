@@ -270,6 +270,7 @@ body {
   -ms-user-select: none;
 }
 .shell {
+  z-index: 10;
   position: relative;
   width: 100%;
   height: 100%;
@@ -345,7 +346,7 @@ body {
   width: 100%;
   top: 100%;
   border-top: 3px solid #333;
-  background: url(assets/ignasi_pattern_s.png);
+  background: url(game/assets/ignasi_pattern_s.png);
   transition: top 0.25s ease;
   z-index: 2;
   /*because of .content.noise*/
@@ -442,12 +443,12 @@ section.dialog p {
   cursor: pointer;
 }
 .menu {
+  z-index: 20;
   position: absolute;
   top: 0;
   right: 100%;
   width: 100%;
   height: 100%;
-  z-index: 20;
   background: no-repeat center center fixed;
   background-size: cover;
   transition: right 0.25s ease, opacity 0.25s ease;
@@ -458,23 +459,20 @@ section.dialog p {
   left: 60%;
   top: 5%;
   max-width: 550px;
-  border: 5px solid #333;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border: 1px solid #333;
   transition: height 0.15s ease;
 }
 .landscape .shell.retracted {
   height: 36px;
   opacity: 0.4;
 }
-.landscape .shell .navbar {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-}
 .landscape .graphics {
   position: absolute;
   width: 100%;
   height: 100%;
   display: block;
-  transition: opacity 0.15s ease;
+  transition: opacity 0.75s ease;
+}
+.landscape .fader {
+  background-color: black;
 }
