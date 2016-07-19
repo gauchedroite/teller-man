@@ -449,9 +449,15 @@ section.dialog p {
   right: 100%;
   width: 100%;
   height: 100%;
-  background: no-repeat center center fixed;
-  background-size: cover;
   transition: right 0.25s ease, opacity 0.25s ease;
+}
+.menu iframe {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 .landscape .shell {
   width: 35%;
@@ -472,6 +478,14 @@ section.dialog p {
   height: 100%;
   display: block;
   transition: opacity 0.75s ease;
+}
+.landscape .graphics iframe {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 .landscape .fader {
   background-color: black;

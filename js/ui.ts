@@ -188,6 +188,7 @@ class UI {
     initScene = (data: ISceneData) => {
         var title = document.querySelector(".title span");
         title.textContent = data.title;
+        if (data.image == undefined) return;
 
         var inner = <HTMLDivElement>document.querySelector(".graphics-inner");
         var zero = <HTMLDivElement>inner.children[0];
@@ -201,9 +202,18 @@ class UI {
         var fader = <HTMLDivElement>inner.children[2];
         fader.style.opacity = "0.25";
 
-        var sceneUrl = `dist/game/${data.image}`;
-        if (frontFrame.src.indexOf(sceneUrl) == -1) {
+        var isImg = false;
+        var imgs = [".jpg", ".jpeg", ".png", ".gif"];
+        for (var img of imgs) {
+            if (data.image.endsWith(img)) isImg = true;
+        }
+
+        var sceneUrl = `dist/game/_image.html`;
+        if (isImg == false) sceneUrl = `dist/game/${data.image}`;
+
+        if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
             localStorage.setItem("ding", null);
+            localStorage.setItem("_image_file", data.image);
             window.addEventListener("storage", function done(e: StorageEvent) {
                 if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
                     window.removeEventListener("storage", done);

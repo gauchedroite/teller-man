@@ -1420,6 +1420,8 @@ var UI = (function () {
         this.initScene = function (data) {
             var title = document.querySelector(".title span");
             title.textContent = data.title;
+            if (data.image == undefined)
+                return;
             var inner = document.querySelector(".graphics-inner");
             var zero = inner.children[0];
             var one = inner.children[1];
@@ -1429,9 +1431,19 @@ var UI = (function () {
             var frontFrame = front.firstElementChild;
             var fader = inner.children[2];
             fader.style.opacity = "0.25";
-            var sceneUrl = "dist/game/" + data.image;
-            if (frontFrame.src.indexOf(sceneUrl) == -1) {
+            var isImg = false;
+            var imgs = [".jpg", ".jpeg", ".png", ".gif"];
+            for (var _i = 0, imgs_1 = imgs; _i < imgs_1.length; _i++) {
+                var img = imgs_1[_i];
+                if (data.image.endsWith(img))
+                    isImg = true;
+            }
+            var sceneUrl = "dist/game/_image.html";
+            if (isImg == false)
+                sceneUrl = "dist/game/" + data.image;
+            if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
                 localStorage.setItem("ding", null);
+                localStorage.setItem("_image_file", data.image);
                 window.addEventListener("storage", function done(e) {
                     if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
                         window.removeEventListener("storage", done);

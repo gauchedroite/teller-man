@@ -221,9 +221,15 @@ section.dialog {
     right: 100%;
     width: 100%;
     height: 100%;
-    background: no-repeat center center fixed;
-    background-size: cover;
     transition: right 0.25s ease, opacity 0.25s ease;
+    iframe {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 
@@ -255,6 +261,14 @@ section.dialog {
         height: 100%;
         display: block;
         transition: opacity 0.75s ease;
+        iframe {
+            border: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
     }
 
     .fader {
