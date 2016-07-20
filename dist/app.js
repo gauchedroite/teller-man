@@ -1133,7 +1133,8 @@ var Editor = (function () {
             {
                 url: "page/situation-index.html",
                 getData: function (id) {
-                    return gdata.loadGame();
+                    var data = gdata.loadGame();
+                    return data;
                 }
             },
             {
@@ -2018,8 +2019,6 @@ var Game = (function () {
         };
         this.executeMoment = function (id) {
             var moment = _this.gdata.getMoment(_this.gdata.moments, id); //we might have edited the moment
-            var current = {};
-            var fsm = "";
             var inComment = false;
             var canRepeat = false;
             var parts = moment.text.split("\n");
@@ -2031,8 +2030,6 @@ var Game = (function () {
                     }
                     else if (inComment) {
                         inComment = (part.startsWith("*/") == false);
-                    }
-                    else if (part.startsWith("//")) {
                     }
                     else if (part.startsWith(".r ")) {
                         var rems = part.substring(2).split(",");
@@ -2069,6 +2066,27 @@ var Game = (function () {
                 history_1.push(moment.id);
                 _this.gdata.history = history_1;
             }
+        };
+        this.getMomentCommands = function (id) {
+            var moment = _this.gdata.getMoment(_this.gdata.moments, id); //we might have edited the moment
+            var inComment = false;
+            var commands = new Array();
+            var parts = moment.text.split("\n");
+            for (var _i = 0, parts_4 = parts; _i < parts_4.length; _i++) {
+                var part = parts_4[_i];
+                if (part.length > 0) {
+                    if (part.startsWith("/*")) {
+                        inComment = true;
+                    }
+                    else if (inComment) {
+                        inComment = (part.startsWith("*/") == false);
+                    }
+                    else if (part.startsWith(".r ") || part.startsWith(".f ")) {
+                        commands.push(part);
+                    }
+                }
+            }
+            return commands;
         };
         this.parseScene = function (scene) {
             var data = {};

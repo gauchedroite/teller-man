@@ -487,8 +487,6 @@ class Game {
 
     executeMoment = (id: number): void => {
         var moment = this.gdata.getMoment(this.gdata.moments, id); //we might have edited the moment
-        var current = <IMomentData>{};
-        var fsm = "";
         var inComment = false
         var canRepeat = false;
 
@@ -500,8 +498,6 @@ class Game {
                 }
                 else if (inComment) {
                     inComment = (part.startsWith("*/") == false);
-                }
-                else if (part.startsWith("//")) {
                 }
                 else if (part.startsWith(".r ")) {
                     let rems = part.substring(2).split(",");
@@ -534,6 +530,24 @@ class Game {
             history.push(moment.id);
             this.gdata.history = history;
         }
+    };
+
+    getMomentCommands = (id: number): Array<string> => {
+        var moment = this.gdata.getMoment(this.gdata.moments, id); //we might have edited the moment
+        var inComment = false
+        var commands = new Array<string>();
+
+        var parts = moment.text.split("\n");
+        for (var part of parts) {
+            if (part.length > 0) {
+                if (part.startsWith("/*")) { inComment = true; }
+                else if (inComment) { inComment = (part.startsWith("*/") == false); }
+                else if (part.startsWith(".r ") || part.startsWith(".f ")) {
+                    commands.push(part);
+                }
+            }
+        }
+        return commands;
     };
 
     parseScene = (scene: IScene) => {

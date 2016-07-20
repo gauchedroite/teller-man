@@ -41,7 +41,8 @@ class Editor {
             {
                 url: "page/situation-index.html", 
                 getData: function (id: number): IGameData {
-                    return gdata.loadGame();
+                    var data = gdata.loadGame();
+                    return data;
                 }
             },
             {
