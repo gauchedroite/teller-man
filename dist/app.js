@@ -1398,25 +1398,6 @@ var UI = (function () {
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
         };
-        this.__obsolete__initScene = function (data) {
-            var title = document.querySelector(".title span");
-            title.textContent = data.title;
-            var back = document.querySelector(".graphics .back");
-            var front = document.querySelector(".graphics .front");
-            if (front.style.backgroundImage.indexOf("dist/assets/" + data.image) == -1) {
-                back.style.backgroundImage = front.style.backgroundImage;
-                back.classList.add("loading");
-                front.style.opacity = "0";
-                var assetName = "dist/assets/" + data.image;
-                var image = new Image();
-                image.onload = function () {
-                    back.classList.remove("loading");
-                    front.style.backgroundImage = "url(" + assetName + ")";
-                    front.style.opacity = "1";
-                };
-                setTimeout(function () { image.src = assetName; }, 200);
-            }
-        };
         this.initScene = function (data) {
             var title = document.querySelector(".title span");
             title.textContent = data.title;
@@ -1470,6 +1451,7 @@ var UI = (function () {
             var spans = section.querySelectorAll("span");
             section.style.opacity = "0";
             content.appendChild(section);
+            _this.scrollContent(content.parentElement);
             setTimeout(function () {
                 section.style.opacity = "1";
                 section.style.transition = "all 0.15s ease";
@@ -1533,6 +1515,19 @@ var UI = (function () {
                     setTimeout(function () { _this.update(opNewGame); }, 500);
                 }
             });
+        };
+        this.scrollContent = function (element) {
+            var start = element.scrollTop;
+            var end = (element.scrollHeight - element.clientHeight);
+            if (end <= start)
+                return;
+            var top = start;
+            setTimeout(function scroll() {
+                top += 10;
+                element.scrollTop = top + 1;
+                if (top < end)
+                    setTimeout(scroll, 10);
+            }, 10);
         };
         document.querySelector(".content").addEventListener("click", function (e) {
             _this.update(_this.blurbOp);

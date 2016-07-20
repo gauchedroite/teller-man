@@ -163,28 +163,6 @@ class UI {
         text.style.marginBottom = "0";
     };
 
-    __obsolete__initScene = (data: ISceneData) => {
-        var title = document.querySelector(".title span");
-        title.textContent = data.title;
-
-        var back = <HTMLDivElement>document.querySelector(".graphics .back");
-        var front = <HTMLDivElement>document.querySelector(".graphics .front");
-
-        if (front.style.backgroundImage.indexOf(`dist/assets/${data.image}`) == -1) {
-            back.style.backgroundImage = front.style.backgroundImage;
-            back.classList.add("loading");
-            front.style.opacity = "0";
-            var assetName = `dist/assets/${data.image}`;
-            var image = new Image();
-            image.onload = () => {
-                back.classList.remove("loading");
-                front.style.backgroundImage = `url(${assetName})`;
-                front.style.opacity = "1";
-            };
-            setTimeout(() => { image.src = assetName; }, 200);
-        }
-    };
-
     initScene = (data: ISceneData) => {
         var title = document.querySelector(".title span");
         title.textContent = data.title;
@@ -241,6 +219,7 @@ class UI {
         var spans = section.querySelectorAll("span");
         section.style.opacity = "0";
         content.appendChild(section);
+        this.scrollContent(content.parentElement);
         setTimeout(function() {
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
@@ -311,4 +290,16 @@ class UI {
             }
         });
     }
+
+    private scrollContent = (element: Element) => {
+        var start = element.scrollTop;
+        var end = (element.scrollHeight - element.clientHeight);
+        if (end <= start) return;
+        var top = start;
+        setTimeout(function scroll() {
+            top += 10;
+            element.scrollTop = top + 1;
+            if (top < end) setTimeout(scroll, 10);
+        }, 10);
+    };
 }

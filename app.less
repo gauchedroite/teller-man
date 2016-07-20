@@ -7,9 +7,7 @@
 @accent-color: orange;
 @navbar-height: 36px;
 
-::-webkit-scrollbar {
-    display: none;
-}
+::-webkit-scrollbar { display: none; }
 
 .noselect {
   -webkit-touch-callout: none; // iOS Safari
@@ -38,6 +36,7 @@ body {
     height: 100%;
     overflow: hidden;
     background-color: black;  //theme2
+    box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
 }
 
 .graphics {
@@ -85,7 +84,7 @@ body {
     top: @navbar-height;
     height: calc(100% - @navbar-height);
     width: 100%;
-    background-color: white;
+    background-color: #ccc;
     //theme2: opacity: 0.6;
     cursor: default;
     overflow: scroll;
@@ -94,7 +93,7 @@ body {
         width: 100%;
     }
     .content-inner {
-        margin: 0 10px 0 10px;
+        margin: 0 16px 0 16px;
         padding: 16px 8px;
         p {
             padding-bottom: 12px;
@@ -107,6 +106,29 @@ body {
         transition: opacity 0.25s ease; 
     }
     transition: opacity 0.25s ease; 
+}
+
+section {
+    font-size: large;
+    &.text {
+        p {
+            padding-bottom: 12px;
+        }
+    }
+    &.dialog {
+        h1 {
+            margin-left: 40%;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        h2 {
+            margin: 0 28%;
+        }
+        p {
+            margin: 0 17%;
+            padding-bottom: 12px;
+        }
+    }
 }
 
 .choice-panel {
@@ -164,21 +186,6 @@ body {
     }
 }
 
-section.dialog {
-    h1 {
-        margin-left: 40%;
-        text-transform: uppercase;
-        font-weight: bold;
-    }
-    h2 {
-        margin: 0 28%;
-    }
-    p {
-        margin: 0 17%;
-        padding-bottom: 12px;
-    }
-}
-
 .modal {
     position: absolute;
     width: 100%;
@@ -232,7 +239,6 @@ section.dialog {
     }
 }
 
-
 .landscape {
     .shell {
         width: 35%;
@@ -241,18 +247,11 @@ section.dialog {
         top: 5%;
         max-width: 550px;
         border: 1px solid @seperator-color;
-        //border: 5px solid @seperator-color;
-        //border-top-left-radius: 10px;
-        //border-top-right-radius: 10px;
         transition: height 0.15s ease;
         &.retracted {
             height: @navbar-height;
             opacity: 0.4;
         }
-        //.navbar {
-        //    border-top-left-radius: 10px;
-        //    border-top-right-radius: 10px;
-        //}
     }
 
     .graphics {
