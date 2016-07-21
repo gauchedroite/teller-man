@@ -66,6 +66,12 @@ class Editor {
                     data.meid = id;
                     data.me.moments = gdata.getMomentsOf(me);
                     data.me.actions = gdata.getActionsOf(me);
+                    for (var mom of data.me.moments) {
+                        mom.commands = Game.getCommands(mom.text);
+                    }
+                    for (var act of data.me.actions) {
+                        act.commands = Game.getCommands(act.text);
+                    }
                     return data;
                 }
             },
@@ -362,10 +368,14 @@ class Editor {
             var momid = this.getMeId(e.target);
             var id = this.gdata.addMoment(momid);
             var li = '<li class="ted-selected">'
-                   +    '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                   +        '<div class="item-content">'
-                   +            '<div class="item-inner">'
+                   +    '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
+                   +        '<div class="item-inner">'
+                   +            '<div class="title-row">'
                    +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +            '<div class="item-text">'
+                   +                '<ul>'
+                   +                '</ul>'
                    +            '</div>'
                    +        '</div>'
                    +    '</a>'
@@ -541,6 +551,8 @@ class Editor {
 
         $(document).on("change", "#ted-moment-text", (e: any) => {
             this.gdata.saveMomentText(e.target.value, this.getMeId(e.target));
+            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            $("#ted-moments li.ted-selected div.item-text").html(ul);
         });
 
         $(document).on("change", "#ted-action-name", (e: any) => {
@@ -550,10 +562,13 @@ class Editor {
 
         $(document).on("change", "#ted-action-when", (e: any) => {
             this.gdata.saveActionWhen(e.target.value, this.getMeId(e.target));
+            $("#ted-actions li.ted-selected div.item-subtitle").text(e.target.value);
         });
 
         $(document).on("change", "#ted-action-text", (e: any) => {
             this.gdata.saveActionText(e.target.value, this.getMeId(e.target));
+            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            $("#ted-actions li.ted-selected div.item-text").html(ul);
         });
 
         $(document).on("change", "#ted-message-to-name", (e: any) => {

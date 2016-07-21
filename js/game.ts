@@ -532,12 +532,11 @@ class Game {
         }
     };
 
-    getMomentCommands = (id: number): Array<string> => {
-        var moment = this.gdata.getMoment(this.gdata.moments, id); //we might have edited the moment
+    static getCommands = (text: string): Array<string> => {
+        if (text == undefined) return [];
         var inComment = false
         var commands = new Array<string>();
-
-        var parts = moment.text.split("\n");
+        var parts = text.split("\n");
         for (var part of parts) {
             if (part.length > 0) {
                 if (part.startsWith("/*")) { inComment = true; }

@@ -35,14 +35,21 @@
 
             <div id="ted-moments">
             <div class="content-block-title">Moments</div>
-            <div class="list-block">
+            <div class="list-block media-list ">
                 <ul>
                     {{#each me.moments}}
                     <li>
-                        <a href="page/moment.html?id={{this.id}}" data-view=".view-right" class="item-link">
-                            <div class="item-content">
-                                <div class="item-inner">
+                        <a href="page/moment.html?id={{this.id}}" data-view=".view-right" class="item-link item-content">
+                            <div class="item-inner">
+                                <div class="item-title-row">
                                     <div class="item-title">{{this.when}}</div>
+                                </div>
+                                <div class="item-text">
+                                    <ul>
+                                        {{#each this.commands}}
+                                        <li>{{this}}</li>
+                                        {{/each}}
+                                    </ul>
                                 </div>
                             </div>
                         </a>
@@ -54,14 +61,22 @@
 
             <div id="ted-actions">
             <div class="content-block-title">Actions</div>
-            <div class="list-block">
+            <div class="list-block media-list">
                 <ul>
                     {{#each me.actions}}
                     <li>
-                        <a href="page/action.html?id={{this.id}}" data-view=".view-right" class="item-link">
-                            <div class="item-content">
-                                <div class="item-inner">
+                        <a href="page/action.html?id={{this.id}}" data-view=".view-right" class="item-link item-content">
+                            <div class="item-inner">
+                                <div class="item-title-row">
                                     <div class="item-title">{{this.name}}</div>
+                                </div>
+                                <div class="item-subtitle">{{this.when}}</div>
+                                <div class="item-text">
+                                    <ul>
+                                        {{#each this.commands}}
+                                        <li>{{this}}</li>
+                                        {{/each}}
+                                    </ul>
                                 </div>
                             </div>
                         </a>

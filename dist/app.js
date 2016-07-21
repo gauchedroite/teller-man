@@ -904,10 +904,14 @@ var Editor = (function () {
                 var momid = _this.getMeId(e.target);
                 var id = _this.gdata.addMoment(momid);
                 var li = '<li class="ted-selected">'
-                    + '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                    + '<div class="item-content">'
+                    + '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
                     + '<div class="item-inner">'
+                    + '<div class="title-row">'
                     + '<div class="item-title"></div>'
+                    + '</div>'
+                    + '<div class="item-text">'
+                    + '<ul>'
+                    + '</ul>'
                     + '</div>'
                     + '</div>'
                     + '</a>'
@@ -1061,6 +1065,8 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-moment-text", function (e) {
                 _this.gdata.saveMomentText(e.target.value, _this.getMeId(e.target));
+                var ul = "<ul><li>" + Game.getCommands(e.target.value).join("</li><li>") + "</li></ul>";
+                $("#ted-moments li.ted-selected div.item-text").html(ul);
             });
             $(document).on("change", "#ted-action-name", function (e) {
                 _this.gdata.saveActionName(e.target.value, _this.getMeId(e.target));
@@ -1068,9 +1074,12 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-action-when", function (e) {
                 _this.gdata.saveActionWhen(e.target.value, _this.getMeId(e.target));
+                $("#ted-actions li.ted-selected div.item-subtitle").text(e.target.value);
             });
             $(document).on("change", "#ted-action-text", function (e) {
                 _this.gdata.saveActionText(e.target.value, _this.getMeId(e.target));
+                var ul = "<ul><li>" + Game.getCommands(e.target.value).join("</li><li>") + "</li></ul>";
+                $("#ted-actions li.ted-selected div.item-text").html(ul);
             });
             $(document).on("change", "#ted-message-to-name", function (e) {
                 _this.gdata.saveMessageToName(e.target.value, _this.getMeId(e.target));
@@ -1158,6 +1167,14 @@ var Editor = (function () {
                     data.meid = id;
                     data.me.moments = gdata.getMomentsOf(me);
                     data.me.actions = gdata.getActionsOf(me);
+                    for (var _i = 0, _a = data.me.moments; _i < _a.length; _i++) {
+                        var mom = _a[_i];
+                        mom.commands = Game.getCommands(mom.text);
+                    }
+                    for (var _b = 0, _c = data.me.actions; _b < _c.length; _b++) {
+                        var act = _c[_b];
+                        act.commands = Game.getCommands(act.text);
+                    }
                     return data;
                 }
             },
@@ -2067,27 +2084,6 @@ var Game = (function () {
                 _this.gdata.history = history_1;
             }
         };
-        this.getMomentCommands = function (id) {
-            var moment = _this.gdata.getMoment(_this.gdata.moments, id); //we might have edited the moment
-            var inComment = false;
-            var commands = new Array();
-            var parts = moment.text.split("\n");
-            for (var _i = 0, parts_4 = parts; _i < parts_4.length; _i++) {
-                var part = parts_4[_i];
-                if (part.length > 0) {
-                    if (part.startsWith("/*")) {
-                        inComment = true;
-                    }
-                    else if (inComment) {
-                        inComment = (part.startsWith("*/") == false);
-                    }
-                    else if (part.startsWith(".r ") || part.startsWith(".f ")) {
-                        commands.push(part);
-                    }
-                }
-            }
-            return commands;
-        };
         this.parseScene = function (scene) {
             var data = {};
             data.title = scene.name;
@@ -2141,6 +2137,28 @@ var Game = (function () {
             }
         });
     }
+    Game.getCommands = function (text) {
+        if (text == undefined)
+            return [];
+        var inComment = false;
+        var commands = new Array();
+        var parts = text.split("\n");
+        for (var _i = 0, parts_4 = parts; _i < parts_4.length; _i++) {
+            var part = parts_4[_i];
+            if (part.length > 0) {
+                if (part.startsWith("/*")) {
+                    inComment = true;
+                }
+                else if (inComment) {
+                    inComment = (part.startsWith("*/") == false);
+                }
+                else if (part.startsWith(".r ") || part.startsWith(".f ")) {
+                    commands.push(part);
+                }
+            }
+        }
+        return commands;
+    };
     return Game;
 }());
 var Tide = (function () {
