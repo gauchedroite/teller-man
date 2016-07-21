@@ -103,6 +103,9 @@ class Editor {
                     data.me = me;
                     data.meid = id;
                     data.me.messages = gdata.getMessageToOf(me);
+                    for (var msg of data.me.messages) {
+                        msg.commands = Game.getCommands(msg.text);
+                    }
                     return data;
                 }
             },
@@ -114,6 +117,9 @@ class Editor {
                     data.me = me;
                     data.meid = id;
                     data.me.messages = gdata.getMessageFromOf(me);
+                    for (var msg of data.me.messages) {
+                        msg.commands = Game.getCommands(msg.text);
+                    }
                     return data;
                 }
             },
@@ -370,17 +376,15 @@ class Editor {
             var li = '<li class="ted-selected">'
                    +    '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
                    +        '<div class="item-inner">'
-                   +            '<div class="title-row">'
+                   +            '<div class="item-title-row">'
                    +                '<div class="item-title"></div>'
                    +            '</div>'
                    +            '<div class="item-text">'
-                   +                '<ul>'
-                   +                '</ul>'
                    +            '</div>'
                    +        '</div>'
                    +    '</a>'
                    +'</li>';
-            var $ul = $("#ted-moments ul");
+            var $ul = $("#ted-moments > div > ul");
             $ul.find("li").removeClass("ted-selected");
             $ul.append(li);
             rightView.router.load({ url: "page/moment.html?id=" + id });
@@ -403,15 +407,18 @@ class Editor {
             var actid = this.getMeId(e.target);
             var id = this.gdata.addAction(actid);
             var li = '<li class="ted-selected">'
-                   +    '<a href="page/action.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                   +        '<div class="item-content">'
-                   +            '<div class="item-inner">'
+                   +    '<a href="page/action.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
+                   +        '<div class="item-inner">'
+                   +            '<div class="item-title-row">'
                    +                '<div class="item-title"></div>'
+                   +            '</div>'
+                   +            '<div class="item-subtitle"></div>'
+                   +            '<div class="item-text">'
                    +            '</div>'
                    +        '</div>'
                    +    '</a>'
                    +'</li>';
-            var $ul = $("#ted-actions ul");
+            var $ul = $("#ted-actions > div > ul");
             $ul.find("li").removeClass("ted-selected");
             $ul.append(li);
             rightView.router.load({ url: "page/action.html?id=" + id });
@@ -434,15 +441,17 @@ class Editor {
             var actid = this.getMeId(e.target);
             var id = this.gdata.addMessageTo(actid);
             var li = '<li class="ted-selected">'
-                   +    '<a href="page/message-to.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                   +        '<div class="item-content">'
-                   +            '<div class="item-inner">'
+                   +    '<a href="page/message-to.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
+                   +        '<div class="item-inner">'
+                   +            '<div class="item-title-row">'
                    +                '<div class="item-title"></div>'
                    +            '</div>'
+                   +            '<div class="item-subtitle"></div>'
+                   +            '<div class="item-text"></div>'
                    +        '</div>'
                    +    '</a>'
                    +'</li>';
-            var $ul = $("#ted-messages-to ul");
+            var $ul = $("#ted-messages-to > div > ul");
             $ul.find("li").removeClass("ted-selected");
             $ul.append(li);
             rightView.router.load({ url: "page/message-to.html?id=" + id });
@@ -465,15 +474,16 @@ class Editor {
             var actid = this.getMeId(e.target);
             var id = this.gdata.addMessageFrom(actid);
             var li = '<li class="ted-selected">'
-                   +    '<a href="page/message-from.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                   +        '<div class="item-content">'
-                   +            '<div class="item-inner">'
+                   +    '<a href="page/message-from.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
+                   +        '<div class="item-inner">'
+                   +            '<div class="item-title-row">'
                    +                '<div class="item-title"></div>'
                    +            '</div>'
+                   +            '<div class="item-text"></div>'
                    +        '</div>'
                    +    '</a>'
                    +'</li>';
-            var $ul = $("#ted-messages-from ul");
+            var $ul = $("#ted-messages-from > div > ul");
             $ul.find("li").removeClass("ted-selected");
             $ul.append(li);
             rightView.router.load({ url: "page/message-from.html?id=" + id });
@@ -578,6 +588,7 @@ class Editor {
 
         $(document).on("change", "#ted-message-to-when", (e: any) => {
             this.gdata.saveMessageToWhen(e.target.value, this.getMeId(e.target));
+            $("#ted-messages-to li.ted-selected div.item-subtitle").text(e.target.value);
         });
 
         $(document).on("click", "input[name^='radio-']", (e: any) => {
@@ -599,6 +610,8 @@ class Editor {
 
         $(document).on("change", "#ted-message-to-text", (e: any) => {
             this.gdata.saveMessageToText(e.target.value, this.getMeId(e.target));
+            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            $("#ted-messages-to li.ted-selected div.item-text").html(ul);
         });
 
         $(document).on("change", "#ted-message-from-when", (e: any) => {
@@ -608,6 +621,8 @@ class Editor {
 
         $(document).on("change", "#ted-message-from-text", (e: any) => {
             this.gdata.saveMessageFromText(e.target.value, this.getMeId(e.target));
+            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            $("#ted-messages-from li.ted-selected div.item-text").html(ul);
         });
     }
 

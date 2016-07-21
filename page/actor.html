@@ -35,14 +35,21 @@
 
             <div id="ted-messages-from">
             <div class="content-block-title">Messages</div>
-            <div class="list-block">
+            <div class="list-block media-list">
                 <ul>
                     {{#each me.messages}}
                     <li>
-                        <a href="page/message-from.html?id={{this.id}}" data-view=".view-right" class="item-link">
-                            <div class="item-content">
-                                <div class="item-inner">
+                        <a href="page/message-from.html?id={{this.id}}" data-view=".view-right" class="item-link item-content">
+                            <div class="item-inner">
+                                <div class="item-title-row">
                                     <div class="item-title">{{this.when}}</div>
+                                </div>
+                                <div class="item-text">
+                                    <ul>
+                                        {{#each this.commands}}
+                                        <li>{{this}}</li>
+                                        {{/each}}
+                                    </ul>
                                 </div>
                             </div>
                         </a>

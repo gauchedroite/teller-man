@@ -906,17 +906,15 @@ var Editor = (function () {
                 var li = '<li class="ted-selected">'
                     + '<a href="page/moment.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
                     + '<div class="item-inner">'
-                    + '<div class="title-row">'
+                    + '<div class="item-title-row">'
                     + '<div class="item-title"></div>'
                     + '</div>'
                     + '<div class="item-text">'
-                    + '<ul>'
-                    + '</ul>'
                     + '</div>'
                     + '</div>'
                     + '</a>'
                     + '</li>';
-                var $ul = $("#ted-moments ul");
+                var $ul = $("#ted-moments > div > ul");
                 $ul.find("li").removeClass("ted-selected");
                 $ul.append(li);
                 rightView.router.load({ url: "page/moment.html?id=" + id });
@@ -937,15 +935,18 @@ var Editor = (function () {
                 var actid = _this.getMeId(e.target);
                 var id = _this.gdata.addAction(actid);
                 var li = '<li class="ted-selected">'
-                    + '<a href="page/action.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                    + '<div class="item-content">'
+                    + '<a href="page/action.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
                     + '<div class="item-inner">'
+                    + '<div class="item-title-row">'
                     + '<div class="item-title"></div>'
+                    + '</div>'
+                    + '<div class="item-subtitle"></div>'
+                    + '<div class="item-text">'
                     + '</div>'
                     + '</div>'
                     + '</a>'
                     + '</li>';
-                var $ul = $("#ted-actions ul");
+                var $ul = $("#ted-actions > div > ul");
                 $ul.find("li").removeClass("ted-selected");
                 $ul.append(li);
                 rightView.router.load({ url: "page/action.html?id=" + id });
@@ -966,15 +967,17 @@ var Editor = (function () {
                 var actid = _this.getMeId(e.target);
                 var id = _this.gdata.addMessageTo(actid);
                 var li = '<li class="ted-selected">'
-                    + '<a href="page/message-to.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                    + '<div class="item-content">'
+                    + '<a href="page/message-to.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
                     + '<div class="item-inner">'
+                    + '<div class="item-title-row">'
                     + '<div class="item-title"></div>'
                     + '</div>'
+                    + '<div class="item-subtitle"></div>'
+                    + '<div class="item-text"></div>'
                     + '</div>'
                     + '</a>'
                     + '</li>';
-                var $ul = $("#ted-messages-to ul");
+                var $ul = $("#ted-messages-to > div > ul");
                 $ul.find("li").removeClass("ted-selected");
                 $ul.append(li);
                 rightView.router.load({ url: "page/message-to.html?id=" + id });
@@ -995,15 +998,16 @@ var Editor = (function () {
                 var actid = _this.getMeId(e.target);
                 var id = _this.gdata.addMessageFrom(actid);
                 var li = '<li class="ted-selected">'
-                    + '<a href="page/message-from.html?id=' + id + '" data-view=".view-right" class="item-link">'
-                    + '<div class="item-content">'
+                    + '<a href="page/message-from.html?id=' + id + '" data-view=".view-right" class="item-link item-content">'
                     + '<div class="item-inner">'
+                    + '<div class="item-title-row">'
                     + '<div class="item-title"></div>'
                     + '</div>'
+                    + '<div class="item-text"></div>'
                     + '</div>'
                     + '</a>'
                     + '</li>';
-                var $ul = $("#ted-messages-from ul");
+                var $ul = $("#ted-messages-from > div > ul");
                 $ul.find("li").removeClass("ted-selected");
                 $ul.append(li);
                 rightView.router.load({ url: "page/message-from.html?id=" + id });
@@ -1087,6 +1091,7 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-message-to-when", function (e) {
                 _this.gdata.saveMessageToWhen(e.target.value, _this.getMeId(e.target));
+                $("#ted-messages-to li.ted-selected div.item-subtitle").text(e.target.value);
             });
             $(document).on("click", "input[name^='radio-']", function (e) {
                 var $ssp = $(e.target).closest("div.smart-select-popup");
@@ -1107,6 +1112,8 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-message-to-text", function (e) {
                 _this.gdata.saveMessageToText(e.target.value, _this.getMeId(e.target));
+                var ul = "<ul><li>" + Game.getCommands(e.target.value).join("</li><li>") + "</li></ul>";
+                $("#ted-messages-to li.ted-selected div.item-text").html(ul);
             });
             $(document).on("change", "#ted-message-from-when", function (e) {
                 _this.gdata.saveMessageFromWhen(e.target.value, _this.getMeId(e.target));
@@ -1114,6 +1121,8 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-message-from-text", function (e) {
                 _this.gdata.saveMessageFromText(e.target.value, _this.getMeId(e.target));
+                var ul = "<ul><li>" + Game.getCommands(e.target.value).join("</li><li>") + "</li></ul>";
+                $("#ted-messages-from li.ted-selected div.item-text").html(ul);
             });
         };
         this.getMeId = function (target) {
@@ -1206,6 +1215,10 @@ var Editor = (function () {
                     data.me = me;
                     data.meid = id;
                     data.me.messages = gdata.getMessageToOf(me);
+                    for (var _i = 0, _a = data.me.messages; _i < _a.length; _i++) {
+                        var msg = _a[_i];
+                        msg.commands = Game.getCommands(msg.text);
+                    }
                     return data;
                 }
             },
@@ -1217,6 +1230,10 @@ var Editor = (function () {
                     data.me = me;
                     data.meid = id;
                     data.me.messages = gdata.getMessageFromOf(me);
+                    for (var _i = 0, _a = data.me.messages; _i < _a.length; _i++) {
+                        var msg = _a[_i];
+                        msg.commands = Game.getCommands(msg.text);
+                    }
                     return data;
                 }
             },
