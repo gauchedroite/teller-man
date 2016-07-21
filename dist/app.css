@@ -247,9 +247,8 @@ body {
   width: 100%;
 }
 .content .content-inner {
-  margin: 0 16px 0 16px;
+  margin: 0 0 0 16px;
   padding: 16px 8px;
-  transition: margin-bottom 0.25 ease;
 }
 .content .content-inner p {
   padding-bottom: 12px;

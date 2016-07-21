@@ -1347,6 +1347,8 @@ var UI = (function () {
     function UI(update, opmenu, skipMenu, menuPage, ready) {
         var _this = this;
         this.update = update;
+        this.typing = false;
+        this.stopTyping = false;
         this.onBlurbTap = function (op) {
             _this.blurbOp = op;
         };
@@ -1398,6 +1400,7 @@ var UI = (function () {
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
+            _this.scrollContent(text.parentElement);
             var me = _this;
             var lis = document.querySelectorAll(".choice-panel li");
             var onChoice = function (e) {
@@ -1432,6 +1435,7 @@ var UI = (function () {
             panel.style.top = "100%";
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
+            text.setAttribute("style", "");
         };
         this.initScene = function (data) {
             var title = document.querySelector(".title span");
@@ -1491,12 +1495,22 @@ var UI = (function () {
                 section.style.opacity = "1";
                 section.style.transition = "all 0.15s ease";
                 if (spans.length > 0) {
+                    _this.typing = true;
+                    _this.stopTyping = false;
                     var ispan = 0;
                     var show_1 = function () {
-                        var span = spans[ispan++];
-                        span.removeAttribute("style");
-                        if (ispan < spans.length)
-                            setTimeout(show_1, 25);
+                        if (_this.stopTyping) {
+                            while (ispan < spans.length)
+                                spans[ispan++].removeAttribute("style");
+                            _this.typing = false;
+                        }
+                        else {
+                            spans[ispan++].removeAttribute("style");
+                            if (ispan < spans.length)
+                                setTimeout(show_1, 25);
+                            else
+                                _this.typing = false;
+                        }
                     };
                     setTimeout(show_1, 100);
                 }
@@ -1564,8 +1578,17 @@ var UI = (function () {
                     setTimeout(scroll, 10);
             }, 10);
         };
+        var me = this;
         document.querySelector(".content").addEventListener("click", function (e) {
-            _this.update(_this.blurbOp);
+            me.stopTyping = true;
+            var wasTyping = me.typing;
+            var check = function () {
+                if (me.typing)
+                    setTimeout(check, 10);
+                else if (wasTyping == false)
+                    me.update(me.blurbOp);
+            };
+            setTimeout(check, 10);
         });
         document.querySelector(".goto-menu").addEventListener("click", function (e) {
             e.stopPropagation();
@@ -1604,6 +1627,7 @@ var UI = (function () {
         var menuUrl = "dist/game/" + menuPage;
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
+    ;
     return UI;
 }());
 var Game = (function () {

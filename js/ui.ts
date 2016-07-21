@@ -15,10 +15,21 @@ interface IChoice {
 class UI {
     sections: Array<string>;
     blurbOp: Op;
+    typing = false;
+    stopTyping = false;;
 
     constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean, menuPage: string, ready: () => void) {
+        var me = this;
         document.querySelector(".content").addEventListener("click", (e) => {
-            this.update(this.blurbOp);
+            me.stopTyping = true;
+            var wasTyping = me.typing;
+            const check = () => {
+                if (me.typing)
+                    setTimeout(check, 10)
+                else if (wasTyping == false)
+                    me.update(me.blurbOp);
+            };
+            setTimeout(check, 10);
         });
 
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
@@ -123,6 +134,7 @@ class UI {
 
         let text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = panel.offsetHeight + "px";
+        this.scrollContent(text.parentElement);
 
         let me = this;
         let lis = document.querySelectorAll(".choice-panel li");
@@ -161,6 +173,7 @@ class UI {
 
         var text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = "0";
+        text.setAttribute("style", "");
     };
 
     initScene = (data: ISceneData) => {
@@ -220,15 +233,26 @@ class UI {
         section.style.opacity = "0";
         content.appendChild(section);
         this.scrollContent(content.parentElement);
-        setTimeout(function() {
+        setTimeout(() => {
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
             if (spans.length > 0) {
+                this.typing = true;
+                this.stopTyping = false;
                 var ispan = 0;
                 const show = () => {
-                    var span = <HTMLElement>spans[ispan++];
-                    span.removeAttribute("style");
-                    if (ispan < spans.length) setTimeout(show, 25);
+                    if (this.stopTyping) {
+                        while (ispan < spans.length)
+                            spans[ispan++].removeAttribute("style");
+                        this.typing = false;
+                    }
+                    else {
+                        spans[ispan++].removeAttribute("style");
+                        if (ispan < spans.length) 
+                            setTimeout(show, 25);
+                        else
+                            this.typing = false;
+                    }
                 };
                 setTimeout(show, 100);
             }
@@ -236,7 +260,7 @@ class UI {
     };
 
     clearBlurb = () => {
-        var content = document.querySelector(".content-inner");
+        var content = <HTMLDivElement>document.querySelector(".content-inner");
         content.innerHTML = "";
     };
 
