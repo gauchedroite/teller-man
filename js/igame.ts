@@ -10,7 +10,11 @@ interface IText {
     lines: Array<string>
 }
 
-type IMomentData = IDialog | IText;
+interface IBackground {
+    asset: string
+}
+
+type IMomentData = IDialog | IText | IBackground;
 
 enum Op {
     WAITING,

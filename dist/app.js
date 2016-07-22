@@ -1437,49 +1437,12 @@ var UI = (function () {
             text.style.marginBottom = "0";
             text.setAttribute("style", "");
         };
-        this.initScene = function (data) {
+        this.initScene = function (data, callback) {
             var title = document.querySelector(".title span");
             title.textContent = data.title;
             if (data.image == undefined)
-                return;
-            var inner = document.querySelector(".graphics-inner");
-            var zero = inner.children[0];
-            var one = inner.children[1];
-            var back = (zero.style.zIndex == "0" ? zero : one);
-            var front = (zero.style.zIndex == "0" ? one : zero);
-            var backFrame = back.firstElementChild;
-            var frontFrame = front.firstElementChild;
-            var fader = inner.children[2];
-            fader.style.opacity = "0.25";
-            var isImg = false;
-            var imgs = [".jpg", ".jpeg", ".png", ".gif"];
-            for (var _i = 0, imgs_1 = imgs; _i < imgs_1.length; _i++) {
-                var img = imgs_1[_i];
-                if (data.image.endsWith(img))
-                    isImg = true;
-            }
-            var sceneUrl = "dist/game/_image.html";
-            if (isImg == false)
-                sceneUrl = "dist/game/" + data.image;
-            if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
-                localStorage.setItem("ding", null);
-                localStorage.setItem("_image_file", data.image);
-                window.addEventListener("storage", function done(e) {
-                    if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
-                        window.removeEventListener("storage", done);
-                        back.style.opacity = "1";
-                        front.style.opacity = "0";
-                        fader.style.opacity = "0";
-                        fader.addEventListener("transitionend", function done() {
-                            fader.removeEventListener("transitionend", done);
-                            back.style.zIndex = "1";
-                            front.style.zIndex = "0";
-                        });
-                    }
-                });
-                back.style.opacity = "0";
-                backFrame.setAttribute("src", sceneUrl);
-            }
+                callback();
+            _this.changeBackground(data.image, callback);
         };
         this.addBlurb = function (chunk) {
             var html = _this.markupChunk(chunk);
@@ -1520,6 +1483,68 @@ var UI = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
+        this.showMenu = function (opNewGame, opContinue) {
+            var menu = document.querySelector(".menu");
+            menu.style.right = "0";
+            var options = { continue: "disabled" };
+            if (opContinue != undefined)
+                options.continue = "enabled";
+            var iframe = document.querySelector("div.menu iframe");
+            var configureMenu = iframe.contentWindow.configureMenu;
+            configureMenu(options, function (name) {
+                if (name == "continue") {
+                    menu.style.right = "100%";
+                    setTimeout(function () { _this.update(opContinue); }, 250);
+                }
+                else {
+                    setTimeout(function () { _this.update(opNewGame); }, 500);
+                }
+            });
+        };
+        this.changeBackground = function (assetName, callback) {
+            if (assetName == undefined)
+                callback();
+            var inner = document.querySelector(".graphics-inner");
+            var zero = inner.children[0];
+            var one = inner.children[1];
+            var back = (zero.style.zIndex == "0" ? zero : one);
+            var front = (zero.style.zIndex == "0" ? one : zero);
+            var backFrame = back.firstElementChild;
+            var frontFrame = front.firstElementChild;
+            var fader = inner.children[2];
+            fader.style.opacity = "0.25";
+            var isImg = false;
+            var imgs = [".jpg", ".jpeg", ".png", ".gif"];
+            for (var _i = 0, imgs_1 = imgs; _i < imgs_1.length; _i++) {
+                var img = imgs_1[_i];
+                if (assetName.endsWith(img))
+                    isImg = true;
+            }
+            var sceneUrl = "dist/game/_image.html";
+            if (isImg == false)
+                sceneUrl = "dist/game/" + assetName;
+            if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
+                localStorage.setItem("ding", null);
+                localStorage.setItem("_image_file", assetName);
+                window.addEventListener("storage", function done(e) {
+                    if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
+                        window.removeEventListener("storage", done);
+                        back.style.opacity = "1";
+                        front.style.opacity = "0";
+                        fader.style.opacity = "0";
+                        fader.addEventListener("transitionend", function done() {
+                            fader.removeEventListener("transitionend", done);
+                            back.style.zIndex = "1";
+                            front.style.zIndex = "0";
+                            if (callback != undefined)
+                                callback();
+                        });
+                    }
+                });
+                back.style.opacity = "0";
+                backFrame.setAttribute("src", sceneUrl);
+            }
+        };
         this.markupChunk = function (chunk) {
             var dialog = chunk;
             var html = Array();
@@ -1546,24 +1571,6 @@ var UI = (function () {
                 html.push("</section>");
             }
             return html.join("");
-        };
-        this.showMenu = function (opNewGame, opContinue) {
-            var menu = document.querySelector(".menu");
-            menu.style.right = "0";
-            var options = { continue: "disabled" };
-            if (opContinue != undefined)
-                options.continue = "enabled";
-            var iframe = document.querySelector("div.menu iframe");
-            var configureMenu = iframe.contentWindow.configureMenu;
-            configureMenu(options, function (name) {
-                if (name == "continue") {
-                    menu.style.right = "100%";
-                    setTimeout(function () { _this.update(opContinue); }, 250);
-                }
-                else {
-                    setTimeout(function () { _this.update(opNewGame); }, 500);
-                }
-            });
         };
         this.scrollContent = function (element) {
             var start = element.scrollTop;
@@ -1648,16 +1655,24 @@ var Game = (function () {
                 if (kind == Kind.Moment || kind == Kind.Action) {
                     _this.currentScene = _this.getSceneOf(_this.currentMoment);
                 }
-                ui.initScene(_this.parseScene(_this.currentScene));
-                ui.clearBlurb();
-                ui.onBlurbTap(Op.BLURB);
-                _this.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
-                setTimeout(function () { _this.update(Op.BLURB); }, 0);
+                ui.initScene(_this.parseScene(_this.currentScene), function () {
+                    ui.clearBlurb();
+                    ui.onBlurbTap(Op.BLURB);
+                    _this.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
+                    setTimeout(function () { _this.update(Op.BLURB); }, 0);
+                });
             }
             else if (op == Op.BLURB) {
                 if (_this.cix < _this.chunks.length) {
                     var chunk = _this.chunks[_this.cix++];
-                    ui.addBlurb(chunk);
+                    if (chunk.asset != undefined) {
+                        ui.changeBackground(chunk.asset, function () {
+                            setTimeout(function () { _this.update(Op.BLURB); }, 0);
+                        });
+                    }
+                    else {
+                        ui.addBlurb(chunk);
+                    }
                 }
                 else {
                     var state = _this.gdata.state;
@@ -2045,6 +2060,10 @@ var Game = (function () {
                     }
                     else if (part.startsWith("(")) {
                         current.parenthetical = part;
+                    }
+                    else if (part.startsWith(".b")) {
+                        var asset = { asset: part.substring(2).trim() };
+                        parsed.push(asset);
                     }
                     else if (part.startsWith(".")) {
                     }

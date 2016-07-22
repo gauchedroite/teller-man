@@ -48,18 +48,24 @@ class Game {
             if (kind == Kind.Moment || kind == Kind.Action) {
                 this.currentScene = this.getSceneOf(this.currentMoment);
             }
-            ui.initScene(this.parseScene(this.currentScene));
-            ui.clearBlurb();
-            ui.onBlurbTap(Op.BLURB);
-
-            this.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
-
-            setTimeout(() => { this.update(Op.BLURB); }, 0);
+            ui.initScene(this.parseScene(this.currentScene), () => {
+                ui.clearBlurb();
+                ui.onBlurbTap(Op.BLURB);
+                this.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
+                setTimeout(() => { this.update(Op.BLURB); }, 0);
+            });
         }
         else if (op == Op.BLURB) {
             if (this.cix < this.chunks.length) {
                 var chunk = this.chunks[this.cix++];
-                ui.addBlurb(chunk);
+                if ((<IBackground>chunk).asset != undefined) {
+                    ui.changeBackground((<IBackground>chunk).asset, () => {
+                        setTimeout(() => { this.update(Op.BLURB); }, 0);
+                    });
+                }
+                else {
+                    ui.addBlurb(chunk);
+                }
             }
             else {
                 let state = this.gdata.state;
@@ -454,6 +460,10 @@ class Game {
                 }
                 else if (part.startsWith("(")) {
                     (<IDialog>current).parenthetical = part;
+                }
+                else if (part.startsWith(".b")) {
+                    let asset = <IBackground> { asset: part.substring(2).trim() };
+                    parsed.push(asset);
                 }
                 else if (part.startsWith(".")) {
                 }

@@ -176,51 +176,11 @@ class UI {
         text.setAttribute("style", "");
     };
 
-    initScene = (data: ISceneData) => {
+    initScene = (data: ISceneData, callback: () => void) => {
         var title = document.querySelector(".title span");
         title.textContent = data.title;
-        if (data.image == undefined) return;
-
-        var inner = <HTMLDivElement>document.querySelector(".graphics-inner");
-        var zero = <HTMLDivElement>inner.children[0];
-        var one = <HTMLDivElement>inner.children[1];
-        var back = (zero.style.zIndex == "0" ? zero : one); 
-        var front = (zero.style.zIndex == "0" ? one : zero); 
-
-        var backFrame = <HTMLIFrameElement>back.firstElementChild;
-        var frontFrame = <HTMLIFrameElement>front.firstElementChild;
-
-        var fader = <HTMLDivElement>inner.children[2];
-        fader.style.opacity = "0.25";
-
-        var isImg = false;
-        var imgs = [".jpg", ".jpeg", ".png", ".gif"];
-        for (var img of imgs) {
-            if (data.image.endsWith(img)) isImg = true;
-        }
-
-        var sceneUrl = `dist/game/_image.html`;
-        if (isImg == false) sceneUrl = `dist/game/${data.image}`;
-
-        if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
-            localStorage.setItem("ding", null);
-            localStorage.setItem("_image_file", data.image);
-            window.addEventListener("storage", function done(e: StorageEvent) {
-                if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
-                    window.removeEventListener("storage", done);
-                    back.style.opacity = "1";
-                    front.style.opacity = "0";
-                    fader.style.opacity = "0";
-                    fader.addEventListener("transitionend", function done() {
-                        fader.removeEventListener("transitionend", done);
-                        back.style.zIndex = "1";
-                        front.style.zIndex = "0";
-                    });
-                }
-            });
-            back.style.opacity = "0";
-            backFrame.setAttribute("src", sceneUrl);
-        }
+        if (data.image == undefined) callback();
+        this.changeBackground(data.image, callback);
     };
 
     addBlurb = (chunk: IMomentData) => {
@@ -264,6 +224,73 @@ class UI {
         content.innerHTML = "";
     };
 
+    showMenu = (opNewGame: Op, opContinue?: Op) => {
+        let menu = <HTMLElement>document.querySelector(".menu");
+        menu.style.right = "0";
+
+        var options: any = { continue: "disabled" };
+        if (opContinue != undefined) options.continue = "enabled";
+
+        var iframe = <HTMLIFrameElement>document.querySelector("div.menu iframe");
+        var configureMenu = (<any>iframe.contentWindow).configureMenu;
+
+        configureMenu(options, (name: string) => {
+            if (name == "continue") {
+                menu.style.right = "100%";
+                setTimeout(() => {  this.update(opContinue); }, 250);
+            }
+            else {
+                setTimeout(() => { this.update(opNewGame); }, 500);
+            }
+        });
+    };
+
+    changeBackground = (assetName: string, callback: () => void) => {
+        if (assetName == undefined) callback();
+        
+        var inner = <HTMLDivElement>document.querySelector(".graphics-inner");
+        var zero = <HTMLDivElement>inner.children[0];
+        var one = <HTMLDivElement>inner.children[1];
+        var back = (zero.style.zIndex == "0" ? zero : one); 
+        var front = (zero.style.zIndex == "0" ? one : zero); 
+
+        var backFrame = <HTMLIFrameElement>back.firstElementChild;
+        var frontFrame = <HTMLIFrameElement>front.firstElementChild;
+
+        var fader = <HTMLDivElement>inner.children[2];
+        fader.style.opacity = "0.25";
+
+        var isImg = false;
+        var imgs = [".jpg", ".jpeg", ".png", ".gif"];
+        for (var img of imgs) {
+            if (assetName.endsWith(img)) isImg = true;
+        }
+
+        var sceneUrl = `dist/game/_image.html`;
+        if (isImg == false) sceneUrl = `dist/game/${assetName}`;
+
+        if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
+            localStorage.setItem("ding", null);
+            localStorage.setItem("_image_file", assetName);
+            window.addEventListener("storage", function done(e: StorageEvent) {
+                if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
+                    window.removeEventListener("storage", done);
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    fader.style.opacity = "0";
+                    fader.addEventListener("transitionend", function done() {
+                        fader.removeEventListener("transitionend", done);
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                        if (callback != undefined) callback();
+                    });
+                }
+            });
+            back.style.opacity = "0";
+            backFrame.setAttribute("src", sceneUrl);
+        }
+    };
+
     private markupChunk = (chunk: IMomentData): string => {
         let dialog = <IDialog>chunk;
         let html = Array<string>();
@@ -293,27 +320,6 @@ class UI {
 
         return html.join("");
     };
-
-    showMenu = (opNewGame: Op, opContinue?: Op) => {
-        let menu = <HTMLElement>document.querySelector(".menu");
-        menu.style.right = "0";
-
-        var options: any = { continue: "disabled" };
-        if (opContinue != undefined) options.continue = "enabled";
-
-        var iframe = <HTMLIFrameElement>document.querySelector("div.menu iframe");
-        var configureMenu = (<any>iframe.contentWindow).configureMenu;
-
-        configureMenu(options, (name: string) => {
-            if (name == "continue") {
-                menu.style.right = "100%";
-                setTimeout(() => {  this.update(opContinue); }, 250);
-            }
-            else {
-                setTimeout(() => { this.update(opNewGame); }, 500);
-            }
-        });
-    }
 
     private scrollContent = (element: Element) => {
         var start = element.scrollTop;
