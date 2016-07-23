@@ -1424,7 +1424,7 @@ var UI = (function () {
                 lis[i].addEventListener("click", onChoice);
             }
         };
-        this.hideChoices = function () {
+        this.hideChoices = function (callback) {
             var content = document.querySelector(".content");
             content.classList.remove("overlay");
             content.style.pointerEvents = "auto";
@@ -1436,6 +1436,7 @@ var UI = (function () {
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
             text.setAttribute("style", "");
+            setTimeout(callback, 0);
         };
         this.initScene = function (data, callback) {
             var title = document.querySelector(".title span");
@@ -1479,6 +1480,17 @@ var UI = (function () {
                 }
             }, 0);
         };
+        this.addBlurbFast = function (chunk) {
+            var html = _this.markupChunk(chunk)
+                .replace(/ style\="visibility:hidden"/g, "")
+                .replace(/<span>/g, "")
+                .replace(/<\/span>/g, "");
+            var content = document.querySelector(".content-inner");
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            var section = div.firstChild;
+            content.appendChild(section);
+        };
         this.clearBlurb = function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
@@ -1502,8 +1514,16 @@ var UI = (function () {
             });
         };
         this.changeBackground = function (assetName, callback) {
-            if (assetName == undefined)
+            if (assetName == undefined) {
                 callback();
+                return;
+            }
+            var isImg = false;
+            for (var _i = 0, _a = [".jpg", ".jpeg", ".png", ".gif"]; _i < _a.length; _i++) {
+                var img = _a[_i];
+                if (assetName.endsWith(img))
+                    isImg = true;
+            }
             var inner = document.querySelector(".graphics-inner");
             var zero = inner.children[0];
             var one = inner.children[1];
@@ -1511,39 +1531,37 @@ var UI = (function () {
             var front = (zero.style.zIndex == "0" ? one : zero);
             var backFrame = back.firstElementChild;
             var frontFrame = front.firstElementChild;
-            var fader = inner.children[2];
-            fader.style.opacity = "0.25";
-            var isImg = false;
-            var imgs = [".jpg", ".jpeg", ".png", ".gif"];
-            for (var _i = 0, imgs_1 = imgs; _i < imgs_1.length; _i++) {
-                var img = imgs_1[_i];
-                if (assetName.endsWith(img))
-                    isImg = true;
-            }
             var sceneUrl = "dist/game/_image.html";
             if (isImg == false)
                 sceneUrl = "dist/game/" + assetName;
-            if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
-                localStorage.setItem("ding", null);
-                localStorage.setItem("_image_file", assetName);
-                window.addEventListener("storage", function done(e) {
-                    if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
-                        window.removeEventListener("storage", done);
-                        back.style.opacity = "1";
-                        front.style.opacity = "0";
-                        fader.style.opacity = "0";
-                        fader.addEventListener("transitionend", function done() {
-                            fader.removeEventListener("transitionend", done);
-                            back.style.zIndex = "1";
-                            front.style.zIndex = "0";
-                            if (callback != undefined)
-                                callback();
-                        });
-                    }
-                });
-                back.style.opacity = "0";
-                backFrame.setAttribute("src", sceneUrl);
-            }
+            if (frontFrame.src.indexOf(sceneUrl) != -1)
+                callback();
+            var fader = inner.children[2];
+            fader.style.opacity = "0.35";
+            fader.style.zIndex = "2";
+            var preloader = document.querySelector(".preloader");
+            preloader.classList.add("change-bg");
+            localStorage.setItem("ding", null);
+            localStorage.setItem("_image_file", assetName);
+            window.addEventListener("storage", function done(e) {
+                if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
+                    window.removeEventListener("storage", done);
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    fader.style.opacity = "0";
+                    preloader.classList.remove("change-bg");
+                    fader.addEventListener("transitionend", function done() {
+                        fader.removeEventListener("transitionend", done);
+                        fader.style.zIndex = "0";
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                        if (callback != undefined)
+                            callback();
+                    });
+                }
+            });
+            back.style.opacity = "0";
+            backFrame.setAttribute("src", sceneUrl);
         };
         this.markupChunk = function (chunk) {
             var dialog = chunk;
@@ -1624,8 +1642,9 @@ var UI = (function () {
                 setTimeout(function () {
                     preloader.style.opacity = "0";
                     preloader.addEventListener("transitionend", function done() {
-                        preloader.style.display = "none";
                         preloader.removeEventListener("transitionend", done);
+                        preloader.classList.remove("full-white");
+                        preloader.removeAttribute("style");
                     });
                 }, 750);
                 setTimeout(ready, 0);
@@ -1640,6 +1659,7 @@ var UI = (function () {
 var Game = (function () {
     function Game() {
         var _this = this;
+        this.fastUi = false;
         this.update = function (op, param) {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
@@ -1671,7 +1691,15 @@ var Game = (function () {
                         });
                     }
                     else {
-                        ui.addBlurb(chunk);
+                        var notLast = _this.cix < _this.chunks.length;
+                        var goFast = _this.fastUi && notLast;
+                        if (goFast) {
+                            ui.addBlurbFast(chunk);
+                            setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                        }
+                        else {
+                            ui.addBlurb(chunk);
+                        }
                     }
                 }
                 else {
@@ -1694,11 +1722,12 @@ var Game = (function () {
                 }
             }
             else if (op == Op.CHOICES) {
-                ui.hideChoices();
-                var choice = param;
-                _this.currentMoment = _this.getChosenMoment(choice);
-                _this.updateTimedState();
-                setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                ui.hideChoices(function () {
+                    var choice = param;
+                    _this.currentMoment = _this.getChosenMoment(choice);
+                    _this.updateTimedState();
+                    setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                });
             }
             else if (op == Op.MENU_BOOT) {
                 if (_this.gdata.options == undefined)

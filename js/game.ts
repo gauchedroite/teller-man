@@ -9,6 +9,7 @@ class Game {
     forbiddenSceneId: number;
     chunks: Array<IMomentData>;
     cix: number;
+    fastUi = false;
 
     constructor() {
         this.gdata = new GameData();
@@ -64,7 +65,15 @@ class Game {
                     });
                 }
                 else {
-                    ui.addBlurb(chunk);
+                    let notLast = this.cix < this.chunks.length;
+                    let goFast = this.fastUi && notLast;
+                    if (goFast) {
+                        ui.addBlurbFast(chunk);
+                        setTimeout(() => { this.update(Op.BLURB); }, 50);
+                    }
+                    else {
+                        ui.addBlurb(chunk);
+                    }
                 }
             }
             else {
@@ -87,11 +96,12 @@ class Game {
             }
         }
         else if (op == Op.CHOICES) {
-            ui.hideChoices();
-            let choice = <IChoice>param;
-            this.currentMoment = this.getChosenMoment(choice);
-            this.updateTimedState();
-            setTimeout(() => { this.update(Op.MOMENT); }, 0);
+            ui.hideChoices(() => {
+                let choice = <IChoice>param;
+                this.currentMoment = this.getChosenMoment(choice);
+                this.updateTimedState();
+                setTimeout(() => { this.update(Op.MOMENT); }, 0);
+            });
         }
         else if (op == Op.MENU_BOOT) {
             if (this.gdata.options == undefined)

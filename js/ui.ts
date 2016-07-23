@@ -62,8 +62,9 @@ class UI {
                 setTimeout(() => { 
                     preloader.style.opacity = "0";
                     preloader.addEventListener("transitionend", function done() {
-                        preloader.style.display = "none";
                         preloader.removeEventListener("transitionend", done);
+                        preloader.classList.remove("full-white");
+                        preloader.removeAttribute("style");
                     });
                 }, 750);
                 setTimeout(ready, 0);
@@ -159,7 +160,7 @@ class UI {
         } 
     };
 
-    hideChoices = () => {
+    hideChoices = (callback: () => void) => {
         var content = <HTMLElement>document.querySelector(".content");
         content.classList.remove("overlay");
         content.style.pointerEvents = "auto";
@@ -174,6 +175,7 @@ class UI {
         var text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = "0";
         text.setAttribute("style", "");
+        setTimeout(callback, 0);
     };
 
     initScene = (data: ISceneData, callback: () => void) => {
@@ -219,6 +221,18 @@ class UI {
         }, 0);
     };
 
+    addBlurbFast = (chunk: IMomentData) => {
+        var html = this.markupChunk(chunk)
+        	.replace(/ style\="visibility:hidden"/g, "")
+            .replace(/<span>/g, "")
+            .replace(/<\/span>/g, "");
+        var content = document.querySelector(".content-inner");
+        var div = document.createElement("div");
+        div.innerHTML = html;
+        var section = <HTMLDivElement>div.firstChild;
+        content.appendChild(section);
+    };
+
     clearBlurb = () => {
         var content = <HTMLDivElement>document.querySelector(".content-inner");
         content.innerHTML = "";
@@ -246,49 +260,56 @@ class UI {
     };
 
     changeBackground = (assetName: string, callback: () => void) => {
-        if (assetName == undefined) callback();
-        
-        var inner = <HTMLDivElement>document.querySelector(".graphics-inner");
-        var zero = <HTMLDivElement>inner.children[0];
-        var one = <HTMLDivElement>inner.children[1];
-        var back = (zero.style.zIndex == "0" ? zero : one); 
-        var front = (zero.style.zIndex == "0" ? one : zero); 
+        if (assetName == undefined) {
+            callback();
+            return;
+        }
 
-        var backFrame = <HTMLIFrameElement>back.firstElementChild;
-        var frontFrame = <HTMLIFrameElement>front.firstElementChild;
-
-        var fader = <HTMLDivElement>inner.children[2];
-        fader.style.opacity = "0.25";
-
-        var isImg = false;
-        var imgs = [".jpg", ".jpeg", ".png", ".gif"];
-        for (var img of imgs) {
+        let isImg = false;
+        for (var img of [".jpg", ".jpeg", ".png", ".gif"])
             if (assetName.endsWith(img)) isImg = true;
-        }
+        
+        let inner = <HTMLDivElement>document.querySelector(".graphics-inner");
+        let zero = <HTMLDivElement>inner.children[0];
+        let one = <HTMLDivElement>inner.children[1];
+        let back = (zero.style.zIndex == "0" ? zero : one); 
+        let front = (zero.style.zIndex == "0" ? one : zero); 
 
-        var sceneUrl = `dist/game/_image.html`;
+        let backFrame = <HTMLIFrameElement>back.firstElementChild;
+        let frontFrame = <HTMLIFrameElement>front.firstElementChild;
+
+        let sceneUrl = "dist/game/_image.html";
         if (isImg == false) sceneUrl = `dist/game/${assetName}`;
+        if (frontFrame.src.indexOf(sceneUrl) != -1) callback();
 
-        if (isImg || frontFrame.src.indexOf(sceneUrl) == -1) {
-            localStorage.setItem("ding", null);
-            localStorage.setItem("_image_file", assetName);
-            window.addEventListener("storage", function done(e: StorageEvent) {
-                if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
-                    window.removeEventListener("storage", done);
-                    back.style.opacity = "1";
-                    front.style.opacity = "0";
-                    fader.style.opacity = "0";
-                    fader.addEventListener("transitionend", function done() {
-                        fader.removeEventListener("transitionend", done);
-                        back.style.zIndex = "1";
-                        front.style.zIndex = "0";
-                        if (callback != undefined) callback();
-                    });
-                }
-            });
-            back.style.opacity = "0";
-            backFrame.setAttribute("src", sceneUrl);
-        }
+        let fader = <HTMLDivElement>inner.children[2];
+        fader.style.opacity = "0.35";
+        fader.style.zIndex = "2";
+
+        let preloader = <HTMLDivElement>document.querySelector(".preloader");
+        preloader.classList.add("change-bg");
+
+        localStorage.setItem("ding", null);
+        localStorage.setItem("_image_file", assetName);
+        window.addEventListener("storage", function done(e: StorageEvent) {
+            if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
+                window.removeEventListener("storage", done);
+                back.style.opacity = "1";
+                front.style.opacity = "0";
+                fader.style.opacity = "0";
+                preloader.classList.remove("change-bg");
+                fader.addEventListener("transitionend", function done() {
+                    fader.removeEventListener("transitionend", done);
+                    fader.style.zIndex = "0";
+                    back.style.zIndex = "1";
+                    front.style.zIndex = "0";
+                    if (callback != undefined) callback();
+                });
+            }
+        });
+
+        back.style.opacity = "0";
+        backFrame.setAttribute("src", sceneUrl);
     };
 
     private markupChunk = (chunk: IMomentData): string => {

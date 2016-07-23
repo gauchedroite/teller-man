@@ -1,11 +1,10 @@
 
 .preloader {
-    z-index: 30;
+    z-index: 0;
     position: absolute;
-    width: 100%;
-    height: 100%;
     top: 0;
-    background-color: white;
+    margin: 30px;
+    opacity: 0;
     transition: opacity 0.5s ease;
     .preloader-inner {
         position: relative;
@@ -28,6 +27,19 @@
             animation-delay: -1.0s;
         }
     }
+    &.full-white {
+        z-index: 30;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        opacity: 1;
+        background: linear-gradient(180deg,#1fc8db 0%, white 100%);
+    }
+    &.change-bg {
+        z-index: 30;
+        opacity: 1;
+        transition-delay: 1s;
+    }
 }
 @keyframes gd-bounce {
     0%, 100% { transform: scale(0.0); }
@@ -35,46 +47,31 @@
 }
 
 
+.circles-8 { 
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScgLz4KICA8Y2lyY2xlIGN4PSc0LjUnIGN5PSc0LjUnIHI9JzQuNScgZmlsbD0nYmxhY2snLz4KPC9zdmc+"); 
+    background-repeat: repeat; 
+}
 
-.loader {
+
+
+
+// maybe later?
+@signal-radius: 50px;
+@signal-margin: -25px;
+.signal {
+    top: 50px;
+    left: 50px;
+    border: 10px solid orange;
+    border-radius: @signal-radius;
+    height: @signal-radius;
+    margin: @signal-margin 0 0 @signal-margin;
     opacity: 0;
-}
-.loading {
-    opacity: 0.75;
-    .loader {
-        opacity: 1;
-        transition: opacity 0.25s ease 1.5s;
-    }
-}
-.loader:before, .loader:after, .loader {
-    border-radius: 50%;
-    width: 2.5em;
-    height: 2.5em;
-    animation-fill-mode: both;
-    animation: load7 1.8s infinite ease-in-out;
-}
-.loader {
-    color: @accent-color;
-    font-size: 10px;
-    margin: 10px 0 0 60px;
-    position: relative;
-    text-indent: -9999em;
-    transform: translateZ(0);
-    animation-delay: -0.16s;
-}
-.loader:before {
-    left: -3.5em;
-    animation-delay: -0.32s;
-}
-.loader:after {
-    left: 3.5em;
-}
-.loader:before, .loader:after {
-    content: '';
     position: absolute;
-    top: 0;
+    width: @signal-radius;
+    animation: pulsate 1s infinite ease-out;
 }
-@keyframes load7 {
-    0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em; }
-    40% { box-shadow: 0 2.5em 0 0; }
+@keyframes pulsate {
+    0% { transform: scale(.1); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: scale(1.2); opacity: 0; }
 }
