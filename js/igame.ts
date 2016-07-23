@@ -14,7 +14,11 @@ interface IBackground {
     asset: string
 }
 
-type IMomentData = IDialog | IText | IBackground;
+interface IInline {
+    image: string
+}
+
+type IMomentData = IDialog | IText | IBackground | IInline;
 
 enum Op {
     WAITING,
@@ -31,7 +35,8 @@ enum Op {
 interface IOptions {
     skipFileLoad: boolean,
     skipMenu: boolean,
-    syncEditor: boolean
+    syncEditor: boolean,
+    fastStory: boolean
 }
 
 interface ISceneData {

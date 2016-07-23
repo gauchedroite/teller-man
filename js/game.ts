@@ -9,7 +9,6 @@ class Game {
     forbiddenSceneId: number;
     chunks: Array<IMomentData>;
     cix: number;
-    fastUi = false;
 
     constructor() {
         this.gdata = new GameData();
@@ -67,7 +66,7 @@ class Game {
                 }
                 else {
                     let notLast = this.cix < this.chunks.length;
-                    let goFast = this.fastUi && notLast;
+                    let goFast = this.gdata.options.fastStory && notLast;
                     if (goFast) {
                         ui.addBlurbFast(chunk, () => {
                             setTimeout(() => { this.update(Op.BLURB); }, 50);
@@ -478,6 +477,10 @@ class Game {
                 else if (part.startsWith(".b")) {
                     let asset = <IBackground> { asset: part.substring(2).trim() };
                     parsed.push(asset);
+                }
+                else if (part.startsWith(".i")) {
+                    let image = <IInline> { image: part.substring(2).trim() };
+                    parsed.push(image);
                 }
                 else if (part.startsWith(".")) {
                 }

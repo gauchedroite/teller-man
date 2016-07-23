@@ -9,6 +9,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Bungee">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Merriweather:300i">
     <style>
         html, body {
             position: relative;
@@ -17,36 +19,74 @@
             overflow-x: hidden;
             margin: 0; padding: 0;
         }
+        h1, h2, hr { margin: 0; padding: 0; }
         .content {
             width: 100%;
             height: 100%;
             background: no-repeat center center fixed;
             background-size: cover;
         }
-        .menu {
+        .content-inner {
             position: absolute;
-            left: 30%;
-            top: 50%;
+            left: 10%;
+            top: 40%;
+            xxbackground-color: gray;
+        }
+        .menu {
+            margin-top: 75px;
         }
         .menu div {
             margin-top: 20px;
-            width: 120px;
-        }
-        .menu div button {
             width: 100%;
-            padding: 8px;
+        }
+        h1 {
+            font-family: 'Bungee', cursive;
+            font-size: 48pt;
+            line-height: 48pt;
+            color: white;
+        }
+        h2 {
+            font-family: 'Merriweather', serif;
+            font-size: 18pt;
+            line-height: 28pt;
+            letter-spacing: 0.22em;
+            color: white;
+        }
+        button {
             cursor: pointer;
+            width: 100%;
+            padding: 0 0 0 8px;
+            border: 0;
+            background: transparent;
+            text-align: left;
+            color: white;
+            font-size: 16pt;
+            background-color: rgba(0, 0, 0, 0.05);
+            transition: background-color 0.1s ease; 
+            border-radius: 2px;
+        }
+        button:focus {
+            outline:0; 
+        }
+        button:hover {
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        button:disabled {
+            display: none;
         }
     </style>
 </head>
 
 <body>
-
     <div class="content">
-        <div class="menu">
-            <div><button id="new-game">New Game</button></div>
-            <div><button id="continue">Continue</button></div>
-            <div><button id="options" disabled>Options</button></div>
+        <div class="content-inner">
+            <h1>Moon Limbo</h1>
+            <h2>Entre ciel et terre</h2>
+            <div class="menu">
+                <div><button id="new-game">Nouvelle partie</button></div>
+                <div><button id="continue">Continuer</button></div>
+                <div><button id="options" disabled>Options</button></div>
+            </div>
         </div>
     </div>
 
@@ -81,7 +121,6 @@
             });
         };
     </script>
-
 </body>
 
 </html>

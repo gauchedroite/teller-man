@@ -106,7 +106,7 @@ Instructions:
   height: 100%;
   margin: 0;
   opacity: 1;
-  background: linear-gradient(180deg, #1fc8db 0%, white 100%);
+  background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
 }
 .preloader.change-bg {
   z-index: 30;
@@ -121,6 +121,38 @@ Instructions:
   50% {
     transform: scale(1);
   }
+}
+@font-face {
+  font-family: "My Magneto";
+  src: url(game/assets/magnetob.ttf) format("truetype");
+}
+@font-face {
+  font-family: "My Pupcat";
+  src: url(game/assets/pupcat__.ttf) format("truetype");
+}
+.studio {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 120px;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.studio .studio-inner {
+  width: 450px;
+  height: 100%;
+}
+.studio text:nth-child(1) {
+  font-family: "My Magneto";
+  font-size: 48pt;
+  fill: yellow;
+  stroke: lime;
+  stroke-width: 0.25pt;
+  stroke-linejoin: round;
+}
+.studio text:nth-child(2) {
+  font-family: "My Pupcat";
+  font-size: 36pt;
+  fill: rgba(255, 255, 255, 0.9);
 }
 .circles-8 {
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScgLz4KICA8Y2lyY2xlIGN4PSc0LjUnIGN5PSc0LjUnIHI9JzQuNScgZmlsbD0nYmxhY2snLz4KPC9zdmc+");
@@ -169,7 +201,8 @@ body {
   overflow-x: hidden;
 }
 body {
-  font-family: monospace;
+  font-family: "Roboto Slab", serif;
+  color: rgba(0, 0, 0, 0.8);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -237,8 +270,8 @@ body {
   width: 100%;
 }
 .content .content-inner {
-  margin: 0 0 0 16px;
-  padding: 16px 8px;
+  padding: 16px 0;
+  line-height: 1.4em;
 }
 .content .content-inner p {
   padding-bottom: 12px;
@@ -250,21 +283,38 @@ body {
 }
 section {
   font-size: large;
+  padding: 8px 0;
+}
+section.text {
+  padding: 8px 24px;
 }
 section.text p {
   padding-bottom: 12px;
 }
+section.dialog {
+  padding: 8px 24px;
+}
 section.dialog h1 {
-  margin-left: 40%;
+  text-align: center;
   text-transform: uppercase;
   font-weight: bold;
 }
 section.dialog h2 {
-  margin: 0 28%;
+  text-align: center;
 }
 section.dialog p {
   margin: 0 17%;
   padding-bottom: 12px;
+}
+section.image {
+  padding: 8px 0;
+  height: 150px;
+}
+section.image div {
+  width: 100%;
+  height: 100%;
+  background: no-repeat center center;
+  background-size: cover;
 }
 .choice-panel {
   position: absolute;
@@ -374,10 +424,10 @@ section.dialog p {
 }
 .landscape .shell {
   width: 35%;
-  height: 90%;
-  left: 60%;
-  top: 5%;
-  max-width: 550px;
+  min-width: 350px;
+  max-width: 450px;
+  height: 95%;
+  top: 2.5%;
   border: 1px solid #333;
   transition: height 0.15s ease;
 }

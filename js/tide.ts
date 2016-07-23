@@ -36,10 +36,18 @@ class Tide {
             gdata.options = options;
         });
 
+        document.getElementById("ide-fast").addEventListener("click", (e) => {
+            var checked = (<any>e.target).checked;
+            var options = gdata.options;
+            options.fastStory = checked;
+            gdata.options = options;
+        });
+
         (<any>window).onAction = this.action;
 
         (<any>document.getElementById("ide-gamefile")).checked = options.skipFileLoad;
         (<any>document.getElementById("ide-sync")).checked = options.syncEditor;
+        (<any>document.getElementById("ide-fast")).checked = options.fastStory;
 
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");

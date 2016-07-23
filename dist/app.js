@@ -1442,53 +1442,38 @@ var UI = (function () {
         };
         this.addBlurb = function (chunk, callback) {
             var html = _this.markupChunk(chunk);
+            var content = document.querySelector(".content");
             var inner = document.querySelector(".content-inner");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
-            var spans = section.querySelectorAll("span");
             section.style.opacity = "0";
             inner.appendChild(section);
             _this.scrollContent(inner.parentElement);
-            var typing = false;
-            var stopTyping = false;
-            setTimeout(function () {
-                section.style.opacity = "1";
-                section.style.transition = "all 0.15s ease";
-                if (spans.length > 0) {
-                    typing = true;
-                    stopTyping = false;
-                    var ispan = 0;
-                    var show_1 = function () {
-                        if (stopTyping) {
-                            while (ispan < spans.length)
-                                spans[ispan++].removeAttribute("style");
-                            typing = false;
-                        }
-                        else {
-                            spans[ispan++].removeAttribute("style");
-                            if (ispan < spans.length)
-                                setTimeout(show_1, 25);
-                            else
-                                typing = false;
-                        }
-                    };
-                    setTimeout(show_1, 100);
-                }
-            }, 0);
-            var content = document.querySelector(".content");
-            content.addEventListener("click", function done(e) {
-                content.removeEventListener("click", done);
-                stopTyping = true;
-                var wasTyping = typing;
-                var check = function () {
-                    if (typing)
-                        setTimeout(check, 10);
-                    else if (wasTyping == false)
-                        callback();
-                };
-                setTimeout(check, 10);
-            });
+            section.style.opacity = "1";
+            section.style.transition = "all 0.15s ease";
+            var spans = section.querySelectorAll("span");
+            if (spans.length == 0) {
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    return callback();
+                });
+            }
+            else {
+                var ispan_1 = 0;
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    clearTimeout(showTimer);
+                    while (ispan_1 < spans.length)
+                        spans[ispan_1++].removeAttribute("style");
+                    return callback();
+                });
+                var showTimer = setTimeout(function show() {
+                    spans[ispan_1++].removeAttribute("style");
+                    if (ispan_1 < spans.length)
+                        showTimer = setTimeout(show, 25);
+                }, 100);
+            }
         };
         this.addBlurbFast = function (chunk, callback) {
             var html = _this.markupChunk(chunk)
@@ -1574,8 +1559,14 @@ var UI = (function () {
         };
         this.markupChunk = function (chunk) {
             var dialog = chunk;
+            var inline = chunk;
             var html = Array();
-            if (dialog.actor != undefined) {
+            if (inline.image != undefined) {
+                html.push("<section class=\"image\">");
+                html.push("<div style=\"background-image:url(dist/game/" + inline.image + ")\"></div>");
+                html.push("</section>");
+            }
+            else if (dialog.actor != undefined) {
                 html.push("<section class=\"dialog\">");
                 html.push("<h1>" + dialog.actor + "</h1>");
                 if (dialog.parenthetical != undefined)
@@ -1642,6 +1633,8 @@ var UI = (function () {
                         preloader.removeEventListener("transitionend", done);
                         preloader.classList.remove("full-white");
                         preloader.removeAttribute("style");
+                        var studio = preloader.querySelector(".studio");
+                        studio.style.display = "none";
                     });
                 }, 750);
                 setTimeout(ready, 0);
@@ -1655,7 +1648,6 @@ var UI = (function () {
 var Game = (function () {
     function Game() {
         var _this = this;
-        this.fastUi = false;
         this.update = function (op, param) {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
@@ -1689,7 +1681,7 @@ var Game = (function () {
                     }
                     else {
                         var notLast = _this.cix < _this.chunks.length;
-                        var goFast = _this.fastUi && notLast;
+                        var goFast = _this.gdata.options.fastStory && notLast;
                         if (goFast) {
                             ui.addBlurbFast(chunk, function () {
                                 setTimeout(function () { _this.update(Op.BLURB); }, 50);
@@ -2094,6 +2086,10 @@ var Game = (function () {
                         var asset = { asset: part.substring(2).trim() };
                         parsed.push(asset);
                     }
+                    else if (part.startsWith(".i")) {
+                        var image = { image: part.substring(2).trim() };
+                        parsed.push(image);
+                    }
                     else if (part.startsWith(".")) {
                     }
                     else {
@@ -2345,9 +2341,16 @@ var Tide = (function () {
             options.syncEditor = checked;
             gdata.options = options;
         });
+        document.getElementById("ide-fast").addEventListener("click", function (e) {
+            var checked = e.target.checked;
+            var options = gdata.options;
+            options.fastStory = checked;
+            gdata.options = options;
+        });
         window.onAction = this.action;
         document.getElementById("ide-gamefile").checked = options.skipFileLoad;
         document.getElementById("ide-sync").checked = options.syncEditor;
+        document.getElementById("ide-fast").checked = options.fastStory;
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");

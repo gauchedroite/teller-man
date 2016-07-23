@@ -49,6 +49,8 @@ class UI {
                         preloader.removeEventListener("transitionend", done);
                         preloader.classList.remove("full-white");
                         preloader.removeAttribute("style");
+                        var studio = <HTMLDivElement>preloader.querySelector(".studio");
+                        studio.style.display = "none";
                     });
                 }, 750);
                 setTimeout(ready, 0);
@@ -166,56 +168,41 @@ class UI {
     };
 
     addBlurb = (chunk: IMomentData, callback: () => void) => {
-        var html = this.markupChunk(chunk);
-        var inner = document.querySelector(".content-inner");
-        var div = document.createElement("div");
+        let html = this.markupChunk(chunk);
+        let content = document.querySelector(".content");
+        let inner = document.querySelector(".content-inner");
+        let div = document.createElement("div");
         div.innerHTML = html;
-        var section = <HTMLDivElement>div.firstChild;
-        var spans = section.querySelectorAll("span");
+        let section = <HTMLDivElement>div.firstChild;
         section.style.opacity = "0";
         inner.appendChild(section);
         this.scrollContent(inner.parentElement);
+        section.style.opacity = "1";
+        section.style.transition = "all 0.15s ease";
 
-        var typing = false;
-        var stopTyping = false;
-        setTimeout(() => {
-            section.style.opacity = "1";
-            section.style.transition = "all 0.15s ease";
-            if (spans.length > 0) {
-                typing = true;
-                stopTyping = false;
-                var ispan = 0;
-                const show = () => {
-                    if (stopTyping) {
-                        while (ispan < spans.length)
-                            spans[ispan++].removeAttribute("style");
-                        typing = false;
-                    }
-                    else {
-                        spans[ispan++].removeAttribute("style");
-                        if (ispan < spans.length) 
-                            setTimeout(show, 25);
-                        else
-                            typing = false;
-                    }
-                };
-                setTimeout(show, 100);
-            }
-        }, 0);
+        let spans = section.querySelectorAll("span");
+        if (spans.length == 0) {
+            content.addEventListener("click", function onclick() {
+                content.removeEventListener("click", onclick);
+                return callback();
+            });
+        }
+        else {
+            let ispan = 0;
+            content.addEventListener("click", function onclick() {
+                content.removeEventListener("click", onclick);
+                clearTimeout(showTimer);
+                while (ispan < spans.length)
+                    spans[ispan++].removeAttribute("style");
+                return callback();
+            });
 
-        var content = document.querySelector(".content");
-        content.addEventListener("click", function done(e) {
-            content.removeEventListener("click", done);
-            stopTyping = true;
-            var wasTyping = typing;
-            const check = () => {
-                if (typing)
-                    setTimeout(check, 10)
-                else if (wasTyping == false)
-                    callback();
-            };
-            setTimeout(check, 10);
-        });
+            var showTimer = setTimeout(function show() {
+                spans[ispan++].removeAttribute("style");
+                if (ispan < spans.length) 
+                    showTimer = setTimeout(show, 25);
+            }, 100);
+        }
     };
 
     addBlurbFast = (chunk: IMomentData, callback: () => void) => {
@@ -309,9 +296,15 @@ class UI {
 
     private markupChunk = (chunk: IMomentData): string => {
         let dialog = <IDialog>chunk;
+        let inline = <IInline>chunk;
         let html = Array<string>();
 
-        if (dialog.actor != undefined) {
+        if (inline.image != undefined) {
+            html.push(`<section class="image">`);
+            html.push(`<div style="background-image:url(dist/game/${inline.image})"></div>`);
+            html.push(`</section>`);
+        }
+        else if (dialog.actor != undefined) {
             html.push(`<section class="dialog">`);
             html.push(`<h1>${dialog.actor}</h1>`);
 
