@@ -51,9 +51,10 @@ class Game {
             }
             ui.initScene(this.parseScene(this.currentScene), () => {
                 ui.clearBlurb();
-                ui.onBlurbTap(Op.BLURB);
                 this.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
-                setTimeout(() => { this.update(Op.BLURB); }, 0);
+                setTimeout(() => { 
+                    this.update(Op.BLURB); 
+                }, 0);
             });
         }
         else if (op == Op.BLURB) {
@@ -68,11 +69,14 @@ class Game {
                     let notLast = this.cix < this.chunks.length;
                     let goFast = this.fastUi && notLast;
                     if (goFast) {
-                        ui.addBlurbFast(chunk);
-                        setTimeout(() => { this.update(Op.BLURB); }, 50);
+                        ui.addBlurbFast(chunk, () => {
+                            setTimeout(() => { this.update(Op.BLURB); }, 50);
+                        });
                     }
                     else {
-                        ui.addBlurb(chunk);
+                        ui.addBlurb(chunk, () => {
+                            setTimeout(() => { this.update(Op.BLURB); }, 50);
+                        });
                     }
                 }
             }

@@ -1347,11 +1347,6 @@ var UI = (function () {
     function UI(update, opmenu, skipMenu, menuPage, ready) {
         var _this = this;
         this.update = update;
-        this.typing = false;
-        this.stopTyping = false;
-        this.onBlurbTap = function (op) {
-            _this.blurbOp = op;
-        };
         this.alert = function (op, text) {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
@@ -1442,45 +1437,60 @@ var UI = (function () {
             var title = document.querySelector(".title span");
             title.textContent = data.title;
             if (data.image == undefined)
-                callback();
+                return callback();
             _this.changeBackground(data.image, callback);
         };
-        this.addBlurb = function (chunk) {
+        this.addBlurb = function (chunk, callback) {
             var html = _this.markupChunk(chunk);
-            var content = document.querySelector(".content-inner");
+            var inner = document.querySelector(".content-inner");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
             var spans = section.querySelectorAll("span");
             section.style.opacity = "0";
-            content.appendChild(section);
-            _this.scrollContent(content.parentElement);
+            inner.appendChild(section);
+            _this.scrollContent(inner.parentElement);
+            var typing = false;
+            var stopTyping = false;
             setTimeout(function () {
                 section.style.opacity = "1";
                 section.style.transition = "all 0.15s ease";
                 if (spans.length > 0) {
-                    _this.typing = true;
-                    _this.stopTyping = false;
+                    typing = true;
+                    stopTyping = false;
                     var ispan = 0;
                     var show_1 = function () {
-                        if (_this.stopTyping) {
+                        if (stopTyping) {
                             while (ispan < spans.length)
                                 spans[ispan++].removeAttribute("style");
-                            _this.typing = false;
+                            typing = false;
                         }
                         else {
                             spans[ispan++].removeAttribute("style");
                             if (ispan < spans.length)
                                 setTimeout(show_1, 25);
                             else
-                                _this.typing = false;
+                                typing = false;
                         }
                     };
                     setTimeout(show_1, 100);
                 }
             }, 0);
+            var content = document.querySelector(".content");
+            content.addEventListener("click", function done(e) {
+                content.removeEventListener("click", done);
+                stopTyping = true;
+                var wasTyping = typing;
+                var check = function () {
+                    if (typing)
+                        setTimeout(check, 10);
+                    else if (wasTyping == false)
+                        callback();
+                };
+                setTimeout(check, 10);
+            });
         };
-        this.addBlurbFast = function (chunk) {
+        this.addBlurbFast = function (chunk, callback) {
             var html = _this.markupChunk(chunk)
                 .replace(/ style\="visibility:hidden"/g, "")
                 .replace(/<span>/g, "")
@@ -1490,6 +1500,7 @@ var UI = (function () {
             div.innerHTML = html;
             var section = div.firstChild;
             content.appendChild(section);
+            callback();
         };
         this.clearBlurb = function () {
             var content = document.querySelector(".content-inner");
@@ -1514,10 +1525,8 @@ var UI = (function () {
             });
         };
         this.changeBackground = function (assetName, callback) {
-            if (assetName == undefined) {
-                callback();
-                return;
-            }
+            if (assetName == undefined)
+                return callback();
             var isImg = false;
             for (var _i = 0, _a = [".jpg", ".jpeg", ".png", ".gif"]; _i < _a.length; _i++) {
                 var img = _a[_i];
@@ -1535,7 +1544,7 @@ var UI = (function () {
             if (isImg == false)
                 sceneUrl = "dist/game/" + assetName;
             if (frontFrame.src.indexOf(sceneUrl) != -1)
-                callback();
+                return callback();
             var fader = inner.children[2];
             fader.style.opacity = "0.35";
             fader.style.zIndex = "2";
@@ -1556,7 +1565,7 @@ var UI = (function () {
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
                         if (callback != undefined)
-                            callback();
+                            return callback();
                     });
                 }
             });
@@ -1603,18 +1612,6 @@ var UI = (function () {
                     setTimeout(scroll, 10);
             }, 10);
         };
-        var me = this;
-        document.querySelector(".content").addEventListener("click", function (e) {
-            me.stopTyping = true;
-            var wasTyping = me.typing;
-            var check = function () {
-                if (me.typing)
-                    setTimeout(check, 10);
-                else if (wasTyping == false)
-                    me.update(me.blurbOp);
-            };
-            setTimeout(check, 10);
-        });
         document.querySelector(".goto-menu").addEventListener("click", function (e) {
             e.stopPropagation();
             _this.update(opmenu);
@@ -1653,7 +1650,6 @@ var UI = (function () {
         var menuUrl = "dist/game/" + menuPage;
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
-    ;
     return UI;
 }());
 var Game = (function () {
@@ -1677,9 +1673,10 @@ var Game = (function () {
                 }
                 ui.initScene(_this.parseScene(_this.currentScene), function () {
                     ui.clearBlurb();
-                    ui.onBlurbTap(Op.BLURB);
                     _this.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
-                    setTimeout(function () { _this.update(Op.BLURB); }, 0);
+                    setTimeout(function () {
+                        _this.update(Op.BLURB);
+                    }, 0);
                 });
             }
             else if (op == Op.BLURB) {
@@ -1694,11 +1691,14 @@ var Game = (function () {
                         var notLast = _this.cix < _this.chunks.length;
                         var goFast = _this.fastUi && notLast;
                         if (goFast) {
-                            ui.addBlurbFast(chunk);
-                            setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                            ui.addBlurbFast(chunk, function () {
+                                setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                            });
                         }
                         else {
-                            ui.addBlurb(chunk);
+                            ui.addBlurb(chunk, function () {
+                                setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                            });
                         }
                     }
                 }

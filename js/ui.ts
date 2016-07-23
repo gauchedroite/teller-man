@@ -14,24 +14,8 @@ interface IChoice {
 
 class UI {
     sections: Array<string>;
-    blurbOp: Op;
-    typing = false;
-    stopTyping = false;;
 
     constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean, menuPage: string, ready: () => void) {
-        var me = this;
-        document.querySelector(".content").addEventListener("click", (e) => {
-            me.stopTyping = true;
-            var wasTyping = me.typing;
-            const check = () => {
-                if (me.typing)
-                    setTimeout(check, 10)
-                else if (wasTyping == false)
-                    me.update(me.blurbOp);
-            };
-            setTimeout(check, 10);
-        });
-
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
             this.update(opmenu);
@@ -74,10 +58,6 @@ class UI {
         var menuUrl = `dist/game/${menuPage}`;
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
-
-    onBlurbTap = (op: Op) => {
-        this.blurbOp = op;
-    };
 
     alert = (op: Op, text: string) => {
         let content = <HTMLElement>document.querySelector(".content");
@@ -181,47 +161,64 @@ class UI {
     initScene = (data: ISceneData, callback: () => void) => {
         var title = document.querySelector(".title span");
         title.textContent = data.title;
-        if (data.image == undefined) callback();
+        if (data.image == undefined) return callback();
         this.changeBackground(data.image, callback);
     };
 
-    addBlurb = (chunk: IMomentData) => {
+    addBlurb = (chunk: IMomentData, callback: () => void) => {
         var html = this.markupChunk(chunk);
-        var content = document.querySelector(".content-inner");
+        var inner = document.querySelector(".content-inner");
         var div = document.createElement("div");
         div.innerHTML = html;
         var section = <HTMLDivElement>div.firstChild;
         var spans = section.querySelectorAll("span");
         section.style.opacity = "0";
-        content.appendChild(section);
-        this.scrollContent(content.parentElement);
+        inner.appendChild(section);
+        this.scrollContent(inner.parentElement);
+
+        var typing = false;
+        var stopTyping = false;
         setTimeout(() => {
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
             if (spans.length > 0) {
-                this.typing = true;
-                this.stopTyping = false;
+                typing = true;
+                stopTyping = false;
                 var ispan = 0;
                 const show = () => {
-                    if (this.stopTyping) {
+                    if (stopTyping) {
                         while (ispan < spans.length)
                             spans[ispan++].removeAttribute("style");
-                        this.typing = false;
+                        typing = false;
                     }
                     else {
                         spans[ispan++].removeAttribute("style");
                         if (ispan < spans.length) 
                             setTimeout(show, 25);
                         else
-                            this.typing = false;
+                            typing = false;
                     }
                 };
                 setTimeout(show, 100);
             }
         }, 0);
+
+        var content = document.querySelector(".content");
+        content.addEventListener("click", function done(e) {
+            content.removeEventListener("click", done);
+            stopTyping = true;
+            var wasTyping = typing;
+            const check = () => {
+                if (typing)
+                    setTimeout(check, 10)
+                else if (wasTyping == false)
+                    callback();
+            };
+            setTimeout(check, 10);
+        });
     };
 
-    addBlurbFast = (chunk: IMomentData) => {
+    addBlurbFast = (chunk: IMomentData, callback: () => void) => {
         var html = this.markupChunk(chunk)
         	.replace(/ style\="visibility:hidden"/g, "")
             .replace(/<span>/g, "")
@@ -231,6 +228,7 @@ class UI {
         div.innerHTML = html;
         var section = <HTMLDivElement>div.firstChild;
         content.appendChild(section);
+        callback();
     };
 
     clearBlurb = () => {
@@ -260,10 +258,7 @@ class UI {
     };
 
     changeBackground = (assetName: string, callback: () => void) => {
-        if (assetName == undefined) {
-            callback();
-            return;
-        }
+        if (assetName == undefined) return callback();
 
         let isImg = false;
         for (var img of [".jpg", ".jpeg", ".png", ".gif"])
@@ -280,7 +275,7 @@ class UI {
 
         let sceneUrl = "dist/game/_image.html";
         if (isImg == false) sceneUrl = `dist/game/${assetName}`;
-        if (frontFrame.src.indexOf(sceneUrl) != -1) callback();
+        if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
 
         let fader = <HTMLDivElement>inner.children[2];
         fader.style.opacity = "0.35";
@@ -303,7 +298,7 @@ class UI {
                     fader.style.zIndex = "0";
                     back.style.zIndex = "1";
                     front.style.zIndex = "0";
-                    if (callback != undefined) callback();
+                    if (callback != undefined) return callback();
                 });
             }
         });
