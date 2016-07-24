@@ -14,7 +14,9 @@ class Game {
         this.gdata = new GameData();
         let options = this.gdata.options;
         let skipMenu = (options != undefined && options.skipMenu);
-        let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "_menu.html");
+        let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
+        if (menuHtml == "") 
+            menuHtml = "teller-menu.html";
 
         (<any>window).GameInstance = this;
 
@@ -60,24 +62,18 @@ class Game {
         else if (op == Op.BLURB) {
             if (this.cix < this.chunks.length) {
                 var chunk = this.chunks[this.cix++];
-                if ((<IBackground>chunk).asset != undefined) {
-                    ui.changeBackground((<IBackground>chunk).asset, () => {
-                        setTimeout(() => { this.update(Op.BLURB); }, 0);
+
+                let notLast = this.cix < this.chunks.length;
+                let goFast = this.gdata.options.fastStory && notLast;
+                if (goFast) {
+                    ui.addBlurbFast(chunk, () => {
+                        setTimeout(() => { this.update(Op.BLURB); }, 50);
                     });
                 }
                 else {
-                    let notLast = this.cix < this.chunks.length;
-                    let goFast = this.gdata.options.fastStory && notLast;
-                    if (goFast) {
-                        ui.addBlurbFast(chunk, () => {
-                            setTimeout(() => { this.update(Op.BLURB); }, 50);
-                        });
-                    }
-                    else {
-                        ui.addBlurb(chunk, () => {
-                            setTimeout(() => { this.update(Op.BLURB); }, 50);
-                        });
-                    }
+                    ui.addBlurb(chunk, () => {
+                        setTimeout(() => { this.update(Op.BLURB); }, 50);
+                    });
                 }
             }
             else {
@@ -118,7 +114,7 @@ class Game {
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
-                this.getDataFile("dist/game/app.json", (text: any) => {
+                this.getDataFile("game/app.json", (text: any) => {
                     this.gdata.saveData(text);
                     this.restoreContinueState();
                     setTimeout(() => { this.update(Op.MOMENT); }, 0);
@@ -183,9 +179,9 @@ class Game {
         this.raiseActionEvent(OpAction.GAME_START);
 
         if (options.skipFileLoad == false) {
-            this.getDataFile("dist/game/app.json", (text: any) => {
+            this.getDataFile("game/app.json", (text: any) => {
                 this.gdata.saveData(text);
-                //initial state is dependent of game data
+                //initial state is dependent on game data
                 let state = { intro: true };
                 state[this.gdata.game.initialstate] = true;
                 this.gdata.state = state;

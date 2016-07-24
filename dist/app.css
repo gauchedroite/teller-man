@@ -91,6 +91,17 @@ iframe {
     transform: scale(1);
   }
 }
+@keyframes color-cycle {
+  0% {
+    background: rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    background: rgba(0, 0, 0, 0.3);
+  }
+  100% {
+    background: rgba(0, 0, 0, 0.1);
+  }
+}
 @font-face {
   font-family: "My Magneto";
   src: url(game/assets/MAGNETOB.TTF) format("truetype");
@@ -276,12 +287,16 @@ section.dialog p {
   padding-bottom: 12px;
 }
 section.image {
+  position: relative;
   padding: 8px 0;
   height: 150px;
+  width: 100%;
+  background-color: #bbb;
 }
 section.image div {
   width: 100%;
-  height: 100%;
+  height: 0;
+  transition: height 0.25s ease;
   background: no-repeat center center;
   background-size: cover;
 }

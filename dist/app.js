@@ -1447,36 +1447,57 @@ var UI = (function () {
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
-            section.style.opacity = "0";
-            inner.appendChild(section);
-            _this.scrollContent(inner.parentElement);
-            section.style.opacity = "1";
-            section.style.transition = "all 0.15s ease";
-            var spans = section.querySelectorAll("span");
-            var inline = chunk;
-            if (inline.image != undefined) {
-                return callback();
-            }
-            else if (spans.length == 0) {
-                content.addEventListener("click", function onclick() {
-                    content.removeEventListener("click", onclick);
+            if (chunk.asset != undefined) {
+                _this.changeBackground(chunk.asset, function () {
                     return callback();
                 });
+            }
+            else if (chunk.image != undefined) {
+                section.style.opacity = "0";
+                inner.appendChild(section);
+                _this.scrollContent(inner.parentElement);
+                section.style.opacity = "1";
+                section.style.transition = "opacity 0.1s ease";
+                section.style.animation = "color-cycle 5s infinite";
+                var assetName_1 = "game/" + chunk.image;
+                var image = new Image();
+                image.onload = function () {
+                    section.style.animation = "";
+                    var img = section.firstElementChild;
+                    img.style.backgroundImage = "url(" + assetName_1 + ")";
+                    img.style.height = "100%";
+                    return callback();
+                };
+                image.src = assetName_1;
             }
             else {
-                var ispan_1 = 0;
-                content.addEventListener("click", function onclick() {
-                    content.removeEventListener("click", onclick);
-                    clearTimeout(showTimer);
-                    while (ispan_1 < spans.length)
-                        spans[ispan_1++].removeAttribute("style");
-                    return callback();
-                });
-                var showTimer = setTimeout(function show() {
-                    spans[ispan_1++].removeAttribute("style");
-                    if (ispan_1 < spans.length)
-                        showTimer = setTimeout(show, 25);
-                }, 100);
+                section.style.opacity = "0";
+                inner.appendChild(section);
+                _this.scrollContent(inner.parentElement);
+                section.style.opacity = "1";
+                section.style.transition = "all 0.15s ease";
+                var spans_1 = section.querySelectorAll("span");
+                if (spans_1.length == 0) {
+                    content.addEventListener("click", function onclick() {
+                        content.removeEventListener("click", onclick);
+                        return callback();
+                    });
+                }
+                else {
+                    var ispan_1 = 0;
+                    content.addEventListener("click", function onclick() {
+                        content.removeEventListener("click", onclick);
+                        clearTimeout(showTimer);
+                        while (ispan_1 < spans_1.length)
+                            spans_1[ispan_1++].removeAttribute("style");
+                        return callback();
+                    });
+                    var showTimer = setTimeout(function show() {
+                        spans_1[ispan_1++].removeAttribute("style");
+                        if (ispan_1 < spans_1.length)
+                            showTimer = setTimeout(show, 25);
+                    }, 100);
+                }
             }
         };
         this.addBlurbFast = function (chunk, callback) {
@@ -1529,9 +1550,9 @@ var UI = (function () {
             var front = (zero.style.zIndex == "0" ? one : zero);
             var backFrame = back.firstElementChild;
             var frontFrame = front.firstElementChild;
-            var sceneUrl = "dist/game/_image.html";
+            var sceneUrl = "game/teller-image.html";
             if (isImg == false)
-                sceneUrl = "dist/game/" + assetName;
+                sceneUrl = "game/" + assetName;
             if (frontFrame.src.indexOf(sceneUrl) != -1)
                 return callback();
             var fader = inner.children[2];
@@ -1564,28 +1585,31 @@ var UI = (function () {
         this.markupChunk = function (chunk) {
             var dialog = chunk;
             var inline = chunk;
+            var backg = chunk;
             var html = Array();
-            if (inline.image != undefined) {
-                html.push("<section class=\"image\">");
-                html.push("<div style=\"background-image:url(dist/game/" + inline.image + ")\"></div>");
+            if (backg.asset != undefined) {
+            }
+            else if (inline.image != undefined) {
+                html.push("<section class='image'>");
+                html.push("<div></div>");
                 html.push("</section>");
             }
             else if (dialog.actor != undefined) {
-                html.push("<section class=\"dialog\">");
+                html.push("<section class='dialog'>");
                 html.push("<h1>" + dialog.actor + "</h1>");
                 if (dialog.parenthetical != undefined)
                     html.push("<h2>" + dialog.parenthetical + "</h2>");
                 for (var _i = 0, _a = dialog.lines; _i < _a.length; _i++) {
                     var line = _a[_i];
                     var spans = Array.prototype.map.call(line, function (char) {
-                        return "<span style=\"visibility:hidden\">" + char + "</span>";
+                        return "<span style='visibility:hidden'>" + char + "</span>";
                     });
                     html.push("<p>" + spans.join("") + "</p>");
                 }
                 html.push("</section>");
             }
             else {
-                html.push("<section class=\"text\">");
+                html.push("<section class='text'>");
                 for (var _b = 0, _c = dialog.lines; _b < _c.length; _b++) {
                     var line = _c[_b];
                     html.push("<p>" + line + "</p>");
@@ -1644,7 +1668,7 @@ var UI = (function () {
                 setTimeout(ready, 0);
             }
         });
-        var menuUrl = "dist/game/" + menuPage;
+        var menuUrl = "game/" + menuPage;
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
     return UI;
@@ -1678,24 +1702,17 @@ var Game = (function () {
             else if (op == Op.BLURB) {
                 if (_this.cix < _this.chunks.length) {
                     var chunk = _this.chunks[_this.cix++];
-                    if (chunk.asset != undefined) {
-                        ui.changeBackground(chunk.asset, function () {
-                            setTimeout(function () { _this.update(Op.BLURB); }, 0);
+                    var notLast = _this.cix < _this.chunks.length;
+                    var goFast = _this.gdata.options.fastStory && notLast;
+                    if (goFast) {
+                        ui.addBlurbFast(chunk, function () {
+                            setTimeout(function () { _this.update(Op.BLURB); }, 50);
                         });
                     }
                     else {
-                        var notLast = _this.cix < _this.chunks.length;
-                        var goFast = _this.gdata.options.fastStory && notLast;
-                        if (goFast) {
-                            ui.addBlurbFast(chunk, function () {
-                                setTimeout(function () { _this.update(Op.BLURB); }, 50);
-                            });
-                        }
-                        else {
-                            ui.addBlurb(chunk, function () {
-                                setTimeout(function () { _this.update(Op.BLURB); }, 50);
-                            });
-                        }
+                        ui.addBlurb(chunk, function () {
+                            setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                        });
                     }
                 }
                 else {
@@ -1736,7 +1753,7 @@ var Game = (function () {
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
-                    _this.getDataFile("dist/game/app.json", function (text) {
+                    _this.getDataFile("game/app.json", function (text) {
                         _this.gdata.saveData(text);
                         _this.restoreContinueState();
                         setTimeout(function () { _this.update(Op.MOMENT); }, 0);
@@ -1796,9 +1813,9 @@ var Game = (function () {
             _this.gdata.options = options;
             _this.raiseActionEvent(OpAction.GAME_START);
             if (options.skipFileLoad == false) {
-                _this.getDataFile("dist/game/app.json", function (text) {
+                _this.getDataFile("game/app.json", function (text) {
                     _this.gdata.saveData(text);
-                    //initial state is dependent of game data
+                    //initial state is dependent on game data
                     var state = { intro: true };
                     state[_this.gdata.game.initialstate] = true;
                     _this.gdata.state = state;
@@ -2220,7 +2237,9 @@ var Game = (function () {
         this.gdata = new GameData();
         var options = this.gdata.options;
         var skipMenu = (options != undefined && options.skipMenu);
-        var menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "_menu.html");
+        var menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
+        if (menuHtml == "")
+            menuHtml = "teller-menu.html";
         window.GameInstance = this;
         this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, menuHtml, function () {
             if (skipMenu) {
@@ -2363,7 +2382,7 @@ var Tide = (function () {
         document.getElementById("ide-sync").checked = options.syncEditor;
         document.getElementById("ide-fast").checked = options.fastStory;
         // Load the iframes at run time to make sure the ide is fully loaded first.
-        igame.querySelector("iframe").setAttribute("src", "index.html");
+        igame.querySelector("iframe").setAttribute("src", "dist/index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");
     }
     return Tide;

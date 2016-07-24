@@ -50,7 +50,7 @@ class Tide {
         (<any>document.getElementById("ide-fast")).checked = options.fastStory;
 
         // Load the iframes at run time to make sure the ide is fully loaded first.
-        igame.querySelector("iframe").setAttribute("src", "index.html");
+        igame.querySelector("iframe").setAttribute("src", "dist/index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");
     }
 

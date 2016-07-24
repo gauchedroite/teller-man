@@ -57,7 +57,7 @@ class UI {
             }
         });
 
-        var menuUrl = `dist/game/${menuPage}`;
+        var menuUrl = `game/${menuPage}`;
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
 
@@ -174,38 +174,61 @@ class UI {
         let div = document.createElement("div");
         div.innerHTML = html;
         let section = <HTMLDivElement>div.firstChild;
-        section.style.opacity = "0";
-        inner.appendChild(section);
-        this.scrollContent(inner.parentElement);
-        section.style.opacity = "1";
-        section.style.transition = "all 0.15s ease";
-        let spans = section.querySelectorAll("span");
 
-        let inline = <IInline>chunk;
-        if (inline.image != undefined) {
-            return callback();
-        }
-        else if (spans.length == 0) {
-            content.addEventListener("click", function onclick() {
-                content.removeEventListener("click", onclick);
+        if ((<IBackground>chunk).asset != undefined) {
+            this.changeBackground((<IBackground>chunk).asset, () => {
                 return callback();
             });
+        }
+        else if ((<IInline>chunk).image != undefined) {
+            section.style.opacity = "0";
+            inner.appendChild(section);
+            this.scrollContent(inner.parentElement);
+            section.style.opacity = "1";
+            section.style.transition = "opacity 0.1s ease";
+            section.style.animation = "color-cycle 5s infinite";
+
+            let assetName = `game/${(<IInline>chunk).image}`;
+            let image = new Image();
+            image.onload = () => {
+                section.style.animation = "";
+                let img = <HTMLImageElement>section.firstElementChild;
+                img.style.backgroundImage = `url(${assetName})`;
+                img.style.height = "100%";
+                return callback();
+            };
+            image.src = assetName;
         }
         else {
-            let ispan = 0;
-            content.addEventListener("click", function onclick() {
-                content.removeEventListener("click", onclick);
-                clearTimeout(showTimer);
-                while (ispan < spans.length)
-                    spans[ispan++].removeAttribute("style");
-                return callback();
-            });
+            section.style.opacity = "0";
+            inner.appendChild(section);
+            this.scrollContent(inner.parentElement);
+            section.style.opacity = "1";
+            section.style.transition = "all 0.15s ease";
+            let spans = section.querySelectorAll("span");
 
-            var showTimer = setTimeout(function show() {
-                spans[ispan++].removeAttribute("style");
-                if (ispan < spans.length) 
-                    showTimer = setTimeout(show, 25);
-            }, 100);
+            if (spans.length == 0) {
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    return callback();
+                });
+            }
+            else {
+                let ispan = 0;
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    clearTimeout(showTimer);
+                    while (ispan < spans.length)
+                        spans[ispan++].removeAttribute("style");
+                    return callback();
+                });
+
+                var showTimer = setTimeout(function show() {
+                    spans[ispan++].removeAttribute("style");
+                    if (ispan < spans.length) 
+                        showTimer = setTimeout(show, 25);
+                }, 100);
+            }
         }
     };
 
@@ -264,8 +287,8 @@ class UI {
         let backFrame = <HTMLIFrameElement>back.firstElementChild;
         let frontFrame = <HTMLIFrameElement>front.firstElementChild;
 
-        let sceneUrl = "dist/game/_image.html";
-        if (isImg == false) sceneUrl = `dist/game/${assetName}`;
+        let sceneUrl = "game/teller-image.html";
+        if (isImg == false) sceneUrl = `game/${assetName}`;
         if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
 
         let fader = <HTMLDivElement>inner.children[2];
@@ -301,15 +324,18 @@ class UI {
     private markupChunk = (chunk: IMomentData): string => {
         let dialog = <IDialog>chunk;
         let inline = <IInline>chunk;
+        let backg = <IBackground>chunk;
         let html = Array<string>();
 
-        if (inline.image != undefined) {
-            html.push(`<section class="image">`);
-            html.push(`<div style="background-image:url(dist/game/${inline.image})"></div>`);
-            html.push(`</section>`);
+        if (backg.asset != undefined) {
+        }
+        else if (inline.image != undefined) {
+            html.push("<section class='image'>");
+            html.push("<div></div>");
+            html.push("</section>");
         }
         else if (dialog.actor != undefined) {
-            html.push(`<section class="dialog">`);
+            html.push("<section class='dialog'>");
             html.push(`<h1>${dialog.actor}</h1>`);
 
             if (dialog.parenthetical != undefined)
@@ -317,18 +343,18 @@ class UI {
 
             for (var line of dialog.lines) {
                 var spans = Array.prototype.map.call(line, function (char:any) {
-                    return `<span style="visibility:hidden">${char}</span>`;
+                    return `<span style='visibility:hidden'>${char}</span>`;
                 })
                 html.push(`<p>${spans.join("")}</p>`);
             }
-            html.push(`</section>`);
+            html.push("</section>");
         }
         else {
-            html.push(`<section class="text">`);
+            html.push("<section class='text'>");
             for (var line of dialog.lines) {
                 html.push(`<p>${line}</p>`);
             }
-            html.push(`</section>`);
+            html.push("</section>");
         }
 
         return html.join("");
