@@ -36,7 +36,7 @@
             var imageFile = localStorage.getItem("_image_file");
             var assetName = "assets/" + imageFile;
             var image = new Image();
-            image.onload = () => {
+            image.onload = function () {
                 var content = document.querySelector(".content");
                 content.style.backgroundImage = "url(" + assetName  + ")";
                 localStorage.setItem("ding", '{"content":"ready"}');

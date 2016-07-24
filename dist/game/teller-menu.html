@@ -94,7 +94,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             var assetName = "assets/menu.jpg";
             var image = new Image();
-            image.onload = () => {
+            image.onload = function() {
                 var content = document.querySelector(".content");
                 content.style.backgroundImage = "url(" + assetName  + ")";
                 localStorage.setItem("ding", '{"menu":"ready"}');
