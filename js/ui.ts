@@ -179,9 +179,13 @@ class UI {
         this.scrollContent(inner.parentElement);
         section.style.opacity = "1";
         section.style.transition = "all 0.15s ease";
-
         let spans = section.querySelectorAll("span");
-        if (spans.length == 0) {
+
+        let inline = <IInline>chunk;
+        if (inline.image != undefined) {
+            return callback();
+        }
+        else if (spans.length == 0) {
             content.addEventListener("click", function onclick() {
                 content.removeEventListener("click", onclick);
                 return callback();

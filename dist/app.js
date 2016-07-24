@@ -1453,7 +1453,11 @@ var UI = (function () {
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
             var spans = section.querySelectorAll("span");
-            if (spans.length == 0) {
+            var inline = chunk;
+            if (inline.image != undefined) {
+                return callback();
+            }
+            else if (spans.length == 0) {
                 content.addEventListener("click", function onclick() {
                     content.removeEventListener("click", onclick);
                     return callback();
@@ -1778,20 +1782,26 @@ var Game = (function () {
             }
         };
         this.newGame = function () {
-            var state = { intro: true };
-            state[_this.gdata.game.initialstate] = true;
-            _this.gdata.state = state; //clear and init state
             _this.gdata.history = []; //init the list of showned moments
             _this.gdata.continueState = null;
             var options = _this.gdata.options;
             if (options == undefined)
-                options = { skipFileLoad: false };
+                options = {
+                    skipFileLoad: false,
+                    skipMenu: true,
+                    syncEditor: false,
+                    fastStory: false
+                };
             options.skipMenu = true;
             _this.gdata.options = options;
             _this.raiseActionEvent(OpAction.GAME_START);
             if (options.skipFileLoad == false) {
                 _this.getDataFile("dist/game/app.json", function (text) {
                     _this.gdata.saveData(text);
+                    //initial state is dependent of game data
+                    var state = { intro: true };
+                    state[_this.gdata.game.initialstate] = true;
+                    _this.gdata.state = state;
                     setTimeout(function () { location.href = "index.html"; }, 0);
                 });
             }
@@ -2210,8 +2220,9 @@ var Game = (function () {
         this.gdata = new GameData();
         var options = this.gdata.options;
         var skipMenu = (options != undefined && options.skipMenu);
+        var menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "_menu.html");
         window.GameInstance = this;
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, this.gdata.game.desc, function () {
+        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, menuHtml, function () {
             if (skipMenu) {
                 options.skipMenu = false;
                 _this.gdata.options = options;
