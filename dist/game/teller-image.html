@@ -33,8 +33,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var imageFile = localStorage.getItem("_image_file");
-            var assetName = "assets/" + imageFile;
+            var assetName = "assets/" + localStorage.getItem("_image_file");
             var image = new Image();
             image.onload = function () {
                 var content = document.querySelector(".content");

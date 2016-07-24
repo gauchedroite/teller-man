@@ -35,7 +35,7 @@
         document.addEventListener("DOMContentLoaded", function() {
             var assetName = "assets/nicolasP_CoffeeB.jpg";
             var image = new Image();
-            image.onload = () => {
+            image.onload = function () {
                 var content = document.querySelector(".content");
                 content.style.backgroundImage = "url(" + assetName  + ")";
                 localStorage.setItem("ding", '{"content":"ready"}');
