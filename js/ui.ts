@@ -23,12 +23,12 @@ class UI {
 
         if (document.querySelector("body").classList.contains("landscape")) {
             var navbar = <HTMLDivElement>document.querySelector(".navbar"); 
-            var shell = <HTMLDivElement>document.querySelector(".shell"); 
+            var inner = <HTMLDivElement>document.querySelector(".story-inner"); 
             navbar.addEventListener("click", (e) => {
-                if (shell.classList.contains("retracted"))
-                    shell.classList.remove("retracted");
+                if (inner.classList.contains("retracted"))
+                    inner.classList.remove("retracted");
                 else
-                    shell.classList.add("retracted");
+                    inner.classList.add("retracted");
             });
         }
 
@@ -148,8 +148,8 @@ class UI {
         content.style.pointerEvents = "auto";
 
         // make sure the first blurb will be visible
-        let shell = <HTMLElement>document.querySelector(".shell");
-        shell.scrollTop = content.offsetTop;
+        let inner = <HTMLElement>document.querySelector(".story-inner");
+        inner.scrollTop = content.offsetTop;
 
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";

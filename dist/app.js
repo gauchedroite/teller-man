@@ -1424,8 +1424,8 @@ var UI = (function () {
             content.classList.remove("overlay");
             content.style.pointerEvents = "auto";
             // make sure the first blurb will be visible
-            var shell = document.querySelector(".shell");
-            shell.scrollTop = content.offsetTop;
+            var inner = document.querySelector(".story-inner");
+            inner.scrollTop = content.offsetTop;
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
             var text = document.querySelector(".content-inner");
@@ -1609,12 +1609,12 @@ var UI = (function () {
         });
         if (document.querySelector("body").classList.contains("landscape")) {
             var navbar = document.querySelector(".navbar");
-            var shell = document.querySelector(".shell");
+            var inner = document.querySelector(".story-inner");
             navbar.addEventListener("click", function (e) {
-                if (shell.classList.contains("retracted"))
-                    shell.classList.remove("retracted");
+                if (inner.classList.contains("retracted"))
+                    inner.classList.remove("retracted");
                 else
-                    shell.classList.add("retracted");
+                    inner.classList.add("retracted");
             });
         }
         if ("addEventListener" in document) {

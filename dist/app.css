@@ -209,14 +209,17 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
 }
-.shell {
+.story {
   z-index: 10;
-  position: relative;
+  position: absolute;
   width: 100%;
   height: 100%;
   overflow: hidden;
+}
+.story-inner {
+  position: absolute;
+  overflow: hidden;
   background-color: black;
-  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
 }
 .graphics {
   display: none;
@@ -422,16 +425,18 @@ section.image div {
   width: 100%;
   height: 100%;
 }
-.landscape .shell {
+.landscape .story-inner {
   width: 35%;
   min-width: 350px;
   max-width: 450px;
+  right: 7%;
   height: 95%;
   top: 2.5%;
   border: 1px solid #333;
   transition: height 0.15s ease;
+  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
 }
-.landscape .shell.retracted {
+.landscape .story-inner.retracted {
   height: 36px;
   opacity: 0.4;
 }

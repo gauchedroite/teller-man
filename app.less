@@ -30,14 +30,18 @@ body {
     .noselect
 }
 
-.shell {
+.story {
     z-index: 10;
-    position: relative;
+    position: absolute;
     width: 100%;
     height: 100%;
     overflow: hidden;
+}
+
+.story-inner {
+    position: absolute;
+    overflow: hidden;
     background-color: black;  //theme2
-    box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
 }
 
 .graphics {
@@ -253,14 +257,16 @@ section {
 }
 
 .landscape {
-    .shell {
+    .story-inner {
         width: 35%;
         min-width: 350px;
         max-width: 450px;
+        right: 7%;
         height: 95%;
         top: 2.5%;
         border: 1px solid @seperator-color;
         transition: height 0.15s ease;
+        box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
         &.retracted {
             height: @navbar-height;
             opacity: 0.4;
