@@ -15,13 +15,6 @@ class Tide {
             gdata.options = options;
         }
 
-        document.getElementById("ide-play-edit").addEventListener("click", (e) => {
-            if (ied.classList.contains("show"))
-                ied.classList.remove("show");
-            else
-                ied.classList.add("show");
-        });
-
         document.getElementById("ide-gamefile").addEventListener("click", (e) => {
             var checked = (<any>e.target).checked;
             var options = gdata.options;
@@ -41,6 +34,21 @@ class Tide {
             var options = gdata.options;
             options.fastStory = checked;
             gdata.options = options;
+        });
+
+        document.getElementById("ide-play-edit").addEventListener("click", (e) => {
+            if (ied.classList.contains("show"))
+                ied.classList.remove("show");
+            else
+                ied.classList.add("show");
+        });
+
+        document.getElementById("ide-reload-game").addEventListener("click", (e) => {
+             igame.querySelector("iframe").setAttribute("src", "dist/index.html");
+        });
+
+        document.getElementById("ide-reload-editor").addEventListener("click", (e) => {
+             ied.querySelector("iframe").setAttribute("src", "index-edit.html");
         });
 
         (<any>window).onAction = this.action;

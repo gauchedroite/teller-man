@@ -20,16 +20,20 @@ class Game {
 
         (<any>window).GameInstance = this;
 
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, menuHtml, () => {
-            if (skipMenu) {
-                options.skipMenu = false;
-                this.gdata.options = options;
-                this.update(Op.WAITING);
-            }
-            else {
-                this.update(Op.MENU_BOOT);
-            }
-        });
+        this.ui = new UI(menuHtml, 
+            () => {
+                if (skipMenu) {
+                    options.skipMenu = false;
+                    this.gdata.options = options;
+                    this.update(Op.WAITING);
+                }
+                else {
+                    this.update(Op.MENU_BOOT);
+                }
+            }, 
+            () => {
+                this.update(Op.MENU_INGAME);
+            });
     }
 
     update = (op: Op, param?: any): void => {
@@ -40,7 +44,9 @@ class Game {
             this.saveContinueState();
 
             if (this.currentMoment == null) { 
-                ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment."); 
+                ui.alert("Il ne se passe plus rien pour le moment.", () => {
+                    this.update(Op.WAITING);
+                }); 
                 return null;
             }
 
@@ -88,10 +94,14 @@ class Game {
                 let messages = this.getAllPossibleMessages();
                 let choices = this.buildChoices(moments, messages);
                 if (choices.length > 0) {
-                    ui.showChoices(Op.CHOICES, choices);
+                    ui.showChoices(choices, (chosen: IChoice) => {
+                        this.update(Op.CHOICES, chosen);
+                    });
                 }
                 else {
-                    ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
+                    ui.alert("Il ne se passe plus rien pour le moment.", () => {
+                        this.update(Op.WAITING);
+                    });
                 }
             }
         }
@@ -105,12 +115,18 @@ class Game {
         }
         else if (op == Op.MENU_BOOT) {
             if (this.gdata.options == undefined)
-                ui.showMenu(Op.NEWGAME);
+                ui.showMenu(Op.NEWGAME, null, (chosen: Op) => {
+                    setTimeout(() => { this.update(chosen); }, 0);
+                });
             else
-                ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
+                ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME, (chosen: Op) => {
+                    setTimeout(() => { this.update(chosen); }, 0);
+                });
         }
         else if (op == Op.MENU_INGAME) {
-            ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
+            ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME, (chosen: Op) => {
+                setTimeout(() => { this.update(chosen); }, 0);
+            });
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
@@ -137,14 +153,16 @@ class Game {
             setTimeout(() => { this.update(Op.MOMENT); }, 0);
         }
         else {
-            ui.alert(Op.WAITING, "Game Over?");
+            ui.alert("Game Over?", () => {
+                this.update(Op.WAITING);
+            });
         }
     };
 
     saveContinueState = () => {
         this.gdata.continueState = {
-            moment: this.currentMoment,
-            scene: this.currentScene,
+            momentId: (this.currentMoment != undefined ? this.currentMoment.id : undefined),
+            sceneId: (this.currentScene != undefined ? this.currentScene.id : undefined),
             forbiddenSceneId: this.forbiddenSceneId,
             state: this.gdata.state,
             history: this.gdata.history
@@ -154,8 +172,8 @@ class Game {
     restoreContinueState = () => {
         let cstate = this.gdata.continueState;
         if (cstate != undefined) {
-            this.currentMoment = cstate.moment;
-            this.currentScene = cstate.scene;
+            this.currentMoment = (cstate.momentId != undefined ? this.gdata.getMoment(this.gdata.moments, cstate.momentId) : undefined);
+            this.currentScene = (cstate.sceneId != undefined ? this.gdata.getScene(this.gdata.scenes, cstate.sceneId) : undefined);
             this.forbiddenSceneId = cstate.forbiddenSceneId;
             this.gdata.state = cstate.state; 
             this.gdata.history = cstate.history;
@@ -178,17 +196,22 @@ class Game {
 
         this.raiseActionEvent(OpAction.GAME_START);
 
+        const setInitialState = () => {
+            //initial state is dependent on game data
+            let state = { intro: true };
+            state[this.gdata.game.initialstate] = true;
+            this.gdata.state = state;
+        };
+
         if (options.skipFileLoad == false) {
             this.getDataFile("game/app.json", (text: any) => {
                 this.gdata.saveData(text);
-                //initial state is dependent on game data
-                let state = { intro: true };
-                state[this.gdata.game.initialstate] = true;
-                this.gdata.state = state;
+                setInitialState();
                 setTimeout(function() { location.href = "index.html"; }, 0);
             });
         }
         else {
+            setInitialState();
             setTimeout(function() { location.href = "index.html"; }, 0);
         }
     };

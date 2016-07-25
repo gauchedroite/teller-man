@@ -1344,10 +1344,9 @@ var CKind;
     CKind[CKind["messageFrom"] = 3] = "messageFrom";
 })(CKind || (CKind = {}));
 var UI = (function () {
-    function UI(update, opmenu, skipMenu, menuPage, ready) {
+    function UI(menuPage, ready, onmenu) {
         var _this = this;
-        this.update = update;
-        this.alert = function (op, text) {
+        this.alert = function (text, onalert) {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
             content.style.pointerEvents = "none";
@@ -1355,18 +1354,18 @@ var UI = (function () {
             panel.innerHTML = "<p>" + text + "</p>";
             var modal = document.querySelector(".modal");
             modal.classList.add("show");
-            var me = _this;
-            modal.addEventListener("click", function click(e) {
-                modal.removeEventListener("click", click);
+            var onclick = function () {
+                modal.removeEventListener("click", onclick);
                 modal.classList.remove("show");
                 setTimeout(function () {
                     content.classList.remove("overlay");
                     content.style.pointerEvents = "";
-                    me.update(op);
+                    setTimeout(onalert, 0);
                 }, 250);
-            });
+            };
+            modal.addEventListener("click", onclick);
         };
-        this.showChoices = function (op, sceneChoices) {
+        this.showChoices = function (sceneChoices, onchoice) {
             var panel = document.querySelector(".choice-panel");
             panel.innerHTML = "";
             var ul = document.createElement("ul");
@@ -1409,11 +1408,13 @@ var UI = (function () {
                         break;
                     li = li.parentElement;
                 }
-                me.update(op, {
-                    kind: parseInt(li.getAttribute("data-kind")),
-                    id: parseInt(li.getAttribute("data-id")),
-                    text: ""
-                });
+                setTimeout(function () {
+                    onchoice({
+                        kind: parseInt(li.getAttribute("data-kind")),
+                        id: parseInt(li.getAttribute("data-id")),
+                        text: ""
+                    });
+                }, 0);
             };
             for (var i = 0; i < lis.length; i++) {
                 lis[i].addEventListener("click", onChoice);
@@ -1516,7 +1517,7 @@ var UI = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
-        this.showMenu = function (opNewGame, opContinue) {
+        this.showMenu = function (opNewGame, opContinue, onmenu) {
             var menu = document.querySelector(".menu");
             menu.style.right = "0";
             var options = { continue: "disabled" };
@@ -1527,10 +1528,10 @@ var UI = (function () {
             configureMenu(options, function (name) {
                 if (name == "continue") {
                     menu.style.right = "100%";
-                    setTimeout(function () { _this.update(opContinue); }, 250);
+                    setTimeout(function () { onmenu(opContinue); }, 250);
                 }
                 else {
-                    setTimeout(function () { _this.update(opNewGame); }, 500);
+                    setTimeout(function () { onmenu(opNewGame); }, 500);
                 }
             });
         };
@@ -1633,7 +1634,7 @@ var UI = (function () {
         };
         document.querySelector(".goto-menu").addEventListener("click", function (e) {
             e.stopPropagation();
-            _this.update(opmenu);
+            setTimeout(onmenu, 0);
         });
         if (document.querySelector("body").classList.contains("landscape")) {
             var navbar = document.querySelector(".navbar");
@@ -1682,7 +1683,9 @@ var Game = (function () {
             if (op == Op.MOMENT) {
                 _this.saveContinueState();
                 if (_this.currentMoment == null) {
-                    ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
+                    ui.alert("Il ne se passe plus rien pour le moment.", function () {
+                        _this.update(Op.WAITING);
+                    });
                     return null;
                 }
                 _this.chunks = _this.parseMoment(_this.currentMoment);
@@ -1727,10 +1730,14 @@ var Game = (function () {
                     var messages = _this.getAllPossibleMessages();
                     var choices = _this.buildChoices(moments, messages);
                     if (choices.length > 0) {
-                        ui.showChoices(Op.CHOICES, choices);
+                        ui.showChoices(choices, function (chosen) {
+                            _this.update(Op.CHOICES, chosen);
+                        });
                     }
                     else {
-                        ui.alert(Op.WAITING, "Il ne se passe plus rien pour le moment.");
+                        ui.alert("Il ne se passe plus rien pour le moment.", function () {
+                            _this.update(Op.WAITING);
+                        });
                     }
                 }
             }
@@ -1744,12 +1751,18 @@ var Game = (function () {
             }
             else if (op == Op.MENU_BOOT) {
                 if (_this.gdata.options == undefined)
-                    ui.showMenu(Op.NEWGAME);
+                    ui.showMenu(Op.NEWGAME, null, function (chosen) {
+                        setTimeout(function () { _this.update(chosen); }, 0);
+                    });
                 else
-                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME);
+                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME, function (chosen) {
+                        setTimeout(function () { _this.update(chosen); }, 0);
+                    });
             }
             else if (op == Op.MENU_INGAME) {
-                ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME);
+                ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME, function (chosen) {
+                    setTimeout(function () { _this.update(chosen); }, 0);
+                });
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
@@ -1776,13 +1789,15 @@ var Game = (function () {
                 setTimeout(function () { _this.update(Op.MOMENT); }, 0);
             }
             else {
-                ui.alert(Op.WAITING, "Game Over?");
+                ui.alert("Game Over?", function () {
+                    _this.update(Op.WAITING);
+                });
             }
         };
         this.saveContinueState = function () {
             _this.gdata.continueState = {
-                moment: _this.currentMoment,
-                scene: _this.currentScene,
+                momentId: (_this.currentMoment != undefined ? _this.currentMoment.id : undefined),
+                sceneId: (_this.currentScene != undefined ? _this.currentScene.id : undefined),
                 forbiddenSceneId: _this.forbiddenSceneId,
                 state: _this.gdata.state,
                 history: _this.gdata.history
@@ -1791,8 +1806,8 @@ var Game = (function () {
         this.restoreContinueState = function () {
             var cstate = _this.gdata.continueState;
             if (cstate != undefined) {
-                _this.currentMoment = cstate.moment;
-                _this.currentScene = cstate.scene;
+                _this.currentMoment = (cstate.momentId != undefined ? _this.gdata.getMoment(_this.gdata.moments, cstate.momentId) : undefined);
+                _this.currentScene = (cstate.sceneId != undefined ? _this.gdata.getScene(_this.gdata.scenes, cstate.sceneId) : undefined);
                 _this.forbiddenSceneId = cstate.forbiddenSceneId;
                 _this.gdata.state = cstate.state;
                 _this.gdata.history = cstate.history;
@@ -1812,17 +1827,21 @@ var Game = (function () {
             options.skipMenu = true;
             _this.gdata.options = options;
             _this.raiseActionEvent(OpAction.GAME_START);
+            var setInitialState = function () {
+                //initial state is dependent on game data
+                var state = { intro: true };
+                state[_this.gdata.game.initialstate] = true;
+                _this.gdata.state = state;
+            };
             if (options.skipFileLoad == false) {
                 _this.getDataFile("game/app.json", function (text) {
                     _this.gdata.saveData(text);
-                    //initial state is dependent on game data
-                    var state = { intro: true };
-                    state[_this.gdata.game.initialstate] = true;
-                    _this.gdata.state = state;
+                    setInitialState();
                     setTimeout(function () { location.href = "index.html"; }, 0);
                 });
             }
             else {
+                setInitialState();
                 setTimeout(function () { location.href = "index.html"; }, 0);
             }
         };
@@ -2241,7 +2260,7 @@ var Game = (function () {
         if (menuHtml == "")
             menuHtml = "teller-menu.html";
         window.GameInstance = this;
-        this.ui = new UI(this.update, Op.MENU_INGAME, skipMenu, menuHtml, function () {
+        this.ui = new UI(menuHtml, function () {
             if (skipMenu) {
                 options.skipMenu = false;
                 _this.gdata.options = options;
@@ -2250,6 +2269,8 @@ var Game = (function () {
             else {
                 _this.update(Op.MENU_BOOT);
             }
+        }, function () {
+            _this.update(Op.MENU_INGAME);
         });
     }
     Game.getCommands = function (text) {
@@ -2353,12 +2374,6 @@ var Tide = (function () {
             options = { skipFileLoad: false, syncEditor: true };
             gdata.options = options;
         }
-        document.getElementById("ide-play-edit").addEventListener("click", function (e) {
-            if (ied.classList.contains("show"))
-                ied.classList.remove("show");
-            else
-                ied.classList.add("show");
-        });
         document.getElementById("ide-gamefile").addEventListener("click", function (e) {
             var checked = e.target.checked;
             var options = gdata.options;
@@ -2376,6 +2391,18 @@ var Tide = (function () {
             var options = gdata.options;
             options.fastStory = checked;
             gdata.options = options;
+        });
+        document.getElementById("ide-play-edit").addEventListener("click", function (e) {
+            if (ied.classList.contains("show"))
+                ied.classList.remove("show");
+            else
+                ied.classList.add("show");
+        });
+        document.getElementById("ide-reload-game").addEventListener("click", function (e) {
+            igame.querySelector("iframe").setAttribute("src", "dist/index.html");
+        });
+        document.getElementById("ide-reload-editor").addEventListener("click", function (e) {
+            ied.querySelector("iframe").setAttribute("src", "index-edit.html");
         });
         window.onAction = this.action;
         document.getElementById("ide-gamefile").checked = options.skipFileLoad;

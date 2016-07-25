@@ -15,10 +15,10 @@ interface IChoice {
 class UI {
     sections: Array<string>;
 
-    constructor (private update: (op: Op, param?: any) => void, opmenu: Op, skipMenu: boolean, menuPage: string, ready: () => void) {
+    constructor (menuPage: string, ready: () => void, onmenu: () => void) {
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
-            this.update(opmenu);
+            setTimeout(onmenu, 0);
         });
 
         if (document.querySelector("body").classList.contains("landscape")) {
@@ -61,7 +61,7 @@ class UI {
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
 
-    alert = (op: Op, text: string) => {
+    alert = (text: string, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
         content.style.pointerEvents = "none";
@@ -72,19 +72,19 @@ class UI {
         let modal = <HTMLElement>document.querySelector(".modal");
         modal.classList.add("show");
 
-        let me = this;
-        modal.addEventListener("click", function click(e) {
-            modal.removeEventListener("click", click);
+        let onclick = () => {
+            modal.removeEventListener("click", onclick);
             modal.classList.remove("show");
-            setTimeout(function() { 
+            setTimeout(() => { 
                 content.classList.remove("overlay");
                 content.style.pointerEvents = "";
-                me.update(op); 
+                setTimeout(onalert, 0);
             }, 250);
-        });
+        };
+        modal.addEventListener("click", onclick);
     };
 
-    showChoices = (op: Op, sceneChoices: Array<IChoice>) => {
+    showChoices = (sceneChoices: Array<IChoice>, onchoice: (chosen: IChoice) => void) => {
         let panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.innerHTML = "";
         let ul = document.createElement("ul");
@@ -131,11 +131,13 @@ class UI {
                 if (li.nodeName == "LI") break;
                 li = li.parentElement;
             }
-            me.update(op, <IChoice> {
-                kind: parseInt(li.getAttribute("data-kind")),
-                id: parseInt(li.getAttribute("data-id")),
-                text: ""
-            });
+            setTimeout(() => {
+                onchoice(<IChoice> {
+                    kind: parseInt(li.getAttribute("data-kind")),
+                    id: parseInt(li.getAttribute("data-id")),
+                    text: ""
+                });
+            }, 0);
         };
         for (var i = 0; i < lis.length; i++) {
             lis[i].addEventListener("click", onChoice);
@@ -250,7 +252,7 @@ class UI {
         content.innerHTML = "";
     };
 
-    showMenu = (opNewGame: Op, opContinue?: Op) => {
+    showMenu = (opNewGame: Op, opContinue: Op, onmenu: (choice: Op) => void) => {
         let menu = <HTMLElement>document.querySelector(".menu");
         menu.style.right = "0";
 
@@ -263,10 +265,10 @@ class UI {
         configureMenu(options, (name: string) => {
             if (name == "continue") {
                 menu.style.right = "100%";
-                setTimeout(() => {  this.update(opContinue); }, 250);
+                setTimeout(() => { onmenu(opContinue); }, 250);
             }
             else {
-                setTimeout(() => { this.update(opNewGame); }, 500);
+                setTimeout(() => { onmenu(opNewGame); }, 500);
             }
         });
     };
