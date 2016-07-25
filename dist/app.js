@@ -1538,6 +1538,8 @@ var UI = (function () {
         this.changeBackground = function (assetName, callback) {
             if (assetName == undefined)
                 return callback();
+            if (document.body.classList.contains("portrait"))
+                return callback();
             var isImg = false;
             for (var _i = 0, _a = [".jpg", ".jpeg", ".png", ".gif"]; _i < _a.length; _i++) {
                 var img = _a[_i];
@@ -1575,8 +1577,7 @@ var UI = (function () {
                         fader.style.zIndex = "0";
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
-                        if (callback != undefined)
-                            return callback();
+                        return callback();
                     });
                 }
             });
@@ -1636,19 +1637,21 @@ var UI = (function () {
             e.stopPropagation();
             setTimeout(onmenu, 0);
         });
-        if (document.querySelector("body").classList.contains("landscape")) {
-            var navbar = document.querySelector(".navbar");
-            var inner = document.querySelector(".story-inner");
-            navbar.addEventListener("click", function (e) {
+        var navbar = document.querySelector(".navbar");
+        var inner = document.querySelector(".story-inner");
+        navbar.addEventListener("click", function (e) {
+            if (document.body.classList.contains("landscape")) {
                 if (inner.classList.contains("retracted"))
                     inner.classList.remove("retracted");
                 else
                     inner.classList.add("retracted");
-            });
-        }
+            }
+        });
         if ("addEventListener" in document) {
             document.addEventListener("DOMContentLoaded", function () {
                 FastClick.attach(document.body);
+                var format = (window.outerWidth > 600 ? "landscape" : "portrait");
+                document.body.classList.add(format);
             }, false);
         }
         localStorage.setItem("ding", null);

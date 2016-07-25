@@ -29,8 +29,7 @@
         .content-inner {
             position: absolute;
             left: 10%;
-            top: 40%;
-            xxbackground-color: gray;
+            top: 30%;
         }
         .menu {
             margin-top: 75px;
@@ -73,6 +72,11 @@
         }
         button:disabled {
             display: none;
+        }
+        @media (min-width: 350px) {
+            .content-inner {
+                top: 40%;
+            }
         }
     </style>
 </head>

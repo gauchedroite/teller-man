@@ -21,20 +21,22 @@ class UI {
             setTimeout(onmenu, 0);
         });
 
-        if (document.querySelector("body").classList.contains("landscape")) {
-            var navbar = <HTMLDivElement>document.querySelector(".navbar"); 
-            var inner = <HTMLDivElement>document.querySelector(".story-inner"); 
-            navbar.addEventListener("click", (e) => {
+        var navbar = <HTMLDivElement>document.querySelector(".navbar"); 
+        var inner = <HTMLDivElement>document.querySelector(".story-inner"); 
+        navbar.addEventListener("click", (e) => {
+            if (document.body.classList.contains("landscape")) {
                 if (inner.classList.contains("retracted"))
                     inner.classList.remove("retracted");
                 else
                     inner.classList.add("retracted");
-            });
-        }
+            }
+        });
 
         if ("addEventListener" in document) {
             document.addEventListener("DOMContentLoaded", function() {
                 FastClick.attach(document.body);
+                let format = (window.outerWidth > 600 ? "landscape" : "portrait");
+                document.body.classList.add(format);
             }, false);
         }
 
@@ -276,6 +278,9 @@ class UI {
     changeBackground = (assetName: string, callback: () => void) => {
         if (assetName == undefined) return callback();
 
+        if (document.body.classList.contains("portrait"))
+            return callback();
+
         let isImg = false;
         for (var img of [".jpg", ".jpeg", ".png", ".gif"])
             if (assetName.endsWith(img)) isImg = true;
@@ -314,7 +319,7 @@ class UI {
                     fader.style.zIndex = "0";
                     back.style.zIndex = "1";
                     front.style.zIndex = "0";
-                    if (callback != undefined) return callback();
+                    return callback();
                 });
             }
         });

@@ -197,19 +197,6 @@ body {
   position: absolute;
   overflow: hidden;
   background-color: black;
-  width: 35%;
-  min-width: 350px;
-  max-width: 450px;
-  right: 7%;
-  height: 95%;
-  top: 2.5%;
-  border: 1px solid #333;
-  transition: height 0.15s ease;
-  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
-}
-.story-inner.retracted {
-  height: 36px;
-  opacity: 0.4;
 }
 .graphics {
   position: absolute;
@@ -433,4 +420,33 @@ section.image div {
 }
 .fader {
   background-color: black;
+}
+.landscape .story-inner {
+  width: 35%;
+  min-width: 350px;
+  max-width: 450px;
+  right: 7%;
+  height: 95%;
+  top: 2.5%;
+  border: 1px solid #333;
+  transition: height 0.15s ease;
+  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
+}
+.landscape .story-inner.retracted {
+  height: 36px;
+  opacity: 0.4;
+}
+.portrait .navbar {
+  height: 66px;
+}
+.portrait .content {
+  top: 66px;
+  height: calc(100% - 66px);
+}
+.portrait .content .content-spacer {
+  height: 66px;
+}
+.portrait .story-inner {
+  width: 100%;
+  height: 100%;
 }
