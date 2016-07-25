@@ -6,7 +6,7 @@
 @seperator-color: #333;
 @accent-color: orange;
 @navbar-height: 36px;
-@navbar-height-portrait: 66px;
+@navbar-height-portrait: 46px;
 
 ::-webkit-scrollbar { display: none; }
 
@@ -118,7 +118,7 @@ body {
         }
     }
     &.overlay {
-        pointer-events: none;
+        //pointer-events: none;
         opacity: 0.5;
         transition: opacity 0.25s ease; 
     }
@@ -135,11 +135,28 @@ section {
         }
     }
     &.dialog {
+        position: relative;
         padding: 8px 24px;
+        .head {
+            position: absolute;
+            width: 75px;
+            height: 75px;
+            top: 0;
+            left: 40px;
+            background: #bbb;
+            border-radius: 40px;
+        }
+        .text {
+            margin-left: 105px;
+            p {
+                margin: 0 10%;
+            }
+        }
         h1 {
             text-align: center;
             text-transform: uppercase;
             font-weight: bold;
+            padding-bottom: 8px;
         }
         h2 {
             text-align: center;

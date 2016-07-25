@@ -269,7 +269,6 @@ body {
   padding-bottom: 12px;
 }
 .content.overlay {
-  pointer-events: none;
   opacity: 0.5;
   transition: opacity 0.25s ease;
 }
@@ -284,12 +283,29 @@ section.text p {
   padding-bottom: 12px;
 }
 section.dialog {
+  position: relative;
   padding: 8px 24px;
+}
+section.dialog .head {
+  position: absolute;
+  width: 75px;
+  height: 75px;
+  top: 0;
+  left: 40px;
+  background: #bbb;
+  border-radius: 40px;
+}
+section.dialog .text {
+  margin-left: 105px;
+}
+section.dialog .text p {
+  margin: 0 10%;
 }
 section.dialog h1 {
   text-align: center;
   text-transform: uppercase;
   font-weight: bold;
+  padding-bottom: 8px;
 }
 section.dialog h2 {
   text-align: center;
@@ -437,14 +453,14 @@ section.image div {
   opacity: 0.4;
 }
 .portrait .navbar {
-  height: 66px;
+  height: 46px;
 }
 .portrait .content {
-  top: 66px;
-  height: calc(100% - 66px);
+  top: 46px;
+  height: calc(100% - 46px);
 }
 .portrait .content .content-spacer {
-  height: 66px;
+  height: 46px;
 }
 .portrait .story-inner {
   width: 100%;

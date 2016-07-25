@@ -342,7 +342,12 @@ class UI {
             html.push("</section>");
         }
         else if (dialog.actor != undefined) {
+            let hasImage = (dialog.mood != undefined);
             html.push("<section class='dialog'>");
+            if (hasImage) {
+                html.push(`<div class='head' style='background-image:url(game/assets/${dialog.mood})'></div>`);
+                html.push("<div class='text'>");
+            }
             html.push(`<h1>${dialog.actor}</h1>`);
 
             if (dialog.parenthetical != undefined)
@@ -354,6 +359,7 @@ class UI {
                 })
                 html.push(`<p>${spans.join("")}</p>`);
             }
+            if (hasImage) html.push("</div>");
             html.push("</section>");
         }
         else {

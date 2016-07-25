@@ -1597,7 +1597,12 @@ var UI = (function () {
                 html.push("</section>");
             }
             else if (dialog.actor != undefined) {
+                var hasImage = (dialog.mood != undefined);
                 html.push("<section class='dialog'>");
+                if (hasImage) {
+                    html.push("<div class='head' style='background-image:url(game/assets/" + dialog.mood + ")'></div>");
+                    html.push("<div class='text'>");
+                }
                 html.push("<h1>" + dialog.actor + "</h1>");
                 if (dialog.parenthetical != undefined)
                     html.push("<h2>" + dialog.parenthetical + "</h2>");
@@ -1608,6 +1613,8 @@ var UI = (function () {
                     });
                     html.push("<p>" + spans.join("") + "</p>");
                 }
+                if (hasImage)
+                    html.push("</div>");
                 html.push("</section>");
             }
             else {
