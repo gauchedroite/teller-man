@@ -1769,11 +1769,13 @@ var Game = (function () {
                     _this.getDataFile("game/app.json", function (text) {
                         _this.gdata.saveData(text);
                         _this.restoreContinueState();
+                        ui.initScene(_this.parseScene(_this.currentScene), function () { });
                         setTimeout(function () { _this.update(Op.MOMENT); }, 0);
                     });
                 }
                 else {
                     _this.restoreContinueState();
+                    ui.initScene(_this.parseScene(_this.currentScene), function () { });
                     setTimeout(function () { _this.update(Op.MOMENT); }, 0);
                 }
             }

@@ -133,11 +133,13 @@ class Game {
                 this.getDataFile("game/app.json", (text: any) => {
                     this.gdata.saveData(text);
                     this.restoreContinueState();
+                    ui.initScene(this.parseScene(this.currentScene), () => {});
                     setTimeout(() => { this.update(Op.MOMENT); }, 0);
                 });
             }
             else {
                 this.restoreContinueState();
+                ui.initScene(this.parseScene(this.currentScene), () => {});
                 setTimeout(() => { this.update(Op.MOMENT); }, 0);
             }
         }

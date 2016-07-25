@@ -42,10 +42,35 @@ body {
     position: absolute;
     overflow: hidden;
     background-color: black;  //theme2
+    width: 35%;
+    min-width: 350px;
+    max-width: 450px;
+    right: 7%;
+    height: 95%;
+    top: 2.5%;
+    border: 1px solid @seperator-color;
+    transition: height 0.15s ease;
+    box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
+    &.retracted {
+        height: @navbar-height;
+        opacity: 0.4;
+    }
 }
 
 .graphics {
-    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: block;
+    transition: opacity 0.75s ease;
+    iframe {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 .navbar {
@@ -260,41 +285,6 @@ section {
     }
 }
 
-.landscape {
-    .story-inner {
-        width: 35%;
-        min-width: 350px;
-        max-width: 450px;
-        right: 7%;
-        height: 95%;
-        top: 2.5%;
-        border: 1px solid @seperator-color;
-        transition: height 0.15s ease;
-        box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
-        &.retracted {
-            height: @navbar-height;
-            opacity: 0.4;
-        }
-    }
-
-    .graphics {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        display: block;
-        transition: opacity 0.75s ease;
-        iframe {
-            border: 0;
-            padding: 0;
-            margin: 0;
-            overflow: hidden;
-            width: 100%;
-            height: 100%;
-        }
-    }
-
-    .fader {
-        background-color: black;
-    }
+.fader {
+    background-color: black;
 }
-
