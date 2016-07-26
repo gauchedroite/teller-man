@@ -50,8 +50,8 @@
         .ide-game {
             position: absolute;
             top: 32px;
-            left: 150px;
-            width: calc(100% - 150px);
+            left: 200px;
+            width: calc(100% - 200px);
             height: calc(100% - 36px);
         }
         .ide-game iframe {
@@ -67,8 +67,8 @@
         .ide-editor {
             position: absolute;
             top: 100%;
-            left: 150px;
-            width: calc(100% - 150px);
+            left: 200px;
+            width: calc(100% - 200px);
             height: calc(100% - 36px);
             transition: top 0.25s ease; 
         }
@@ -79,12 +79,12 @@
         .show { top: 32px; }
         .debug {
             position: absolute;
-            width: 150px;
+            width: 200px;
             height: calc(100% - 36px);
             top: 32px;
         }
         .debug-content {
-            padding: 12px;
+            padding: 6px 12px;
         }
         table, caption, tbody, tfoot, thead, tr, th, td {
             border: 0;
@@ -111,6 +111,32 @@
         .changed td:last-child {
             color: green;
         }
+        .debug-moment {
+            padding: 6px 12px;
+        }
+        .debug-moment .head {
+            font-weight: bold;
+            border-bottom: 1px solid #a0a0a0;
+        }
+        .debug-moment .body {
+            padding-bottom: 12px;
+        }
+        .debug-state {
+            padding-top: 6px;
+        }
+        .debug-state button {
+            width: calc(100%);
+            margin: 0;
+        }
+        .debug-state textarea {
+            margin-top: 4px;
+            width: 100%;
+            background-color: #888;
+        }
+        a {
+            color: #a0a0a0;
+        }
+        .hidden { display: none; }
     </style>
 </head>
 
@@ -129,8 +155,21 @@
     </div>
 
     <div class="debug">
-        <div class="debug-content">
+        <div class="debug-moment">
+            <div class="head">When</div>
+            <div class="body" id="id-when"></div>
+            <div class="head">Commands</div>
+            <div class="body" id="id-command">.r silent</div>
+        </div>
+        <div class="debug-content hidden">
             <table></table>
+            <div class="debug-state">
+                <a href="#">View State ></a>
+                <div class="hidden">
+                    <textarea id="ide-state" rows="8" spellcheck="false"></textarea>
+                    <button id="ide-save-state">Save</button>
+                </div>
+            </div>
         </div>
     </div>
 

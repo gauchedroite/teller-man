@@ -2308,6 +2308,19 @@ var Game = (function () {
         }
         return commands;
     };
+    Game.getWhens = function (text) {
+        if (text == undefined)
+            return [];
+        var whens = new Array();
+        var parts = text.split(",");
+        for (var _i = 0, parts_5 = parts; _i < parts_5.length; _i++) {
+            var part = parts_5[_i];
+            if (part.length > 0) {
+                whens.push(part.trim());
+            }
+        }
+        return whens;
+    };
     return Game;
 }());
 var Tide = (function () {
@@ -2336,7 +2349,9 @@ var Tide = (function () {
                     all.push({ name: property, prev: undefined, now: state[property] });
                 }
                 all.sort(function (a, b) { return a.name.localeCompare(b.name); });
-                var table = document.querySelector("div.debug-content table");
+                var div = document.querySelector("div.debug-content");
+                div.classList.remove("hidden");
+                var table = div.getElementsByTagName("table")[0];
                 for (var i = table.rows.length - 1; i >= 0; i--)
                     table.deleteRow(i);
                 var thead = table.createTHead();
@@ -2367,7 +2382,9 @@ var Tide = (function () {
             }
             else if (op == OpAction.GAME_START) {
                 _this.prevState = {};
-                var table = document.querySelector("div.debug-content table");
+                var div = document.querySelector("div.debug-content");
+                div.classList.add("hidden");
+                var table = div.getElementsByTagName("table")[0];
                 for (var i = table.rows.length - 1; i >= 0; i--)
                     table.deleteRow(i);
             }
@@ -2375,7 +2392,18 @@ var Tide = (function () {
                 if (document.getElementById("ide-sync").checked) {
                     var iframe = document.querySelector("div.ide-editor iframe");
                     var editor = iframe.contentWindow.EditorInstance;
-                    editor.gotoMoment(param);
+                    var moment = param;
+                    editor.gotoMoment(moment);
+                    var whens = Game.getWhens(moment.when);
+                    var divs = Array.prototype.map.call(whens, function (when) {
+                        return "<div>" + when + "</div>";
+                    });
+                    document.getElementById("id-when").innerHTML = divs.join("");
+                    var cmds = Game.getCommands(moment.text);
+                    divs = Array.prototype.map.call(cmds, function (cmd) {
+                        return "<div>" + cmd + "</div>";
+                    });
+                    document.getElementById("id-command").innerHTML = divs.join("");
                 }
             }
         };
@@ -2416,6 +2444,26 @@ var Tide = (function () {
         });
         document.getElementById("ide-reload-editor").addEventListener("click", function (e) {
             ied.querySelector("iframe").setAttribute("src", "index-edit.html");
+        });
+        document.querySelector(".debug-state a").addEventListener("click", function (e) {
+            var link = e.target;
+            var div = link.nextElementSibling;
+            if (div.classList.contains("hidden") == false) {
+                div.classList.add("hidden");
+                return;
+            }
+            div.classList.remove("hidden");
+            var text = JSON.stringify(gdata.state);
+            var textarea = div.getElementsByTagName("textarea")[0];
+            textarea.value = text;
+        });
+        document.getElementById("ide-save-state").addEventListener("click", function (e) {
+            var button = e.target;
+            var textarea = button.previousElementSibling;
+            var div = textarea.parentElement;
+            div.classList.add("hidden");
+            gdata.state = JSON.parse(textarea.value);
+            _this.action(OpAction.SHOWING_CHOICES);
         });
         window.onAction = this.action;
         document.getElementById("ide-gamefile").checked = options.skipFileLoad;

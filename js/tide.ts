@@ -51,6 +51,28 @@ class Tide {
              ied.querySelector("iframe").setAttribute("src", "index-edit.html");
         });
 
+        document.querySelector(".debug-state a").addEventListener("click", (e) => {
+            var link = <HTMLLinkElement>e.target;
+            var div = <HTMLDivElement>link.nextElementSibling;
+            if (div.classList.contains("hidden") == false) {
+                div.classList.add("hidden");
+                return;
+            }
+            div.classList.remove("hidden");
+            let text = JSON.stringify(gdata.state);
+            let textarea = <HTMLTextAreaElement>div.getElementsByTagName("textarea")[0];
+            textarea.value = text;
+        });
+
+        document.getElementById("ide-save-state").addEventListener("click", (e) => {
+            var button = <HTMLButtonElement>e.target;
+            var textarea = <HTMLTextAreaElement>button.previousElementSibling;
+            var div = <HTMLDivElement>textarea.parentElement;
+            div.classList.add("hidden");
+            gdata.state = JSON.parse(textarea.value);
+            this.action(OpAction.SHOWING_CHOICES);
+        });
+
         (<any>window).onAction = this.action;
 
         (<any>document.getElementById("ide-gamefile")).checked = options.skipFileLoad;
@@ -86,7 +108,9 @@ class Tide {
             }
             all.sort((a: IProp, b: IProp) => { return a.name.localeCompare(b.name); });
 
-            var table = <HTMLTableElement>document.querySelector("div.debug-content table");
+            let div = <HTMLDivElement>document.querySelector("div.debug-content");
+            div.classList.remove("hidden");
+            var table = div.getElementsByTagName("table")[0];
             for (var i = table.rows.length - 1; i >= 0; i--)
                 table.deleteRow(i);
 
@@ -120,15 +144,30 @@ class Tide {
         else if (op == OpAction.GAME_START) {
             this.prevState = {};
 
-            var table = <HTMLTableElement>document.querySelector("div.debug-content table");
+            let div = <HTMLDivElement>document.querySelector("div.debug-content");
+            div.classList.add("hidden");
+            var table = div.getElementsByTagName("table")[0];
             for (var i = table.rows.length - 1; i >= 0; i--)
                 table.deleteRow(i);
         }
         else if (op == OpAction.SHOWING_MOMENT) {
             if ((<any>document.getElementById("ide-sync")).checked) {
-                var iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
-                var editor = <Editor>(<any>iframe.contentWindow).EditorInstance;
-                editor.gotoMoment(<IMoment>param);
+                let iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
+                let editor = <Editor>(<any>iframe.contentWindow).EditorInstance;
+                let moment = <IMoment>param;
+                editor.gotoMoment(moment);
+
+                let whens = Game.getWhens(moment.when);
+                let divs = Array.prototype.map.call(whens, function (when:string) {
+                    return `<div>${when}</div>`;
+                })
+                document.getElementById("id-when").innerHTML = divs.join("");
+
+                var cmds = Game.getCommands(moment.text);
+                divs = Array.prototype.map.call(cmds, function (cmd:string) {
+                    return `<div>${cmd}</div>`;
+                })
+                document.getElementById("id-command").innerHTML = divs.join("");
             }
         }
     };

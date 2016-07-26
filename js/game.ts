@@ -603,6 +603,18 @@ class Game {
         return commands;
     };
 
+    static getWhens = (text: string): Array<string> => {
+        if (text == undefined) return [];
+        var whens = new Array<string>();
+        var parts = text.split(",");
+        for (var part of parts) {
+            if (part.length > 0) {
+                whens.push(part.trim());
+            }
+        }
+        return whens;
+    };
+
     parseScene = (scene: IScene) => {
         var data = <ISceneData>{};
         data.title = scene.name;
