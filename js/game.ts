@@ -41,9 +41,8 @@ class Game {
         var ui = this.ui;
 
         if (op == Op.MOMENT) {
-            this.saveContinueState();
-
             if (this.currentMoment == null) { 
+                this.saveContinueState();
                 ui.alert("Il ne se passe plus rien pour le moment.", () => {
                     this.update(Op.WAITING);
                 }); 
@@ -57,12 +56,12 @@ class Game {
             if (kind == Kind.Moment || kind == Kind.Action) {
                 this.currentScene = this.getSceneOf(this.currentMoment);
             }
+            this.saveContinueState();
+            
+            ui.clearBlurb();
             ui.initScene(this.parseScene(this.currentScene), () => {
-                ui.clearBlurb();
                 this.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
-                setTimeout(() => { 
-                    this.update(Op.BLURB); 
-                }, 0);
+                setTimeout(() => { this.update(Op.BLURB); }, 0);
             });
         }
         else if (op == Op.BLURB) {
@@ -133,14 +132,16 @@ class Game {
                 this.getDataFile("game/app.json", (text: any) => {
                     this.gdata.saveData(text);
                     this.restoreContinueState();
-                    ui.initScene(this.parseScene(this.currentScene), () => {});
-                    setTimeout(() => { this.update(Op.MOMENT); }, 0);
+                    ui.initScene(this.parseScene(this.currentScene), () => {
+                        setTimeout(() => { this.update(Op.MOMENT); }, 0);
+                    });
                 });
             }
             else {
                 this.restoreContinueState();
-                ui.initScene(this.parseScene(this.currentScene), () => {});
-                setTimeout(() => { this.update(Op.MOMENT); }, 0);
+                ui.initScene(this.parseScene(this.currentScene), () => {
+                    setTimeout(() => { this.update(Op.MOMENT); }, 0);
+                });
             }
         }
         else if (op == Op.CONTINUE_INGAME) {
@@ -155,9 +156,7 @@ class Game {
             setTimeout(() => { this.update(Op.MOMENT); }, 0);
         }
         else {
-            ui.alert("Game Over?", () => {
-                this.update(Op.WAITING);
-            });
+            ui.alert("Game Over?", () => { this.update(Op.WAITING); });
         }
     };
 
@@ -491,8 +490,8 @@ class Game {
 
                     let dialog = current = <IDialog>{};
                     if (aa.length == 2) {
-                        dialog.actor = aa[0];
-                        dialog.mood = aa[1];
+                        dialog.actor = aa[0].trim();
+                        dialog.mood = aa[1].trim();
                     }
                     else {
                         dialog.actor = aa[0];

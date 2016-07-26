@@ -1449,9 +1449,7 @@ var UI = (function () {
             div.innerHTML = html;
             var section = div.firstChild;
             if (chunk.asset != undefined) {
-                _this.changeBackground(chunk.asset, function () {
-                    return callback();
-                });
+                _this.changeBackground(chunk.asset, callback);
             }
             else if (chunk.image != undefined) {
                 section.style.opacity = "0";
@@ -1460,7 +1458,10 @@ var UI = (function () {
                 section.style.opacity = "1";
                 section.style.transition = "opacity 0.1s ease";
                 section.style.animation = "color-cycle 5s infinite";
-                var assetName_1 = "game/" + chunk.image;
+                var assetName_1 = chunk.image.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (assetName_1.indexOf(".") == -1)
+                    assetName_1 += ".jpg";
+                assetName_1 = "game/assets/" + assetName_1;
                 var image = new Image();
                 image.onload = function () {
                     section.style.animation = "";
@@ -1538,14 +1539,9 @@ var UI = (function () {
         this.changeBackground = function (assetName, callback) {
             if (assetName == undefined)
                 return callback();
+            assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
             if (document.body.classList.contains("portrait"))
                 return callback();
-            var isImg = false;
-            for (var _i = 0, _a = [".jpg", ".jpeg", ".png", ".gif"]; _i < _a.length; _i++) {
-                var img = _a[_i];
-                if (assetName.endsWith(img))
-                    isImg = true;
-            }
             var inner = document.querySelector(".graphics-inner");
             var zero = inner.children[0];
             var one = inner.children[1];
@@ -1553,9 +1549,13 @@ var UI = (function () {
             var front = (zero.style.zIndex == "0" ? one : zero);
             var backFrame = back.firstElementChild;
             var frontFrame = front.firstElementChild;
-            var sceneUrl = "game/teller-image.html";
-            if (isImg == false)
+            if (assetName.indexOf(".") == -1)
+                assetName += ".jpg";
+            var sceneUrl;
+            if (assetName.endsWith(".html"))
                 sceneUrl = "game/" + assetName;
+            else
+                sceneUrl = "game/teller-image.html?" + assetName;
             if (frontFrame.src.indexOf(sceneUrl) != -1)
                 return callback();
             var fader = inner.children[2];
@@ -1572,13 +1572,12 @@ var UI = (function () {
                     front.style.opacity = "0";
                     fader.style.opacity = "0";
                     preloader.classList.remove("change-bg");
-                    fader.addEventListener("transitionend", function done() {
-                        fader.removeEventListener("transitionend", done);
+                    setTimeout(function () {
                         fader.style.zIndex = "0";
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
-                        return callback();
-                    });
+                        callback();
+                    }, 1000);
                 }
             });
             back.style.opacity = "0";
@@ -1600,7 +1599,10 @@ var UI = (function () {
                 var hasImage = (dialog.mood != undefined);
                 html.push("<section class='dialog'>");
                 if (hasImage) {
-                    html.push("<div class='head' style='background-image:url(game/assets/" + dialog.mood + ")'></div>");
+                    var assetName = dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                    if (assetName.indexOf(".") == -1)
+                        assetName += ".jpg";
+                    html.push("<div class='head' style='background-image:url(game/assets/" + assetName + ")'></div>");
                     html.push("<div class='text'>");
                 }
                 html.push("<h1>" + dialog.actor + "</h1>");
@@ -1691,8 +1693,8 @@ var Game = (function () {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
             if (op == Op.MOMENT) {
-                _this.saveContinueState();
                 if (_this.currentMoment == null) {
+                    _this.saveContinueState();
                     ui.alert("Il ne se passe plus rien pour le moment.", function () {
                         _this.update(Op.WAITING);
                     });
@@ -1704,12 +1706,11 @@ var Game = (function () {
                 if (kind == Kind.Moment || kind == Kind.Action) {
                     _this.currentScene = _this.getSceneOf(_this.currentMoment);
                 }
+                _this.saveContinueState();
+                ui.clearBlurb();
                 ui.initScene(_this.parseScene(_this.currentScene), function () {
-                    ui.clearBlurb();
                     _this.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
-                    setTimeout(function () {
-                        _this.update(Op.BLURB);
-                    }, 0);
+                    setTimeout(function () { _this.update(Op.BLURB); }, 0);
                 });
             }
             else if (op == Op.BLURB) {
@@ -1779,14 +1780,16 @@ var Game = (function () {
                     _this.getDataFile("game/app.json", function (text) {
                         _this.gdata.saveData(text);
                         _this.restoreContinueState();
-                        ui.initScene(_this.parseScene(_this.currentScene), function () { });
-                        setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                        ui.initScene(_this.parseScene(_this.currentScene), function () {
+                            setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                        });
                     });
                 }
                 else {
                     _this.restoreContinueState();
-                    ui.initScene(_this.parseScene(_this.currentScene), function () { });
-                    setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                    ui.initScene(_this.parseScene(_this.currentScene), function () {
+                        setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                    });
                 }
             }
             else if (op == Op.CONTINUE_INGAME) {
@@ -1801,9 +1804,7 @@ var Game = (function () {
                 setTimeout(function () { _this.update(Op.MOMENT); }, 0);
             }
             else {
-                ui.alert("Game Over?", function () {
-                    _this.update(Op.WAITING);
-                });
+                ui.alert("Game Over?", function () { _this.update(Op.WAITING); });
             }
         };
         this.saveContinueState = function () {
@@ -2129,8 +2130,8 @@ var Game = (function () {
                         var aa = actor.split("/");
                         var dialog = current = {};
                         if (aa.length == 2) {
-                            dialog.actor = aa[0];
-                            dialog.mood = aa[1];
+                            dialog.actor = aa[0].trim();
+                            dialog.mood = aa[1].trim();
                         }
                         else {
                             dialog.actor = aa[0];

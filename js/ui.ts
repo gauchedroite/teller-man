@@ -180,9 +180,7 @@ class UI {
         let section = <HTMLDivElement>div.firstChild;
 
         if ((<IBackground>chunk).asset != undefined) {
-            this.changeBackground((<IBackground>chunk).asset, () => {
-                return callback();
-            });
+            this.changeBackground((<IBackground>chunk).asset, callback);
         }
         else if ((<IInline>chunk).image != undefined) {
             section.style.opacity = "0";
@@ -192,7 +190,9 @@ class UI {
             section.style.transition = "opacity 0.1s ease";
             section.style.animation = "color-cycle 5s infinite";
 
-            let assetName = `game/${(<IInline>chunk).image}`;
+            let assetName = (<IInline>chunk).image.replace(/ /g, "%20").replace(/'/g, "%27");
+            if (assetName.indexOf(".") == -1) assetName += ".jpg";
+            assetName = `game/assets/${assetName}`;
             let image = new Image();
             image.onload = () => {
                 section.style.animation = "";
@@ -277,14 +277,11 @@ class UI {
 
     changeBackground = (assetName: string, callback: () => void) => {
         if (assetName == undefined) return callback();
+        assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
 
         if (document.body.classList.contains("portrait"))
             return callback();
 
-        let isImg = false;
-        for (var img of [".jpg", ".jpeg", ".png", ".gif"])
-            if (assetName.endsWith(img)) isImg = true;
-        
         let inner = <HTMLDivElement>document.querySelector(".graphics-inner");
         let zero = <HTMLDivElement>inner.children[0];
         let one = <HTMLDivElement>inner.children[1];
@@ -294,8 +291,12 @@ class UI {
         let backFrame = <HTMLIFrameElement>back.firstElementChild;
         let frontFrame = <HTMLIFrameElement>front.firstElementChild;
 
-        let sceneUrl = "game/teller-image.html";
-        if (isImg == false) sceneUrl = `game/${assetName}`;
+        if (assetName.indexOf(".") == -1) assetName += ".jpg";
+        let sceneUrl: string;
+        if (assetName.endsWith(".html")) 
+            sceneUrl = `game/${assetName}`;
+        else
+            sceneUrl = `game/teller-image.html?${assetName}`;
         if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
 
         let fader = <HTMLDivElement>inner.children[2];
@@ -314,13 +315,12 @@ class UI {
                 front.style.opacity = "0";
                 fader.style.opacity = "0";
                 preloader.classList.remove("change-bg");
-                fader.addEventListener("transitionend", function done() {
-                    fader.removeEventListener("transitionend", done);
+                setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the 1000ms delay instead*/
                     fader.style.zIndex = "0";
                     back.style.zIndex = "1";
                     front.style.zIndex = "0";
-                    return callback();
-                });
+                    callback();
+                }, 1000);
             }
         });
 
@@ -345,7 +345,9 @@ class UI {
             let hasImage = (dialog.mood != undefined);
             html.push("<section class='dialog'>");
             if (hasImage) {
-                html.push(`<div class='head' style='background-image:url(game/assets/${dialog.mood})'></div>`);
+                let assetName = dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (assetName.indexOf(".") == -1) assetName += ".jpg";                
+                html.push(`<div class='head' style='background-image:url(game/assets/${assetName})'></div>`);
                 html.push("<div class='text'>");
             }
             html.push(`<h1>${dialog.actor}</h1>`);
