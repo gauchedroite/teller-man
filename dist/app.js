@@ -1318,6 +1318,14 @@ var Editor = (function () {
     };
     return Editor;
 }());
+var ChunkKind;
+(function (ChunkKind) {
+    ChunkKind[ChunkKind["dialog"] = 0] = "dialog";
+    ChunkKind[ChunkKind["text"] = 1] = "text";
+    ChunkKind[ChunkKind["background"] = 2] = "background";
+    ChunkKind[ChunkKind["inline"] = 3] = "inline";
+    ChunkKind[ChunkKind["heading"] = 4] = "heading";
+})(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
     Op[Op["WAITING"] = 0] = "WAITING";
@@ -1336,13 +1344,13 @@ var OpAction;
     OpAction[OpAction["GAME_START"] = 1] = "GAME_START";
     OpAction[OpAction["SHOWING_MOMENT"] = 2] = "SHOWING_MOMENT";
 })(OpAction || (OpAction = {}));
-var CKind;
-(function (CKind) {
-    CKind[CKind["scene"] = 0] = "scene";
-    CKind[CKind["action"] = 1] = "action";
-    CKind[CKind["messageTo"] = 2] = "messageTo";
-    CKind[CKind["messageFrom"] = 3] = "messageFrom";
-})(CKind || (CKind = {}));
+var ChoiceKind;
+(function (ChoiceKind) {
+    ChoiceKind[ChoiceKind["scene"] = 0] = "scene";
+    ChoiceKind[ChoiceKind["action"] = 1] = "action";
+    ChoiceKind[ChoiceKind["messageTo"] = 2] = "messageTo";
+    ChoiceKind[ChoiceKind["messageFrom"] = 3] = "messageFrom";
+})(ChoiceKind || (ChoiceKind = {}));
 var UI = (function () {
     function UI(menuPage, ready, onmenu) {
         var _this = this;
@@ -1372,11 +1380,11 @@ var UI = (function () {
             for (var i = 0; i < sceneChoices.length; i++) {
                 var choice = sceneChoices[i];
                 var icon = "ion-ios-location";
-                if (choice.kind == CKind.action)
+                if (choice.kind == ChoiceKind.action)
                     icon = "ion-flash";
-                if (choice.kind == CKind.messageTo)
+                if (choice.kind == ChoiceKind.messageTo)
                     icon = "ion-android-person";
-                if (choice.kind == CKind.messageFrom)
+                if (choice.kind == ChoiceKind.messageFrom)
                     icon = "ion-chatbubble-working";
                 var li = document.createElement("li");
                 li.setAttribute("data-kind", choice.kind.toString());
@@ -1448,10 +1456,10 @@ var UI = (function () {
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
-            if (chunk.asset != undefined) {
+            if (chunk.kind == ChunkKind.background) {
                 _this.changeBackground(chunk.asset, callback);
             }
-            else if (chunk.image != undefined) {
+            else if (chunk.kind == ChunkKind.inline) {
                 section.style.opacity = "0";
                 inner.appendChild(section);
                 _this.scrollContent(inner.parentElement);
@@ -1472,7 +1480,7 @@ var UI = (function () {
                 };
                 image.src = assetName_1;
             }
-            else {
+            else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog) {
                 section.style.opacity = "0";
                 inner.appendChild(section);
                 _this.scrollContent(inner.parentElement);
@@ -1500,6 +1508,20 @@ var UI = (function () {
                             showTimer = setTimeout(show, 25);
                     }, 100);
                 }
+            }
+            else if (chunk.kind == ChunkKind.heading) {
+                var heading_1 = document.querySelector(".heading");
+                var inner_1 = document.querySelector(".heading-inner");
+                inner_1.innerHTML = html;
+                heading_1.classList.add("show", "showing");
+                heading_1.addEventListener("click", function onclick() {
+                    heading_1.removeEventListener("click", onclick);
+                    heading_1.classList.remove("showing");
+                    setTimeout(function () { heading_1.classList.remove("show"); callback(); }, 500);
+                });
+            }
+            else {
+                callback();
             }
         };
         this.addBlurbFast = function (chunk, callback) {
@@ -1577,25 +1599,25 @@ var UI = (function () {
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
                         callback();
-                    }, 1000);
+                    }, 500);
                 }
             });
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
         };
         this.markupChunk = function (chunk) {
-            var dialog = chunk;
-            var inline = chunk;
-            var backg = chunk;
             var html = Array();
-            if (backg.asset != undefined) {
-            }
-            else if (inline.image != undefined) {
-                html.push("<section class='image'>");
-                html.push("<div></div>");
+            if (chunk.kind == ChunkKind.text) {
+                var text = chunk;
+                html.push("<section class='text'>");
+                for (var _i = 0, _a = text.lines; _i < _a.length; _i++) {
+                    var line = _a[_i];
+                    html.push("<p>" + line + "</p>");
+                }
                 html.push("</section>");
             }
-            else if (dialog.actor != undefined) {
+            else if (chunk.kind == ChunkKind.dialog) {
+                var dialog = chunk;
                 var hasImage = (dialog.mood != undefined);
                 html.push("<section class='dialog'>");
                 if (hasImage) {
@@ -1608,8 +1630,8 @@ var UI = (function () {
                 html.push("<h1>" + dialog.actor + "</h1>");
                 if (dialog.parenthetical != undefined)
                     html.push("<h2>" + dialog.parenthetical + "</h2>");
-                for (var _i = 0, _a = dialog.lines; _i < _a.length; _i++) {
-                    var line = _a[_i];
+                for (var _b = 0, _c = dialog.lines; _b < _c.length; _b++) {
+                    var line = _c[_b];
                     var spans = Array.prototype.map.call(line, function (char) {
                         return "<span style='visibility:hidden'>" + char + "</span>";
                     });
@@ -1619,13 +1641,16 @@ var UI = (function () {
                     html.push("</div>");
                 html.push("</section>");
             }
-            else {
-                html.push("<section class='text'>");
-                for (var _b = 0, _c = dialog.lines; _b < _c.length; _b++) {
-                    var line = _c[_b];
-                    html.push("<p>" + line + "</p>");
-                }
+            else if (chunk.kind == ChunkKind.inline) {
+                html.push("<section class='image'>");
+                html.push("<div></div>");
                 html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.heading) {
+                var heading = chunk;
+                html.push("<h1>" + heading.title + "</h1>");
+                if (heading.subtitle != undefined)
+                    html.push("<h2>" + heading.subtitle + "</h2>");
             }
             return html.join("");
         };
@@ -1965,7 +1990,7 @@ var Game = (function () {
             var choices = Array();
             choices = scenes.map(function (obj) {
                 return {
-                    kind: CKind.scene,
+                    kind: ChoiceKind.scene,
                     id: obj.id,
                     text: obj.name
                 };
@@ -1973,7 +1998,7 @@ var Game = (function () {
             var choices2 = Array();
             choices2 = actions.map(function (obj) {
                 return {
-                    kind: CKind.action,
+                    kind: ChoiceKind.action,
                     id: obj.id,
                     text: obj.name
                 };
@@ -1983,7 +2008,7 @@ var Game = (function () {
                 var message = messages_1[_a];
                 if (message.kind == Kind.MessageFrom) {
                     choices.push({
-                        kind: CKind.messageFrom,
+                        kind: ChoiceKind.messageFrom,
                         id: message.id,
                         text: "Message de " + _this.getActorOf(message).name
                     });
@@ -1991,7 +2016,7 @@ var Game = (function () {
                 else {
                     var msg = message;
                     choices.push({
-                        kind: CKind.messageTo,
+                        kind: ChoiceKind.messageTo,
                         id: msg.id,
                         text: "Contacter " + _this.getActorById(msg.to).name,
                         subtext: msg.name
@@ -2002,7 +2027,7 @@ var Game = (function () {
             return choices;
         };
         this.getChosenMoment = function (choice) {
-            if (choice.kind == CKind.scene) {
+            if (choice.kind == ChoiceKind.scene) {
                 var data = _this.data;
                 var scene = void 0;
                 for (var _i = 0, _a = data.scenes; _i < _a.length; _i++) {
@@ -2119,7 +2144,7 @@ var Game = (function () {
         };
         this.parseMoment = function (moment) {
             var parsed = Array();
-            var current = {};
+            var dialog = {};
             var fsm = "";
             var inComment = false;
             if (moment.text == null)
@@ -2139,7 +2164,7 @@ var Game = (function () {
                     else if (part.startsWith(".a ")) {
                         var actor = part.substring(2).trim();
                         var aa = actor.split("/");
-                        var dialog = current = {};
+                        dialog = { kind: ChunkKind.dialog };
                         if (aa.length == 2) {
                             dialog.actor = aa[0].trim();
                             dialog.mood = aa[1].trim();
@@ -2150,14 +2175,14 @@ var Game = (function () {
                         fsm = "DIALOG";
                     }
                     else if (part.startsWith("(")) {
-                        current.parenthetical = part;
+                        dialog.parenthetical = part;
                     }
                     else if (part.startsWith(".b")) {
-                        var asset = { asset: part.substring(2).trim() };
+                        var asset = { kind: ChunkKind.background, asset: part.substring(2).trim() };
                         parsed.push(asset);
                     }
                     else if (part.startsWith(".i")) {
-                        var image = { image: part.substring(2).trim() };
+                        var image = { kind: ChunkKind.inline, image: part.substring(2).trim() };
                         parsed.push(image);
                     }
                     else if (part.startsWith(".d")) {
@@ -2166,39 +2191,45 @@ var Game = (function () {
                             var chance = parseInt(part.substring(2, space));
                             if ((Math.random() * chance) < 1) {
                                 var lines_1 = part.substr(space).trim().split("/");
-                                var my = {};
-                                my.lines = Array();
+                                var text = { kind: ChunkKind.text };
+                                text.lines = Array();
                                 for (var _a = 0, lines_2 = lines_1; _a < lines_2.length; _a++) {
                                     var line = lines_2[_a];
-                                    my.lines.push(line);
+                                    text.lines.push(line);
                                 }
-                                parsed[parsed.length - 1] = my;
+                                parsed[parsed.length - 1] = text;
                             }
                         }
+                    }
+                    else if (part.startsWith(".h")) {
+                        var parts_2 = part.substring(2).trim().split("/");
+                        var title = parts_2[0].trim();
+                        var subtitle = (parts_2.length > 1 ? parts_2[1].trim() : undefined);
+                        var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle };
+                        parsed.push(heading);
                     }
                     else if (part.startsWith(".")) {
                     }
                     else {
                         if (fsm == "DIALOG") {
                             var lines = part.split("/");
-                            var my = current;
-                            my.lines = Array();
+                            dialog.lines = Array();
                             for (var _b = 0, lines_3 = lines; _b < lines_3.length; _b++) {
                                 var line = lines_3[_b];
-                                my.lines.push(line);
+                                dialog.lines.push(line);
                             }
-                            parsed.push(current);
+                            parsed.push(dialog);
                             fsm = "";
                         }
                         else {
                             var lines = part.split("/");
-                            var my = {};
-                            my.lines = Array();
+                            var text = { kind: ChunkKind.text };
+                            text.lines = Array();
                             for (var _c = 0, lines_4 = lines; _c < lines_4.length; _c++) {
                                 var line = lines_4[_c];
-                                my.lines.push(line);
+                                text.lines.push(line);
                             }
-                            parsed.push(my);
+                            parsed.push(text);
                         }
                     }
                 }
@@ -2210,8 +2241,8 @@ var Game = (function () {
             var inComment = false;
             var canRepeat = false;
             var parts = moment.text.split("\n");
-            for (var _i = 0, parts_2 = parts; _i < parts_2.length; _i++) {
-                var part = parts_2[_i];
+            for (var _i = 0, parts_3 = parts; _i < parts_3.length; _i++) {
+                var part = parts_3[_i];
                 if (part.length > 0) {
                     if (part.startsWith("/*")) {
                         inComment = true;
@@ -2223,9 +2254,9 @@ var Game = (function () {
                         var rems = part.substring(2).split(",");
                         for (var _a = 0, rems_1 = rems; _a < rems_1.length; _a++) {
                             var rem = rems_1[_a];
-                            var parts_3 = rem.replace("=", ":").split(":");
-                            var name_2 = parts_3[0].trim();
-                            var value = (parts_3.length == 2 ? parts_3[1].trim() : "true");
+                            var parts_4 = rem.replace("=", ":").split(":");
+                            var name_2 = parts_4[0].trim();
+                            var value = (parts_4.length == 2 ? parts_4[1].trim() : "true");
                             if (value == "true" || value == "false")
                                 value = (value == "true");
                             var state = _this.gdata.state;
@@ -2344,8 +2375,8 @@ var Game = (function () {
         var inComment = false;
         var commands = new Array();
         var parts = text.split("\n");
-        for (var _i = 0, parts_4 = parts; _i < parts_4.length; _i++) {
-            var part = parts_4[_i];
+        for (var _i = 0, parts_5 = parts; _i < parts_5.length; _i++) {
+            var part = parts_5[_i];
             if (part.length > 0) {
                 if (part.startsWith("/*")) {
                     inComment = true;
@@ -2365,8 +2396,8 @@ var Game = (function () {
             return [];
         var whens = new Array();
         var parts = text.split(",");
-        for (var _i = 0, parts_5 = parts; _i < parts_5.length; _i++) {
-            var part = parts_5[_i];
+        for (var _i = 0, parts_6 = parts; _i < parts_6.length; _i++) {
+            var part = parts_6[_i];
             if (part.length > 0) {
                 whens.push(part.trim());
             }

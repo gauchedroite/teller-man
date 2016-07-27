@@ -1,24 +1,40 @@
 
-interface IDialog {
+enum ChunkKind {
+    dialog,
+    text,
+    background,
+    inline,
+    heading
+}
+interface IChunkKind {
+    kind: ChunkKind
+}
+interface IDialog extends IChunkKind {
+    kind: ChunkKind
     actor: string
     mood: string
     parenthetical: string
     lines: Array<string>
 }
-
-interface IText {
+interface IText extends IChunkKind {
+    kind: ChunkKind
     lines: Array<string>
 }
-
-interface IBackground {
+interface IBackground extends IChunkKind {
+    kind: ChunkKind
     asset: string
 }
-
-interface IInline {
+interface IInline extends IChunkKind {
+    kind: ChunkKind
     image: string
 }
+interface IHeading extends IChunkKind {
+    kind: ChunkKind
+    title: string
+    subtitle: string
+}
 
-type IMomentData = IDialog | IText | IBackground | IInline;
+type IMomentData = IDialog | IText | IBackground | IInline | IHeading;
 
 enum Op {
     WAITING,

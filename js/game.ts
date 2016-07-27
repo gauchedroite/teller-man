@@ -322,7 +322,7 @@ class Game {
         let choices = Array<IChoice>();
         choices = scenes.map((obj) => { 
             return <IChoice> { 
-                kind: CKind.scene,
+                kind: ChoiceKind.scene,
                 id: obj.id,
                 text: obj.name 
             }; 
@@ -330,7 +330,7 @@ class Game {
         let choices2 = Array<IChoice>();
         choices2 = actions.map((obj) => { 
             return <IChoice> { 
-                kind: CKind.action,
+                kind: ChoiceKind.action,
                 id: obj.id,
                 text: obj.name 
             }; 
@@ -341,7 +341,7 @@ class Game {
         for (var message of messages) {
             if (message.kind == Kind.MessageFrom) {
                 choices.push(<IChoice> {
-                    kind: CKind.messageFrom,
+                    kind: ChoiceKind.messageFrom,
                     id: message.id,
                     text: "Message de " + this.getActorOf(message).name
                 });
@@ -349,7 +349,7 @@ class Game {
             else {
                 let msg = (<IMessageTo>message);
                 choices.push(<IChoice> {
-                    kind: CKind.messageTo,
+                    kind: ChoiceKind.messageTo,
                     id: msg.id,
                     text: "Contacter " + this.getActorById(msg.to).name,
                     subtext: msg.name
@@ -362,7 +362,7 @@ class Game {
     };
 
     getChosenMoment = (choice: IChoice): IMoment => {
-        if (choice.kind == CKind.scene) {
+        if (choice.kind == ChoiceKind.scene) {
             let data = this.data;
             let scene: IScene;
             for (scene of data.scenes) {
@@ -470,7 +470,7 @@ class Game {
 
     parseMoment = (moment: IMoment): Array<IMomentData> => {
         var parsed = Array<IMomentData>();
-        var current = <IMomentData>{};
+        var dialog = <IDialog>{};
         var fsm = "";
         var inComment = false
 
@@ -492,7 +492,7 @@ class Game {
                     let actor = part.substring(2).trim();
                     let aa = actor.split("/");
 
-                    let dialog = current = <IDialog>{};
+                    dialog = <IDialog> { kind: ChunkKind.dialog };
                     if (aa.length == 2) {
                         dialog.actor = aa[0].trim();
                         dialog.mood = aa[1].trim();
@@ -503,14 +503,14 @@ class Game {
                     fsm = "DIALOG";
                 }
                 else if (part.startsWith("(")) {
-                    (<IDialog>current).parenthetical = part;
+                    dialog.parenthetical = part;
                 }
                 else if (part.startsWith(".b")) {
-                    let asset = <IBackground> { asset: part.substring(2).trim() };
+                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(2).trim() };
                     parsed.push(asset);
                 }
                 else if (part.startsWith(".i")) {
-                    let image = <IInline> { image: part.substring(2).trim() };
+                    let image = <IInline> { kind: ChunkKind.inline , image: part.substring(2).trim() };
                     parsed.push(image);
                 }
                 else if (part.startsWith(".d")) {
@@ -519,14 +519,21 @@ class Game {
                         let chance = parseInt(part.substring(2, space));
                         if ((Math.random() * chance) < 1) {
                             let lines = part.substr(space).trim().split("/");
-                            let my = <IText>{};
-                            my.lines = Array<string>();
+                            let text = <IText> { kind: ChunkKind.text };
+                            text.lines = Array<string>();
                             for (var line of lines) {
-                                my.lines.push(line);
+                                text.lines.push(line);
                             }
-                            parsed[parsed.length - 1] = my;
+                            parsed[parsed.length - 1] = text;
                         }
                     }
+                }
+                else if (part.startsWith(".h")) {
+                    let parts = part.substring(2).trim().split("/");
+                    let title = parts[0].trim();
+                    let subtitle = (parts.length > 1 ? parts[1].trim() : undefined);
+                    let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle };
+                    parsed.push(heading);
                 }
                 else if (part.startsWith(".")) {
                 }
@@ -534,23 +541,22 @@ class Game {
                     if (fsm == "DIALOG") {
                         var lines = part.split("/");
 
-                        let my = <IDialog>current;
-                        my.lines = Array<string>();
+                        dialog.lines = Array<string>();
                         for (var line of lines) {
-                            my.lines.push(line);
+                            dialog.lines.push(line);
                         }
-                        parsed.push(current);
+                        parsed.push(dialog);
                         fsm = "";
                     }
                     else {
                         var lines = part.split("/");
 
-                        let my = <IText>{};
-                        my.lines = Array<string>();
+                        let text = <IText> { kind: ChunkKind.text };
+                        text.lines = Array<string>();
                         for (var line of lines) {
-                            my.lines.push(line);
+                            text.lines.push(line);
                         }
-                        parsed.push(my);
+                        parsed.push(text);
                     }
                 }
             }

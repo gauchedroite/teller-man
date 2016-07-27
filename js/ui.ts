@@ -1,4 +1,4 @@
-enum CKind {
+enum ChoiceKind {
     scene,
     action,
     messageTo,
@@ -6,7 +6,7 @@ enum CKind {
 }
 
 interface IChoice {
-    kind: CKind
+    kind: ChoiceKind
     id: number
     text: string
     subtext?: string
@@ -102,9 +102,9 @@ class UI {
             let choice = sceneChoices[i];
 
             var icon: string = "ion-ios-location";
-            if (choice.kind == CKind.action) icon = "ion-flash";
-            if (choice.kind == CKind.messageTo) icon = "ion-android-person";
-            if (choice.kind == CKind.messageFrom) icon = "ion-chatbubble-working";
+            if (choice.kind == ChoiceKind.action) icon = "ion-flash";
+            if (choice.kind == ChoiceKind.messageTo) icon = "ion-android-person";
+            if (choice.kind == ChoiceKind.messageFrom) icon = "ion-chatbubble-working";
 
             let li = <HTMLLIElement>document.createElement("li");
             li.setAttribute("data-kind", choice.kind.toString());
@@ -187,10 +187,10 @@ class UI {
         div.innerHTML = html;
         let section = <HTMLDivElement>div.firstChild;
 
-        if ((<IBackground>chunk).asset != undefined) {
+        if (chunk.kind == ChunkKind.background) {
             this.changeBackground((<IBackground>chunk).asset, callback);
         }
-        else if ((<IInline>chunk).image != undefined) {
+        else if (chunk.kind == ChunkKind.inline) {
             section.style.opacity = "0";
             inner.appendChild(section);
             this.scrollContent(inner.parentElement);
@@ -211,7 +211,7 @@ class UI {
             };
             image.src = assetName;
         }
-        else {
+        else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog) {
             section.style.opacity = "0";
             inner.appendChild(section);
             this.scrollContent(inner.parentElement);
@@ -241,6 +241,20 @@ class UI {
                         showTimer = setTimeout(show, 25);
                 }, 100);
             }
+        }
+        else if (chunk.kind == ChunkKind.heading) {
+            let heading = <HTMLDivElement>document.querySelector(".heading");
+            let inner = <HTMLDivElement>document.querySelector(".heading-inner");
+            inner.innerHTML = html;
+            heading.classList.add("show", "showing");
+            heading.addEventListener("click", function onclick() {
+                heading.removeEventListener("click", onclick);
+                heading.classList.remove("showing");
+                setTimeout(() => { heading.classList.remove("show"); callback(); }, 500);
+            });
+        }
+        else {
+            callback();
         }
     };
 
@@ -323,12 +337,12 @@ class UI {
                 front.style.opacity = "0";
                 fader.style.opacity = "0";
                 preloader.classList.remove("change-bg");
-                setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the 1000ms delay instead*/
+                setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the delay instead*/
                     fader.style.zIndex = "0";
                     back.style.zIndex = "1";
                     front.style.zIndex = "0";
                     callback();
-                }, 1000);
+                }, 500);
             }
         });
 
@@ -337,19 +351,18 @@ class UI {
     };
 
     private markupChunk = (chunk: IMomentData): string => {
-        let dialog = <IDialog>chunk;
-        let inline = <IInline>chunk;
-        let backg = <IBackground>chunk;
         let html = Array<string>();
 
-        if (backg.asset != undefined) {
-        }
-        else if (inline.image != undefined) {
-            html.push("<section class='image'>");
-            html.push("<div></div>");
+        if (chunk.kind == ChunkKind.text) {
+            let text = <IText>chunk;
+            html.push("<section class='text'>");
+            for (var line of text.lines) {
+                html.push(`<p>${line}</p>`);
+            }
             html.push("</section>");
         }
-        else if (dialog.actor != undefined) {
+        else if (chunk.kind == ChunkKind.dialog) {
+            let dialog = <IDialog>chunk;
             let hasImage = (dialog.mood != undefined);
             html.push("<section class='dialog'>");
             if (hasImage) {
@@ -372,12 +385,15 @@ class UI {
             if (hasImage) html.push("</div>");
             html.push("</section>");
         }
-        else {
-            html.push("<section class='text'>");
-            for (var line of dialog.lines) {
-                html.push(`<p>${line}</p>`);
-            }
+        else if (chunk.kind == ChunkKind.inline) {
+            html.push("<section class='image'>");
+            html.push("<div></div>");
             html.push("</section>");
+        }
+        else if (chunk.kind == ChunkKind.heading) {
+            let heading = <IHeading>chunk;
+            html.push(`<h1>${heading.title}</h1>`);
+            if (heading.subtitle != undefined) html.push(`<h2>${heading.subtitle}</h2>`);
         }
 
         return html.join("");
