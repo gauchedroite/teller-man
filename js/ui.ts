@@ -253,6 +253,17 @@ class UI {
                 setTimeout(() => { heading.classList.remove("show"); callback(); }, 500);
             });
         }
+        else if (chunk.kind == ChunkKind.pause) {
+            let choices = Array<IChoice>();
+            choices.push(<IChoice> { 
+                kind: ChoiceKind.action,
+                id: 0,
+                text: (<IPause>chunk).text 
+            });
+            this.showChoices(choices, (chosen: IChoice) => {
+                this.hideChoices(callback);
+            });
+        }
         else {
             callback();
         }

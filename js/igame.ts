@@ -4,7 +4,8 @@ enum ChunkKind {
     text,
     background,
     inline,
-    heading
+    heading,
+    pause
 }
 interface IChunkKind {
     kind: ChunkKind
@@ -33,8 +34,12 @@ interface IHeading extends IChunkKind {
     title: string
     subtitle: string
 }
+interface IPause extends IChunkKind {
+    kind: ChunkKind
+    text: string
+}
 
-type IMomentData = IDialog | IText | IBackground | IInline | IHeading;
+type IMomentData = IDialog | IText | IBackground | IInline | IHeading | IPause;
 
 enum Op {
     WAITING,

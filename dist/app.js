@@ -1325,6 +1325,7 @@ var ChunkKind;
     ChunkKind[ChunkKind["background"] = 2] = "background";
     ChunkKind[ChunkKind["inline"] = 3] = "inline";
     ChunkKind[ChunkKind["heading"] = 4] = "heading";
+    ChunkKind[ChunkKind["pause"] = 5] = "pause";
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
@@ -1518,6 +1519,17 @@ var UI = (function () {
                     heading_1.removeEventListener("click", onclick);
                     heading_1.classList.remove("showing");
                     setTimeout(function () { heading_1.classList.remove("show"); callback(); }, 500);
+                });
+            }
+            else if (chunk.kind == ChunkKind.pause) {
+                var choices = Array();
+                choices.push({
+                    kind: ChoiceKind.action,
+                    id: 0,
+                    text: chunk.text
+                });
+                _this.showChoices(choices, function (chosen) {
+                    _this.hideChoices(callback);
                 });
             }
             else {
@@ -2207,6 +2219,11 @@ var Game = (function () {
                         var subtitle = (parts_2.length > 1 ? parts_2[1].trim() : undefined);
                         var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle };
                         parsed.push(heading);
+                    }
+                    else if (part.startsWith(".p")) {
+                        var text = part.substring(2).trim();
+                        var pause = { kind: ChunkKind.pause, text: text };
+                        parsed.push(pause);
                     }
                     else if (part.startsWith(".")) {
                     }

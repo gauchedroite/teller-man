@@ -73,6 +73,13 @@
         button:disabled {
             display: none;
         }
+        button.confirm {
+            color: lime;
+            background-color: rgba(255, 0, 0, 0.25);
+        }
+        button.confirm:hover {
+            background-color: rgba(255, 0, 0, 0.35);
+        }
         @media (min-width: 350px) {
             .content-inner {
                 top: 40%;
@@ -104,26 +111,44 @@
                 localStorage.setItem("ding", '{"menu":"ready"}');
             };
             image.src = assetName;
-        }, false);
 
-        window.configureMenu = function(options, callback) {
-            var continu = document.querySelector("button#continue");
-            if (options.continue == "disabled") {
-                continu.setAttribute("disabled", "disabled");
-            }
-            else {
-                continu.removeAttribute("disabled");
-                continu.addEventListener("click", function click(e) {
-                    continu.removeEventListener("click", click);
-                    setTimeout(function() { callback("continue"); }, 0); 
-                });
-            }
-            var newgame = document.querySelector("button#new-game");
-            newgame.addEventListener("click", function click(e) {
-                newgame.removeEventListener("click", click);
-                setTimeout(function() { callback("new-game"); }, 0); 
+            var btnnewgame = document.querySelector("button#new-game");
+            var btncontinue = document.querySelector("button#continue");
+            var btnoptions = document.querySelector("button#options");
+
+            var myoptions;
+            var mycallback;
+            var myconfirm = false;
+
+            window.configureMenu = function(options, callback) {
+                myoptions = options;
+                mycallback = callback;
+                myconfirm = false;
+                btnnewgame.innerText = "Nouvelle partie";
+                btnnewgame.classList.remove("confirm");
+                if (options.continue == "disabled")
+                    btncontinue.setAttribute("disabled", "disabled");
+                else
+                    btncontinue.removeAttribute("disabled");
+            };
+
+            document.addEventListener("click", function click(e) {
+                var id = e.target.id;
+                if (id == "new-game") {
+                    if (myconfirm == false) {
+                        btnnewgame.classList.add("confirm");
+                        btnnewgame.innerText = "Les données seront effacées. Ok?";
+                        myconfirm = true;
+                    }
+                    else {
+                        setTimeout(function() { mycallback("new-game"); }, 0); 
+                    }
+                }
+                else if (id == "continue") {
+                    setTimeout(function() { mycallback("continue"); }, 0); 
+                }
             });
-        };
+        }, false);
     </script>
 </body>
 

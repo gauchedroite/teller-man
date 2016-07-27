@@ -535,6 +535,11 @@ class Game {
                     let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle };
                     parsed.push(heading);
                 }
+                else if (part.startsWith(".p")) {
+                    let text = part.substring(2).trim();
+                    let pause = <IPause> { kind: ChunkKind.pause, text: text };
+                    parsed.push(pause);
+                }
                 else if (part.startsWith(".")) {
                 }
                 else {
