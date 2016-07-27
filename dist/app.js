@@ -1074,11 +1074,11 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-action-name", function (e) {
                 _this.gdata.saveActionName(e.target.value, _this.getMeId(e.target));
-                $("#ted-actions li.ted-selected div.item-title").text(e.target.value);
+                $("#ted-actions li.ted-selected div.item-subtitle").text(e.target.value);
             });
             $(document).on("change", "#ted-action-when", function (e) {
                 _this.gdata.saveActionWhen(e.target.value, _this.getMeId(e.target));
-                $("#ted-actions li.ted-selected div.item-subtitle").text(e.target.value);
+                $("#ted-actions li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("change", "#ted-action-text", function (e) {
                 _this.gdata.saveActionText(e.target.value, _this.getMeId(e.target));
@@ -1087,11 +1087,11 @@ var Editor = (function () {
             });
             $(document).on("change", "#ted-message-to-name", function (e) {
                 _this.gdata.saveMessageToName(e.target.value, _this.getMeId(e.target));
-                $("#ted-messages-to li.ted-selected div.item-title").text(e.target.value);
+                $("#ted-messages-to li.ted-selected div.item-subtitle").text(e.target.value);
             });
             $(document).on("change", "#ted-message-to-when", function (e) {
                 _this.gdata.saveMessageToWhen(e.target.value, _this.getMeId(e.target));
-                $("#ted-messages-to li.ted-selected div.item-subtitle").text(e.target.value);
+                $("#ted-messages-to li.ted-selected div.item-title").text(e.target.value);
             });
             $(document).on("click", "input[name^='radio-']", function (e) {
                 var $ssp = $(e.target).closest("div.smart-select-popup");
@@ -1659,10 +1659,17 @@ var UI = (function () {
         if ("addEventListener" in document) {
             document.addEventListener("DOMContentLoaded", function () {
                 FastClick.attach(document.body);
-                var format = (window.outerWidth > 600 ? "landscape" : "portrait");
+                var format = (window.innerWidth > 600 ? "landscape" : "portrait");
                 document.body.classList.add(format);
             }, false);
         }
+        window.onresize = function () {
+            var format = (window.innerWidth > 600 ? "landscape" : "portrait");
+            if (document.body.classList.contains(format) == false) {
+                document.body.removeAttribute("class");
+                document.body.classList.add(format);
+            }
+        };
         localStorage.setItem("ding", null);
         window.addEventListener("storage", function done(e) {
             if (e.key == "ding" && (JSON.parse(e.newValue).menu == "ready")) {
@@ -1873,6 +1880,8 @@ var Game = (function () {
                     break;
                 }
             }
+            if (situation == undefined)
+                return Array();
             var sids = Array();
             //
             for (var _a = 0, _b = data.scenes; _a < _b.length; _a++) {
@@ -1907,6 +1916,8 @@ var Game = (function () {
                     break;
                 }
             }
+            if (situation == undefined)
+                return Array();
             var aids = Array();
             //
             for (var _a = 0, _b = data.actors; _a < _b.length; _a++) {
@@ -2149,6 +2160,22 @@ var Game = (function () {
                         var image = { image: part.substring(2).trim() };
                         parsed.push(image);
                     }
+                    else if (part.startsWith(".d")) {
+                        var space = part.indexOf(" ");
+                        if (space != -1) {
+                            var chance = parseInt(part.substring(2, space));
+                            if ((Math.random() * chance) < 1) {
+                                var lines_1 = part.substr(space).trim().split("/");
+                                var my = {};
+                                my.lines = Array();
+                                for (var _a = 0, lines_2 = lines_1; _a < lines_2.length; _a++) {
+                                    var line = lines_2[_a];
+                                    my.lines.push(line);
+                                }
+                                parsed[parsed.length - 1] = my;
+                            }
+                        }
+                    }
                     else if (part.startsWith(".")) {
                     }
                     else {
@@ -2156,8 +2183,8 @@ var Game = (function () {
                             var lines = part.split("/");
                             var my = current;
                             my.lines = Array();
-                            for (var _a = 0, lines_1 = lines; _a < lines_1.length; _a++) {
-                                var line = lines_1[_a];
+                            for (var _b = 0, lines_3 = lines; _b < lines_3.length; _b++) {
+                                var line = lines_3[_b];
                                 my.lines.push(line);
                             }
                             parsed.push(current);
@@ -2167,8 +2194,8 @@ var Game = (function () {
                             var lines = part.split("/");
                             var my = {};
                             my.lines = Array();
-                            for (var _b = 0, lines_2 = lines; _b < lines_2.length; _b++) {
-                                var line = lines_2[_b];
+                            for (var _c = 0, lines_4 = lines; _c < lines_4.length; _c++) {
+                                var line = lines_4[_c];
                                 my.lines.push(line);
                             }
                             parsed.push(my);
@@ -2212,13 +2239,38 @@ var Game = (function () {
                     else if (part.startsWith(".f ")) {
                         var flags = part.substring(2).split(",");
                         for (var _b = 0, flags_1 = flags; _b < flags_1.length; _b++) {
-                            var oneflag = flags_1[_b];
-                            var flag = oneflag.trim();
+                            var del = flags_1[_b];
+                            var flag = del.trim();
                             if (flag == "can-repeat")
                                 canRepeat = true;
                             if (flag == "must-leave-scene")
                                 _this.forbiddenSceneId = _this.getSceneOf(moment).id;
                         }
+                    }
+                    else if (part.startsWith(".x ")) {
+                        var dels = part.substring(2).split(",");
+                        var state = _this.gdata.state;
+                        for (var _c = 0, dels_1 = dels; _c < dels_1.length; _c++) {
+                            var del = dels_1[_c];
+                            var pattern = del.trim();
+                            if (pattern == "*") {
+                                for (var property in state) {
+                                    if (property.indexOf(".") == -1)
+                                        delete state[property];
+                                }
+                            }
+                            else if (pattern.endsWith(".*")) {
+                                var prefix = pattern.split(".")[0].trim();
+                                for (var property in state) {
+                                    if (property.startsWith(prefix + "."))
+                                        delete state[property];
+                                }
+                            }
+                            else {
+                                delete state[pattern];
+                            }
+                        }
+                        _this.gdata.state = state;
                     }
                 }
             }
@@ -2301,7 +2353,7 @@ var Game = (function () {
                 else if (inComment) {
                     inComment = (part.startsWith("*/") == false);
                 }
-                else if (part.startsWith(".r ") || part.startsWith(".f ")) {
+                else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
                     commands.push(part);
                 }
             }
@@ -2432,6 +2484,13 @@ var Tide = (function () {
             var options = gdata.options;
             options.fastStory = checked;
             gdata.options = options;
+        });
+        document.getElementById("ide-res-iphone").addEventListener("click", function (e) {
+            var game = document.querySelector(".ide-game");
+            if (game.classList.contains("iphone"))
+                game.classList.remove("iphone");
+            else
+                game.classList.add("iphone");
         });
         document.getElementById("ide-play-edit").addEventListener("click", function (e) {
             if (ied.classList.contains("show"))

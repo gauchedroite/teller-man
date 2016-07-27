@@ -36,6 +36,14 @@ class Tide {
             gdata.options = options;
         });
 
+        document.getElementById("ide-res-iphone").addEventListener("click", (e) => {
+            let game = document.querySelector(".ide-game");
+            if (game.classList.contains("iphone"))
+                game.classList.remove("iphone");
+            else
+                game.classList.add("iphone");
+        });
+
         document.getElementById("ide-play-edit").addEventListener("click", (e) => {
             if (ied.classList.contains("show"))
                 ied.classList.remove("show");
@@ -78,6 +86,7 @@ class Tide {
         (<any>document.getElementById("ide-gamefile")).checked = options.skipFileLoad;
         (<any>document.getElementById("ide-sync")).checked = options.syncEditor;
         (<any>document.getElementById("ide-fast")).checked = options.fastStory;
+
 
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "dist/index.html");

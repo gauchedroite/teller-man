@@ -21,6 +21,9 @@
             color: #888;
             background-image: url(dist/game/assets/pw_maze_black_@2X.png);
         }
+        iframe {
+            display: block;
+        }
         button {
             padding: 2px 12px;
             margin: 4px 0 0 8px;
@@ -52,24 +55,24 @@
             top: 32px;
             left: 200px;
             width: calc(100% - 200px);
-            height: calc(100% - 36px);
+            height: calc(100% - 32px);
+        }
+        .ide-game.iphone {
+            width: 375px;
+            height: 667px;
+            top: calc(32px + 16px);
+            left: calc(((100% - 200px - 375px) / 2) + 200px);
         }
         .ide-game iframe {
             width: 100%;
             height: 100%;
-        }
-        .iphone5 {
-            margin: 4px auto;
-            width: 320px;
-            height: 568px;
-            border: 1px solid rgb(178, 178, 178);
         }
         .ide-editor {
             position: absolute;
             top: 100%;
             left: 200px;
             width: calc(100% - 200px);
-            height: calc(100% - 36px);
+            height: calc(100% - 32px);
             transition: top 0.25s ease; 
         }
         .ide-editor iframe {
@@ -80,7 +83,7 @@
         .debug {
             position: absolute;
             width: 200px;
-            height: calc(100% - 36px);
+            height: calc(100% - 32px);
             top: 32px;
         }
         .debug-content {
@@ -145,9 +148,11 @@
         <div class="left">
             <label><input id="ide-gamefile" type="checkbox"> Skip file load</label>
             <label><input id="ide-sync" type="checkbox"> Sync editor with game</label>
-            <label><input id="ide-fast" type="checkbox"> Fast story</label>
+            <label><input id="ide-fast" type="checkbox"> Fast game</label>
         </div>
         <div class="right">
+            <a href="dist/index.html" target="_blank">open external</a>
+            <button id="ide-res-iphone">iPhone</button>
             <button id="ide-reload-game">Reload Game</button>
             <button id="ide-reload-editor">Reload Editor</button>
             <button id="ide-play-edit">Play / Edit</button>
@@ -159,7 +164,7 @@
             <div class="head">When</div>
             <div class="body" id="id-when"></div>
             <div class="head">Commands</div>
-            <div class="body" id="id-command">.r silent</div>
+            <div class="body" id="id-command"></div>
         </div>
         <div class="debug-content hidden">
             <table></table>

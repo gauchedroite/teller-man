@@ -233,6 +233,8 @@ class Game {
                 break;
             }
         }
+        if (situation == undefined)
+            return Array<IMoment>();
 
         var sids = Array<number>();
         //
@@ -268,6 +270,8 @@ class Game {
                 break;
             }
         }
+        if (situation == undefined)
+            return Array<IMoment>();
 
         var aids = Array<number>();
         //
@@ -509,6 +513,21 @@ class Game {
                     let image = <IInline> { image: part.substring(2).trim() };
                     parsed.push(image);
                 }
+                else if (part.startsWith(".d")) {
+                    let space = part.indexOf(" ");
+                    if (space != -1) {
+                        let chance = parseInt(part.substring(2, space));
+                        if ((Math.random() * chance) < 1) {
+                            let lines = part.substr(space).trim().split("/");
+                            let my = <IText>{};
+                            my.lines = Array<string>();
+                            for (var line of lines) {
+                                my.lines.push(line);
+                            }
+                            parsed[parsed.length - 1] = my;
+                        }
+                    }
+                }
                 else if (part.startsWith(".")) {
                 }
                 else {
@@ -571,11 +590,35 @@ class Game {
                 }
                 else if (part.startsWith(".f ")) {
                     let flags = part.substring(2).split(",");
-                    for (var oneflag of flags) {
-                        let flag = oneflag.trim();
+                    for (var del of flags) {
+                        let flag = del.trim();
                         if (flag == "can-repeat") canRepeat = true;
                         if (flag == "must-leave-scene") this.forbiddenSceneId = this.getSceneOf(moment).id;
                     }
+                }
+                else if (part.startsWith(".x ")) {
+                    let dels = part.substring(2).split(",");
+                    let state = this.gdata.state;
+                    for (var del of dels) {
+                        let pattern = del.trim();
+                        if (pattern == "*") {
+                            for (var property in state) {
+                                if (property.indexOf(".") == -1) //one part names only (not inv.*)
+                                    delete state[property];
+                            }
+                        }
+                        else if (pattern.endsWith(".*")) {
+                            let prefix = pattern.split(".")[0].trim();
+                            for (var property in state) {
+                                if (property.startsWith(prefix + "."))
+                                    delete state[property];
+                            }
+                        }
+                        else {
+                            delete state[pattern];
+                        }
+                    }
+                    this.gdata.state = state;
                 }
             }
         }
@@ -595,7 +638,7 @@ class Game {
             if (part.length > 0) {
                 if (part.startsWith("/*")) { inComment = true; }
                 else if (inComment) { inComment = (part.startsWith("*/") == false); }
-                else if (part.startsWith(".r ") || part.startsWith(".f ")) {
+                else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
                     commands.push(part);
                 }
             }

@@ -35,10 +35,18 @@ class UI {
         if ("addEventListener" in document) {
             document.addEventListener("DOMContentLoaded", function() {
                 FastClick.attach(document.body);
-                let format = (window.outerWidth > 600 ? "landscape" : "portrait");
+                let format = (window.innerWidth > 600 ? "landscape" : "portrait");
                 document.body.classList.add(format);
             }, false);
         }
+
+        window.onresize = () => {
+            let format = (window.innerWidth > 600 ? "landscape" : "portrait");
+            if (document.body.classList.contains(format) == false) {
+                document.body.removeAttribute("class");
+                document.body.classList.add(format);
+            }
+        };
 
         localStorage.setItem("ding", null);
         window.addEventListener("storage", function done(e: StorageEvent) {

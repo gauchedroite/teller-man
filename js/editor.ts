@@ -567,12 +567,12 @@ class Editor {
 
         $(document).on("change", "#ted-action-name", (e: any) => {
             this.gdata.saveActionName(e.target.value, this.getMeId(e.target));
-            $("#ted-actions li.ted-selected div.item-title").text(e.target.value);
+            $("#ted-actions li.ted-selected div.item-subtitle").text(e.target.value);
         });
 
         $(document).on("change", "#ted-action-when", (e: any) => {
             this.gdata.saveActionWhen(e.target.value, this.getMeId(e.target));
-            $("#ted-actions li.ted-selected div.item-subtitle").text(e.target.value);
+            $("#ted-actions li.ted-selected div.item-title").text(e.target.value);
         });
 
         $(document).on("change", "#ted-action-text", (e: any) => {
@@ -583,12 +583,12 @@ class Editor {
 
         $(document).on("change", "#ted-message-to-name", (e: any) => {
             this.gdata.saveMessageToName(e.target.value, this.getMeId(e.target));
-            $("#ted-messages-to li.ted-selected div.item-title").text(e.target.value);
+            $("#ted-messages-to li.ted-selected div.item-subtitle").text(e.target.value);
         });
 
         $(document).on("change", "#ted-message-to-when", (e: any) => {
             this.gdata.saveMessageToWhen(e.target.value, this.getMeId(e.target));
-            $("#ted-messages-to li.ted-selected div.item-subtitle").text(e.target.value);
+            $("#ted-messages-to li.ted-selected div.item-title").text(e.target.value);
         });
 
         $(document).on("click", "input[name^='radio-']", (e: any) => {
