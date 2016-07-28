@@ -1355,7 +1355,7 @@ var ChoiceKind;
 var UI = (function () {
     function UI(menuPage, ready, onmenu) {
         var _this = this;
-        this.alert = function (text, onalert) {
+        this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
             content.style.pointerEvents = "none";
@@ -1365,12 +1365,24 @@ var UI = (function () {
             modal.classList.add("show");
             var onclick = function () {
                 modal.removeEventListener("click", onclick);
-                modal.classList.remove("show");
-                setTimeout(function () {
-                    content.classList.remove("overlay");
-                    content.style.pointerEvents = "";
-                    setTimeout(onalert, 0);
-                }, 250);
+                panel.innerHTML = "<div class=\"bounce1\"></div><div class=\"bounce2\"></div>";
+                var waitForClose = function () {
+                    var ready = canclose();
+                    if (ready) {
+                        modal.classList.remove("show");
+                        modal.classList.remove("disable");
+                        setTimeout(function () {
+                            content.classList.remove("overlay");
+                            content.style.pointerEvents = "";
+                            setTimeout(onalert, 0);
+                        }, 250);
+                    }
+                    else {
+                        modal.classList.add("disable");
+                        setTimeout(waitForClose, 100);
+                    }
+                };
+                waitForClose();
             };
             modal.addEventListener("click", onclick);
         };
@@ -1739,9 +1751,7 @@ var Game = (function () {
             if (op == Op.MOMENT) {
                 if (_this.currentMoment == null) {
                     _this.saveContinueState();
-                    ui.alert("Il ne se passe plus rien pour le moment.", function () {
-                        _this.update(Op.WAITING);
-                    });
+                    _this.idle("Il ne se passe plus rien pour le moment.");
                     return null;
                 }
                 _this.chunks = _this.parseMoment(_this.currentMoment);
@@ -1790,9 +1800,7 @@ var Game = (function () {
                         });
                     }
                     else {
-                        ui.alert("Il ne se passe plus rien pour le moment.", function () {
-                            _this.update(Op.WAITING);
-                        });
+                        _this.idle("Il ne se passe plus rien pour le moment.");
                     }
                 }
             }
@@ -1822,7 +1830,8 @@ var Game = (function () {
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
                     _this.getDataFile("game/app.json", function (text) {
-                        _this.gdata.saveData(text);
+                        if (text != undefined && text.length > 0)
+                            _this.gdata.saveData(text);
                         _this.restoreContinueState();
                         ui.initScene(_this.parseScene(_this.currentScene), function () {
                             setTimeout(function () { _this.update(Op.MOMENT); }, 0);
@@ -1848,7 +1857,7 @@ var Game = (function () {
                 setTimeout(function () { _this.update(Op.MOMENT); }, 0);
             }
             else {
-                ui.alert("Game Over?", function () { _this.update(Op.WAITING); });
+                _this.idle("Game Over?");
             }
         };
         this.saveContinueState = function () {
@@ -1892,7 +1901,8 @@ var Game = (function () {
             };
             if (options.skipFileLoad == false) {
                 _this.getDataFile("game/app.json", function (text) {
-                    _this.gdata.saveData(text);
+                    if (text != undefined && text.length > 0)
+                        _this.gdata.saveData(text);
                     setInitialState();
                     setTimeout(function () { location.href = "index.html"; }, 0);
                 });
@@ -1901,6 +1911,19 @@ var Game = (function () {
                 setInitialState();
                 setTimeout(function () { location.href = "index.html"; }, 0);
             }
+        };
+        this.idle = function (text) {
+            var refreshed = (_this.gdata.options != undefined && _this.gdata.options.skipFileLoad);
+            if (refreshed == false) {
+                _this.getDataFile("game/app.json", function (text) {
+                    if (text != undefined && text.length > 0)
+                        _this.gdata.saveData(text);
+                    refreshed = true;
+                });
+            }
+            _this.ui.alert(text, function () { return refreshed; }, function () {
+                _this.update(Op.WAITING);
+            });
         };
         this.raiseActionEvent = function (op, param) {
             if (window != window.top)
@@ -2382,9 +2405,7 @@ var Game = (function () {
             else {
                 _this.update(Op.MENU_BOOT);
             }
-        }, function () {
-            _this.update(Op.MENU_INGAME);
-        });
+        }, function () { _this.update(Op.MENU_INGAME); });
     }
     Game.getCommands = function (text) {
         if (text == undefined)

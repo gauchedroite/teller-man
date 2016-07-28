@@ -31,9 +31,7 @@ class Game {
                     this.update(Op.MENU_BOOT);
                 }
             }, 
-            () => {
-                this.update(Op.MENU_INGAME);
-            });
+            () => { this.update(Op.MENU_INGAME); });
     }
 
     update = (op: Op, param?: any): void => {
@@ -43,9 +41,7 @@ class Game {
         if (op == Op.MOMENT) {
             if (this.currentMoment == null) { 
                 this.saveContinueState();
-                ui.alert("Il ne se passe plus rien pour le moment.", () => {
-                    this.update(Op.WAITING);
-                }); 
+                this.idle("Il ne se passe plus rien pour le moment.");
                 return null;
             }
 
@@ -98,9 +94,7 @@ class Game {
                     });
                 }
                 else {
-                    ui.alert("Il ne se passe plus rien pour le moment.", () => {
-                        this.update(Op.WAITING);
-                    });
+                    this.idle("Il ne se passe plus rien pour le moment.");
                 }
             }
         }
@@ -129,8 +123,8 @@ class Game {
         }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
-                this.getDataFile("game/app.json", (text: any) => {
-                    this.gdata.saveData(text);
+                this.getDataFile("game/app.json", (text: string) => {
+                    if (text != undefined && text.length > 0) this.gdata.saveData(text);
                     this.restoreContinueState();
                     ui.initScene(this.parseScene(this.currentScene), () => {
                         setTimeout(() => { this.update(Op.MOMENT); }, 0);
@@ -156,7 +150,7 @@ class Game {
             setTimeout(() => { this.update(Op.MOMENT); }, 0);
         }
         else {
-            ui.alert("Game Over?", () => { this.update(Op.WAITING); });
+            this.idle("Game Over?");
         }
     };
 
@@ -206,7 +200,7 @@ class Game {
 
         if (options.skipFileLoad == false) {
             this.getDataFile("game/app.json", (text: any) => {
-                this.gdata.saveData(text);
+                if (text != undefined && text.length > 0) this.gdata.saveData(text);
                 setInitialState();
                 setTimeout(function() { location.href = "index.html"; }, 0);
             });
@@ -215,6 +209,19 @@ class Game {
             setInitialState();
             setTimeout(function() { location.href = "index.html"; }, 0);
         }
+    };
+
+    idle = (text: string) => {
+        let refreshed = (this.gdata.options != undefined && this.gdata.options.skipFileLoad);
+        if (refreshed == false) {
+            this.getDataFile("game/app.json", (text: string) => {
+                if (text != undefined && text.length > 0) this.gdata.saveData(text);
+                refreshed = true;
+            });
+        }
+        this.ui.alert(text, () => { return refreshed; }, () => {
+            this.update(Op.WAITING);
+        }); 
     };
 
     raiseActionEvent = (op: OpAction, param?: any) => {
@@ -700,7 +707,7 @@ class Game {
         }
     };
 
-    getDataFile = (url: string, callback: (text: any) => void) => {
+    getDataFile = (url: string, callback: (text: string) => void) => {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.onreadystatechange = function () {

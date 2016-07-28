@@ -71,7 +71,7 @@ class UI {
         document.querySelector(".menu iframe").setAttribute("src", menuUrl);
     }
 
-    alert = (text: string, onalert: () => void) => {
+    alert = (text: string, canclose: () => boolean, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
         content.style.pointerEvents = "none";
@@ -84,12 +84,24 @@ class UI {
 
         let onclick = () => {
             modal.removeEventListener("click", onclick);
-            modal.classList.remove("show");
-            setTimeout(() => { 
-                content.classList.remove("overlay");
-                content.style.pointerEvents = "";
-                setTimeout(onalert, 0);
-            }, 250);
+            panel.innerHTML = `<div class="bounce1"></div><div class="bounce2"></div>`;
+            const waitForClose = () => {
+                var ready = canclose();
+                if (ready) {
+                    modal.classList.remove("show");
+                    modal.classList.remove("disable");
+                    setTimeout(() => { 
+                        content.classList.remove("overlay");
+                        content.style.pointerEvents = "";
+                        setTimeout(onalert, 0);
+                    }, 250);
+                }
+                else {
+                    modal.classList.add("disable");
+                    setTimeout(waitForClose, 100);
+                }
+            };
+            waitForClose();
         };
         modal.addEventListener("click", onclick);
     };
