@@ -37,12 +37,14 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    pointer-events: none;
 }
 
 .story-inner {
     position: absolute;
     overflow: hidden;
     background-color: black;  //theme2
+    pointer-events: auto;
 }
 
 .graphics {
@@ -58,6 +60,14 @@ body {
         overflow: hidden;
         width: 100%;
         height: 100%;
+    }
+    &.game {
+        opacity: 0;
+        z-index: 0;
+        &.show {
+            opacity: 1;
+            z-index: 2;
+        }
     }
 }
 
@@ -122,7 +132,6 @@ body {
         }
     }
     &.overlay {
-        //pointer-events: none;
         opacity: 0.5;
         transition: opacity 0.25s ease; 
     }
@@ -170,6 +179,13 @@ section {
             padding-bottom: 12px;
         }
     }
+    &.result {
+        padding: 8px 24px;
+        p {
+            padding-bottom: 12px;
+            font-style: italic;
+        }
+    }
     &.image {
         position: relative;
         padding: 8px 0;
@@ -194,6 +210,12 @@ section {
     background: url(game/assets/ignasi_pattern_s.png);
     transition: top 0.25s ease; 
     z-index: 2; /*because of .content.noise*/
+    &.disabled {
+        opacity: 0.5;
+        ul li {
+            cursor: default;
+        }
+    }
     ul {
         padding: 32px;
         font-size: large;
@@ -370,6 +392,10 @@ section {
 }
 
 .portrait {
+    .graphics.game {
+        height: calc(100% - @navbar-height-portrait);
+        top: @navbar-height-portrait;
+    }
     .navbar {
         height: @navbar-height-portrait;
     }
@@ -383,5 +409,9 @@ section {
     .story-inner {
         width: 100%;
         height: 100%;
+        transition: height 0.15s ease;
+        &.retracted {
+            height: @navbar-height-portrait;
+        }
     }
 }

@@ -67,14 +67,26 @@ class Game {
                 let notLast = this.cix < this.chunks.length;
                 let goFast = this.gdata.options.fastStory && notLast;
                 if (goFast) {
-                    ui.addBlurbFast(chunk, () => {
-                        setTimeout(() => { this.update(Op.BLURB); }, 50);
-                    });
+                    ui.addBlurbFast(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
                 }
                 else {
-                    ui.addBlurb(chunk, () => {
-                        setTimeout(() => { this.update(Op.BLURB); }, 50);
-                    });
+                    if (chunk.kind == ChunkKind.minigame) {
+                        let minigame = <IMiniGame>chunk;
+                        ui.addBlurb(chunk, (result: any) => {
+                            let command = (result.win == true ? minigame.winCommand : minigame.loseCommand);
+                            let moment = <IMoment> { id: -1, text: command, parentid: this.currentScene.id };
+                            this.executeMoment(moment);
+
+                            let text = (result.win == true ? minigame.winText : minigame.loseText);
+                            let resultChunk = <IGameResult> { kind: ChunkKind.gameresult, text: text }; 
+                            this.chunks.splice(this.cix, 0, resultChunk);
+
+                            setTimeout(() => { this.update(Op.BLURB); }, 50);
+                        });
+                    }
+                    else {
+                        ui.addBlurb(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
+                    }
                 }
             }
             else {
@@ -83,7 +95,10 @@ class Game {
                     delete state.intro;
                     this.gdata.state = state;
                 }
-                this.executeMoment(this.currentMoment.id);
+                
+                let moment = this.gdata.getMoment(this.gdata.moments, this.currentMoment.id); //we might have edited the moment
+                this.executeMoment(moment);
+
                 this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 let moments = this.getAllPossibleMoments();
                 let messages = this.getAllPossibleMessages();
@@ -542,9 +557,26 @@ class Game {
                     let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle };
                     parsed.push(heading);
                 }
-                else if (part.startsWith(".p")) {
+                else if (part.startsWith(".d")) {
                     let text = part.substring(2).trim();
-                    let pause = <IPause> { kind: ChunkKind.pause, text: text };
+                    let pause = <IDo> { kind: ChunkKind.doo, text: text };
+                    parsed.push(pause);
+                }
+                else if (part.startsWith(".m")) {
+                    let minigame = <IMiniGame> { kind: ChunkKind.minigame };
+                    let parts = part.substring(2).trim().split("/");
+                    minigame.text = parts[0].trim(); 
+                    minigame.url = parts[1].trim();
+                    let parts2 = parts[2].split("=>");
+                    minigame.winText = parts2[0].trim();
+                    minigame.winCommand = parts2[1].trim();
+                    parts2 = parts[3].split("=>");
+                    minigame.loseText = parts2[0].trim();
+                    minigame.loseCommand = parts2[1].trim();
+                    parsed.push(minigame);
+                }
+                else if (part.startsWith(".w")) {
+                    let pause = <IWaitClick> { kind: ChunkKind.waitclick };
                     parsed.push(pause);
                 }
                 else if (part.startsWith(".")) {
@@ -576,8 +608,7 @@ class Game {
         return parsed;
     };
 
-    executeMoment = (id: number): void => {
-        var moment = this.gdata.getMoment(this.gdata.moments, id); //we might have edited the moment
+    executeMoment = (moment: IMoment): void => {
         var inComment = false
         var canRepeat = false;
 
@@ -611,7 +642,10 @@ class Game {
                     for (var del of flags) {
                         let flag = del.trim();
                         if (flag == "can-repeat") canRepeat = true;
-                        if (flag == "must-leave-scene") this.forbiddenSceneId = this.getSceneOf(moment).id;
+                        if (flag == "must-leave-scene") {
+                            let scene = this.getSceneOf(moment);
+                            if (scene != undefined/*e.g.message*/) this.forbiddenSceneId = scene.id;
+                        }
                     }
                 }
                 else if (part.startsWith(".x ")) {
@@ -640,7 +674,7 @@ class Game {
                 }
             }
         }
-        if (canRepeat == false) {
+        if (canRepeat == false && moment.id != -1/*minigame*/) {
             let history = this.gdata.history;
             history.push(moment.id);
             this.gdata.history = history;

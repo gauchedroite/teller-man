@@ -191,7 +191,7 @@ class UI {
         this.changeBackground(data.image, callback);
     };
 
-    addBlurb = (chunk: IMomentData, callback: () => void) => {
+    addBlurb = (chunk: IMomentData, callback: (result?: any) => void) => {
         let html = this.markupChunk(chunk);
         let content = document.querySelector(".content");
         let inner = document.querySelector(".content-inner");
@@ -223,7 +223,7 @@ class UI {
             };
             image.src = assetName;
         }
-        else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog) {
+        else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
             section.style.opacity = "0";
             inner.appendChild(section);
             this.scrollContent(inner.parentElement);
@@ -265,15 +265,24 @@ class UI {
                 setTimeout(() => { heading.classList.remove("show"); callback(); }, 500);
             });
         }
-        else if (chunk.kind == ChunkKind.pause) {
+        else if (chunk.kind == ChunkKind.doo) {
             let choices = Array<IChoice>();
             choices.push(<IChoice> { 
                 kind: ChoiceKind.action,
                 id: 0,
-                text: (<IPause>chunk).text 
+                text: (<IDo>chunk).text 
             });
             this.showChoices(choices, (chosen: IChoice) => {
                 this.hideChoices(callback);
+            });
+        }
+        else if (chunk.kind == ChunkKind.minigame) {
+            this.setupMinigame(<IMiniGame>chunk, callback);
+        }
+        else if (chunk.kind == ChunkKind.waitclick) {
+            content.addEventListener("click", function onclick() {
+                content.removeEventListener("click", onclick);
+                return callback();
             });
         }
         else {
@@ -344,24 +353,21 @@ class UI {
             sceneUrl = `game/teller-image.html?${assetName}`;
         if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
 
-        let fader = <HTMLDivElement>inner.children[2];
-        fader.style.opacity = "0.35";
-        fader.style.zIndex = "2";
-
+        this.fader(true);
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
         preloader.classList.add("change-bg");
 
         localStorage.setItem("ding", null);
         localStorage.setItem("_image_file", assetName);
+        var me = this;
         window.addEventListener("storage", function done(e: StorageEvent) {
             if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
                 window.removeEventListener("storage", done);
                 back.style.opacity = "1";
                 front.style.opacity = "0";
-                fader.style.opacity = "0";
+                me.fader(false);
                 preloader.classList.remove("change-bg");
                 setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the delay instead*/
-                    fader.style.zIndex = "0";
                     back.style.zIndex = "1";
                     front.style.zIndex = "0";
                     callback();
@@ -371,6 +377,82 @@ class UI {
 
         back.style.opacity = "0";
         backFrame.setAttribute("src", sceneUrl);
+    };
+
+    setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
+        let minigame = <IMiniGame>chunk;
+        let game = <HTMLDivElement>document.querySelector(".game");
+        let story = document.querySelector(".story-inner");
+        let panel = <HTMLDivElement>document.querySelector(".choice-panel");
+        let ready = false;
+        let fadedout = false;
+        this.runMinigame(minigame.url, (result: any) => {
+            if (result.ready != undefined) { 
+                if (fadedout) {
+                    game.classList.add("show");
+                    story.classList.add("retracted");
+                    this.fader(false);
+                }
+                ready = true;
+            }
+            else {
+                game.classList.remove("show");
+                story.classList.remove("retracted");
+                panel.classList.remove("disabled");
+                this.hideChoices(() => {
+                    let text = (result.win == true ? minigame.winText : minigame.loseText);
+                    setTimeout(() => { callback(result); }, 0);
+                });
+            }
+        });
+        let choices = Array<IChoice>();
+        choices.push(<IChoice> { 
+            kind: ChoiceKind.action,
+            id: 0,
+            text: minigame.text
+        });
+        this.showChoices(choices, (chosen: IChoice) => {
+            if (ready) { 
+                game.classList.add("show");
+                story.classList.add("retracted");
+            }
+            else {
+                this.fader(true); 
+                fadedout = true;
+            } 
+            panel.classList.add("disabled");
+        });
+    };
+
+    runMinigame = (url: string, callback: (result: any) => void) => {
+        let src = `game/${url.replace(/ /g, "%20").replace(/'/g, "%27")}`;;
+
+        let game = <HTMLDivElement>document.querySelector(".game");
+        let gameFrame = <HTMLIFrameElement>game.firstElementChild;
+        gameFrame.setAttribute("src", src);
+
+        const configure = () => {
+            var configureMiniGame = (<any>gameFrame.contentWindow).configureMiniGame;
+            if (configureMiniGame == undefined) return setTimeout(configure, 100);
+            callback({ready:true});
+            configureMiniGame({}, (result: any) => {
+                setTimeout(() => { callback(result); }, 0);
+            });
+        };
+        configure();
+    }
+
+    fader = (enable: boolean) => {
+        let inner = <HTMLDivElement>document.querySelector(".graphics-inner");
+        let div = <HTMLDivElement>inner.children[3];
+        if (enable) {
+            div.style.opacity = "0.35";
+            div.style.zIndex = "3";
+        }
+        else {
+            div.style.opacity = "0";
+            setTimeout(() => { div.style.zIndex = "0"; }, 500);
+        }
     };
 
     private markupChunk = (chunk: IMomentData): string => {
@@ -406,6 +488,12 @@ class UI {
                 html.push(`<p>${spans.join("")}</p>`);
             }
             if (hasImage) html.push("</div>");
+            html.push("</section>");
+        }
+        else if (chunk.kind == ChunkKind.gameresult) {
+            let result = <IGameResult>chunk;
+            html.push("<section class='result'>");
+            html.push(`<p>${result.text}</p>`);
             html.push("</section>");
         }
         else if (chunk.kind == ChunkKind.inline) {

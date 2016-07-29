@@ -1325,7 +1325,10 @@ var ChunkKind;
     ChunkKind[ChunkKind["background"] = 2] = "background";
     ChunkKind[ChunkKind["inline"] = 3] = "inline";
     ChunkKind[ChunkKind["heading"] = 4] = "heading";
-    ChunkKind[ChunkKind["pause"] = 5] = "pause";
+    ChunkKind[ChunkKind["doo"] = 5] = "doo";
+    ChunkKind[ChunkKind["minigame"] = 6] = "minigame";
+    ChunkKind[ChunkKind["gameresult"] = 7] = "gameresult";
+    ChunkKind[ChunkKind["waitclick"] = 8] = "waitclick";
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
@@ -1493,7 +1496,7 @@ var UI = (function () {
                 };
                 image.src = assetName_1;
             }
-            else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog) {
+            else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
                 section.style.opacity = "0";
                 inner.appendChild(section);
                 _this.scrollContent(inner.parentElement);
@@ -1533,7 +1536,7 @@ var UI = (function () {
                     setTimeout(function () { heading_1.classList.remove("show"); callback(); }, 500);
                 });
             }
-            else if (chunk.kind == ChunkKind.pause) {
+            else if (chunk.kind == ChunkKind.doo) {
                 var choices = Array();
                 choices.push({
                     kind: ChoiceKind.action,
@@ -1542,6 +1545,15 @@ var UI = (function () {
                 });
                 _this.showChoices(choices, function (chosen) {
                     _this.hideChoices(callback);
+                });
+            }
+            else if (chunk.kind == ChunkKind.minigame) {
+                _this.setupMinigame(chunk, callback);
+            }
+            else if (chunk.kind == ChunkKind.waitclick) {
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    return callback();
                 });
             }
             else {
@@ -1604,22 +1616,20 @@ var UI = (function () {
                 sceneUrl = "game/teller-image.html?" + assetName;
             if (frontFrame.src.indexOf(sceneUrl) != -1)
                 return callback();
-            var fader = inner.children[2];
-            fader.style.opacity = "0.35";
-            fader.style.zIndex = "2";
+            _this.fader(true);
             var preloader = document.querySelector(".preloader");
             preloader.classList.add("change-bg");
             localStorage.setItem("ding", null);
             localStorage.setItem("_image_file", assetName);
+            var me = _this;
             window.addEventListener("storage", function done(e) {
                 if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
                     window.removeEventListener("storage", done);
                     back.style.opacity = "1";
                     front.style.opacity = "0";
-                    fader.style.opacity = "0";
+                    me.fader(false);
                     preloader.classList.remove("change-bg");
                     setTimeout(function () {
-                        fader.style.zIndex = "0";
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
                         callback();
@@ -1628,6 +1638,79 @@ var UI = (function () {
             });
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
+        };
+        this.setupMinigame = function (chunk, callback) {
+            var minigame = chunk;
+            var game = document.querySelector(".game");
+            var story = document.querySelector(".story-inner");
+            var panel = document.querySelector(".choice-panel");
+            var ready = false;
+            var fadedout = false;
+            _this.runMinigame(minigame.url, function (result) {
+                if (result.ready != undefined) {
+                    if (fadedout) {
+                        game.classList.add("show");
+                        story.classList.add("retracted");
+                        _this.fader(false);
+                    }
+                    ready = true;
+                }
+                else {
+                    game.classList.remove("show");
+                    story.classList.remove("retracted");
+                    panel.classList.remove("disabled");
+                    _this.hideChoices(function () {
+                        var text = (result.win == true ? minigame.winText : minigame.loseText);
+                        setTimeout(function () { callback(result); }, 0);
+                    });
+                }
+            });
+            var choices = Array();
+            choices.push({
+                kind: ChoiceKind.action,
+                id: 0,
+                text: minigame.text
+            });
+            _this.showChoices(choices, function (chosen) {
+                if (ready) {
+                    game.classList.add("show");
+                    story.classList.add("retracted");
+                }
+                else {
+                    _this.fader(true);
+                    fadedout = true;
+                }
+                panel.classList.add("disabled");
+            });
+        };
+        this.runMinigame = function (url, callback) {
+            var src = "game/" + url.replace(/ /g, "%20").replace(/'/g, "%27");
+            ;
+            var game = document.querySelector(".game");
+            var gameFrame = game.firstElementChild;
+            gameFrame.setAttribute("src", src);
+            var configure = function () {
+                var configureMiniGame = gameFrame.contentWindow.configureMiniGame;
+                if (configureMiniGame == undefined)
+                    return setTimeout(configure, 100);
+                callback({ ready: true });
+                configureMiniGame({}, function (result) {
+                    setTimeout(function () { callback(result); }, 0);
+                });
+            };
+            configure();
+        };
+        this.fader = function (enable) {
+            var inner = document.querySelector(".graphics-inner");
+            var div = inner.children[3];
+            if (enable) {
+                div.style.opacity = "0.35";
+                div.style.zIndex = "3";
+            }
+            else {
+                div.style.opacity = "0";
+                setTimeout(function () { div.style.zIndex = "0"; }, 500);
+            }
         };
         this.markupChunk = function (chunk) {
             var html = Array();
@@ -1663,6 +1746,12 @@ var UI = (function () {
                 }
                 if (hasImage)
                     html.push("</div>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.gameresult) {
+                var result = chunk;
+                html.push("<section class='result'>");
+                html.push("<p>" + result.text + "</p>");
                 html.push("</section>");
             }
             else if (chunk.kind == ChunkKind.inline) {
@@ -1773,14 +1862,24 @@ var Game = (function () {
                     var notLast = _this.cix < _this.chunks.length;
                     var goFast = _this.gdata.options.fastStory && notLast;
                     if (goFast) {
-                        ui.addBlurbFast(chunk, function () {
-                            setTimeout(function () { _this.update(Op.BLURB); }, 50);
-                        });
+                        ui.addBlurbFast(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
                     }
                     else {
-                        ui.addBlurb(chunk, function () {
-                            setTimeout(function () { _this.update(Op.BLURB); }, 50);
-                        });
+                        if (chunk.kind == ChunkKind.minigame) {
+                            var minigame_1 = chunk;
+                            ui.addBlurb(chunk, function (result) {
+                                var command = (result.win == true ? minigame_1.winCommand : minigame_1.loseCommand);
+                                var moment = { id: -1, text: command, parentid: _this.currentScene.id };
+                                _this.executeMoment(moment);
+                                var text = (result.win == true ? minigame_1.winText : minigame_1.loseText);
+                                var resultChunk = { kind: ChunkKind.gameresult, text: text };
+                                _this.chunks.splice(_this.cix, 0, resultChunk);
+                                setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                            });
+                        }
+                        else {
+                            ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+                        }
                     }
                 }
                 else {
@@ -1789,7 +1888,8 @@ var Game = (function () {
                         delete state.intro;
                         _this.gdata.state = state;
                     }
-                    _this.executeMoment(_this.currentMoment.id);
+                    var moment = _this.gdata.getMoment(_this.gdata.moments, _this.currentMoment.id); //we might have edited the moment
+                    _this.executeMoment(moment);
                     _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                     var moments = _this.getAllPossibleMoments();
                     var messages = _this.getAllPossibleMessages();
@@ -2243,9 +2343,26 @@ var Game = (function () {
                         var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle };
                         parsed.push(heading);
                     }
-                    else if (part.startsWith(".p")) {
+                    else if (part.startsWith(".d")) {
                         var text = part.substring(2).trim();
-                        var pause = { kind: ChunkKind.pause, text: text };
+                        var pause = { kind: ChunkKind.doo, text: text };
+                        parsed.push(pause);
+                    }
+                    else if (part.startsWith(".m")) {
+                        var minigame = { kind: ChunkKind.minigame };
+                        var parts_3 = part.substring(2).trim().split("/");
+                        minigame.text = parts_3[0].trim();
+                        minigame.url = parts_3[1].trim();
+                        var parts2 = parts_3[2].split("=>");
+                        minigame.winText = parts2[0].trim();
+                        minigame.winCommand = parts2[1].trim();
+                        parts2 = parts_3[3].split("=>");
+                        minigame.loseText = parts2[0].trim();
+                        minigame.loseCommand = parts2[1].trim();
+                        parsed.push(minigame);
+                    }
+                    else if (part.startsWith(".w")) {
+                        var pause = { kind: ChunkKind.waitclick };
                         parsed.push(pause);
                     }
                     else if (part.startsWith(".")) {
@@ -2276,13 +2393,12 @@ var Game = (function () {
             }
             return parsed;
         };
-        this.executeMoment = function (id) {
-            var moment = _this.gdata.getMoment(_this.gdata.moments, id); //we might have edited the moment
+        this.executeMoment = function (moment) {
             var inComment = false;
             var canRepeat = false;
             var parts = moment.text.split("\n");
-            for (var _i = 0, parts_3 = parts; _i < parts_3.length; _i++) {
-                var part = parts_3[_i];
+            for (var _i = 0, parts_4 = parts; _i < parts_4.length; _i++) {
+                var part = parts_4[_i];
                 if (part.length > 0) {
                     if (part.startsWith("/*")) {
                         inComment = true;
@@ -2294,9 +2410,9 @@ var Game = (function () {
                         var rems = part.substring(2).split(",");
                         for (var _a = 0, rems_1 = rems; _a < rems_1.length; _a++) {
                             var rem = rems_1[_a];
-                            var parts_4 = rem.replace("=", ":").split(":");
-                            var name_2 = parts_4[0].trim();
-                            var value = (parts_4.length == 2 ? parts_4[1].trim() : "true");
+                            var parts_5 = rem.replace("=", ":").split(":");
+                            var name_2 = parts_5[0].trim();
+                            var value = (parts_5.length == 2 ? parts_5[1].trim() : "true");
                             if (value == "true" || value == "false")
                                 value = (value == "true");
                             var state = _this.gdata.state;
@@ -2314,8 +2430,11 @@ var Game = (function () {
                             var flag = del.trim();
                             if (flag == "can-repeat")
                                 canRepeat = true;
-                            if (flag == "must-leave-scene")
-                                _this.forbiddenSceneId = _this.getSceneOf(moment).id;
+                            if (flag == "must-leave-scene") {
+                                var scene = _this.getSceneOf(moment);
+                                if (scene != undefined /*e.g.message*/)
+                                    _this.forbiddenSceneId = scene.id;
+                            }
                         }
                     }
                     else if (part.startsWith(".x ")) {
@@ -2345,7 +2464,7 @@ var Game = (function () {
                     }
                 }
             }
-            if (canRepeat == false) {
+            if (canRepeat == false && moment.id != -1 /*minigame*/) {
                 var history_1 = _this.gdata.history;
                 history_1.push(moment.id);
                 _this.gdata.history = history_1;
@@ -2413,8 +2532,8 @@ var Game = (function () {
         var inComment = false;
         var commands = new Array();
         var parts = text.split("\n");
-        for (var _i = 0, parts_5 = parts; _i < parts_5.length; _i++) {
-            var part = parts_5[_i];
+        for (var _i = 0, parts_6 = parts; _i < parts_6.length; _i++) {
+            var part = parts_6[_i];
             if (part.length > 0) {
                 if (part.startsWith("/*")) {
                     inComment = true;
@@ -2434,8 +2553,8 @@ var Game = (function () {
             return [];
         var whens = new Array();
         var parts = text.split(",");
-        for (var _i = 0, parts_6 = parts; _i < parts_6.length; _i++) {
-            var part = parts_6[_i];
+        for (var _i = 0, parts_7 = parts; _i < parts_7.length; _i++) {
+            var part = parts_7[_i];
             if (part.length > 0) {
                 whens.push(part.trim());
             }

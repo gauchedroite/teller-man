@@ -61,7 +61,7 @@
             color: white;
             font-size: 16pt;
             background-color: rgba(0, 0, 0, 0.05);
-            transition: background-color 0.1s ease; 
+            transition: all 0.1s ease; 
             border-radius: 2px;
         }
         button:focus {
@@ -76,6 +76,10 @@
         button.confirm {
             color: lime;
             background-color: rgba(255, 0, 0, 0.25);
+        }
+        button.confirm.confirmed {
+            color: red;
+            background-color: rgba(0, 0, 0, 0.05);
         }
         button.confirm:hover {
             background-color: rgba(255, 0, 0, 0.35);
@@ -141,6 +145,8 @@
                         myconfirm = true;
                     }
                     else {
+                        btnnewgame.classList.add("confirmed");
+                        btnnewgame.innerText = "Les données seront effacées.";
                         setTimeout(function() { mycallback("new-game"); }, 0); 
                     }
                 }

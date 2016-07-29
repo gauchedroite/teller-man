@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Teller Mini-Game Template</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <style>
+        html, body {
+            position: relative;
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            margin: 0; padding: 0;
+        }
+        .content {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            background: silver;
+        }
+        button {
+            padding: 64px;
+            margin: 16px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="content">
+        <div class="content-inner">
+            <button id="win">Gagner</button>
+            <button id="lose">Perdre</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var btnwin = document.querySelector("button#win");
+            var btnlose = document.querySelector("button#lose");
+
+            var myoptions;
+            var mycallback;
+
+//setTimeout(function(){
+            window.configureMiniGame = function(options, callback) {
+                myoptions = options;
+                mycallback = callback;
+            };
+//},3000);
+            document.addEventListener("click", function click(e) {
+                var id = e.target.id;
+                if (id == "win") {
+                    setTimeout(function() { mycallback({win:true}); }, 0); 
+                }
+                else if (id == "lose") {
+                    setTimeout(function() { mycallback({win:false}); }, 0); 
+                }
+            });
+        }, false);
+    </script>
+</body>
+
+</html>

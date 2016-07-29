@@ -140,6 +140,31 @@
             color: #a0a0a0;
         }
         .hidden { display: none; }
+        .studio {
+            position: absolute;
+            bottom: 0;
+        }
+        @font-face {
+            font-family: "My Magneto";
+            src: url(dist/game/assets/MAGNETOB.TTF) format("truetype");
+        }
+        @font-face {
+            font-family: "My Pupcat";
+            src: url(dist/game/assets/pupcat__.ttf) format("truetype");
+        }
+        .studio-inner {
+            margin: 6px 12px;
+        }
+        .studio-inner div:nth-child(1) {
+            font-family: 'My Magneto';
+            color: yellow;
+            font-size: 1.25em;
+            line-height: 0.6em;
+            opacity: 0.8;
+        }
+        .studio-inner div:nth-child(2) {
+            font-family: 'My Pupcat';
+        }
     </style>
 </head>
 
@@ -174,6 +199,12 @@
                     <textarea id="ide-state" rows="8" spellcheck="false"></textarea>
                     <button id="ide-save-state">Save</button>
                 </div>
+            </div>
+        </div>
+        <div class="studio">
+            <div class="studio-inner">
+                <div>Studio</div>
+                <div>Gauche-Droite</div>
             </div>
         </div>
     </div>

@@ -5,7 +5,10 @@ enum ChunkKind {
     background,
     inline,
     heading,
-    pause
+    doo,
+    minigame,
+    gameresult,
+    waitclick
 }
 interface IChunkKind {
     kind: ChunkKind
@@ -34,12 +37,28 @@ interface IHeading extends IChunkKind {
     title: string
     subtitle: string
 }
-interface IPause extends IChunkKind {
+interface IDo extends IChunkKind {
     kind: ChunkKind
     text: string
 }
+interface IMiniGame extends IChunkKind {
+    kind: ChunkKind
+    text: string
+    url: string
+    winText: string
+    winCommand: string
+    loseText: string
+    loseCommand: string
+}
+interface IGameResult extends IChunkKind {
+    kind: ChunkKind
+    text: string
+}
+interface IWaitClick extends IChunkKind {
+    kind: ChunkKind
+}
 
-type IMomentData = IDialog | IText | IBackground | IInline | IHeading | IPause;
+type IMomentData = IDialog | IText | IBackground | IInline | IHeading | IDo | IMiniGame | IGameResult | IWaitClick;
 
 enum Op {
     WAITING,
