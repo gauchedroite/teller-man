@@ -1332,15 +1332,15 @@ var ChunkKind;
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
-    Op[Op["WAITING"] = 0] = "WAITING";
-    Op[Op["MOMENT"] = 1] = "MOMENT";
+    Op[Op["STARTING_NEWGAME"] = 0] = "STARTING_NEWGAME";
+    Op[Op["CURRENT_MOMENT"] = 1] = "CURRENT_MOMENT";
     Op[Op["BLURB"] = 2] = "BLURB";
-    Op[Op["CHOICES"] = 3] = "CHOICES";
-    Op[Op["MENU_BOOT"] = 4] = "MENU_BOOT";
+    Op[Op["BUILD_CHOICES"] = 3] = "BUILD_CHOICES";
+    Op[Op["MENU_F5"] = 4] = "MENU_F5";
     Op[Op["MENU_INGAME"] = 5] = "MENU_INGAME";
     Op[Op["NEWGAME"] = 6] = "NEWGAME";
     Op[Op["CONTINUE_SAVEDGAME"] = 7] = "CONTINUE_SAVEDGAME";
-    Op[Op["CONTINUE_INGAME"] = 8] = "CONTINUE_INGAME";
+    Op[Op["CONTINUE_INGAME"] = 8] = "CONTINUE_INGAME"; //8
 })(Op || (Op = {}));
 var OpAction;
 (function (OpAction) {
@@ -1834,15 +1834,10 @@ var UI = (function () {
 var Game = (function () {
     function Game() {
         var _this = this;
-        this.update = function (op, param) {
+        this.update = function (op) {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
-            if (op == Op.MOMENT) {
-                if (_this.currentMoment == null) {
-                    _this.saveContinueState();
-                    _this.idle("Il ne se passe plus rien pour le moment.");
-                    return null;
-                }
+            if (op == Op.CURRENT_MOMENT) {
                 _this.chunks = _this.parseMoment(_this.currentMoment);
                 _this.cix = 0;
                 var kind = _this.currentMoment.kind;
@@ -1888,31 +1883,32 @@ var Game = (function () {
                         delete state.intro;
                         _this.gdata.state = state;
                     }
-                    var moment = _this.gdata.getMoment(_this.gdata.moments, _this.currentMoment.id); //we might have edited the moment
-                    _this.executeMoment(moment);
-                    _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
-                    var moments = _this.getAllPossibleMoments();
-                    var messages = _this.getAllPossibleMessages();
-                    var choices = _this.buildChoices(moments, messages);
-                    if (choices.length > 0) {
-                        ui.showChoices(choices, function (chosen) {
-                            _this.update(Op.CHOICES, chosen);
-                        });
-                    }
-                    else {
-                        _this.idle("Il ne se passe plus rien pour le moment.");
-                    }
+                    _this.currentMoment = _this.gdata.getMoment(_this.gdata.moments, _this.currentMoment.id); //we might have edited the moment
+                    _this.executeMoment(_this.currentMoment);
+                    _this.update(Op.BUILD_CHOICES);
                 }
             }
-            else if (op == Op.CHOICES) {
-                ui.hideChoices(function () {
-                    var choice = param;
-                    _this.currentMoment = _this.getChosenMoment(choice);
-                    _this.updateTimedState();
-                    setTimeout(function () { _this.update(Op.MOMENT); }, 0);
-                });
+            else if (op == Op.BUILD_CHOICES) {
+                _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                var moments = _this.getAllPossibleMoments();
+                var messages = _this.getAllPossibleMessages();
+                var choices = _this.buildChoices(moments, messages);
+                _this.updateTimedState();
+                if (choices.length > 0) {
+                    ui.showChoices(choices, function (chosen) {
+                        ui.hideChoices(function () {
+                            _this.currentMoment = _this.getChosenMoment(chosen);
+                            _this.update(Op.CURRENT_MOMENT);
+                        });
+                    });
+                }
+                else {
+                    _this.refreshGameAndAlert("Il ne se passe plus rien pour le moment.", function () {
+                        _this.update(Op.BUILD_CHOICES);
+                    });
+                }
             }
-            else if (op == Op.MENU_BOOT) {
+            else if (op == Op.MENU_F5) {
                 if (_this.gdata.options == undefined)
                     ui.showMenu(Op.NEWGAME, null, function (chosen) {
                         setTimeout(function () { _this.update(chosen); }, 0);
@@ -1928,21 +1924,21 @@ var Game = (function () {
                 });
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
+                var process_1 = function () {
+                    _this.restoreContinueState();
+                    ui.initScene(_this.parseScene(_this.currentScene), function () {
+                        _this.update(_this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+                    });
+                };
                 if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
                     _this.getDataFile("game/app.json", function (text) {
                         if (text != undefined && text.length > 0)
                             _this.gdata.saveData(text);
-                        _this.restoreContinueState();
-                        ui.initScene(_this.parseScene(_this.currentScene), function () {
-                            setTimeout(function () { _this.update(Op.MOMENT); }, 0);
-                        });
+                        process_1();
                     });
                 }
                 else {
-                    _this.restoreContinueState();
-                    ui.initScene(_this.parseScene(_this.currentScene), function () {
-                        setTimeout(function () { _this.update(Op.MOMENT); }, 0);
-                    });
+                    process_1();
                 }
             }
             else if (op == Op.CONTINUE_INGAME) {
@@ -1950,14 +1946,22 @@ var Game = (function () {
             else if (op == Op.NEWGAME) {
                 _this.newGame();
             }
-            else if (op == Op.WAITING) {
+            else if (op == Op.STARTING_NEWGAME) {
                 _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
-                _this.updateTimedState();
-                setTimeout(function () { _this.update(Op.MOMENT); }, 0);
+                if (_this.currentMoment != null) {
+                    setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
+                }
+                else {
+                    _this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", function () {
+                        _this.update(Op.BUILD_CHOICES);
+                    });
+                }
             }
             else {
-                _this.idle("Game Over?");
+                _this.refreshGameAndAlert("!!! DEAD END !!!", function () {
+                    _this.update(Op.BUILD_CHOICES);
+                });
             }
         };
         this.saveContinueState = function () {
@@ -2012,7 +2016,7 @@ var Game = (function () {
                 setTimeout(function () { location.href = "index.html"; }, 0);
             }
         };
-        this.idle = function (text) {
+        this.refreshGameAndAlert = function (text, callback) {
             var refreshed = (_this.gdata.options != undefined && _this.gdata.options.skipFileLoad);
             if (refreshed == false) {
                 _this.getDataFile("game/app.json", function (text) {
@@ -2022,7 +2026,7 @@ var Game = (function () {
                 });
             }
             _this.ui.alert(text, function () { return refreshed; }, function () {
-                _this.update(Op.WAITING);
+                callback();
             });
         };
         this.raiseActionEvent = function (op, param) {
@@ -2320,6 +2324,11 @@ var Game = (function () {
                         var image = { kind: ChunkKind.inline, image: part.substring(2).trim() };
                         parsed.push(image);
                     }
+                    else if (part.startsWith(".d ")) {
+                        var text = part.substring(2).trim();
+                        var pause = { kind: ChunkKind.doo, text: text };
+                        parsed.push(pause);
+                    }
                     else if (part.startsWith(".d")) {
                         var space = part.indexOf(" ");
                         if (space != -1) {
@@ -2342,11 +2351,6 @@ var Game = (function () {
                         var subtitle = (parts_2.length > 1 ? parts_2[1].trim() : undefined);
                         var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle };
                         parsed.push(heading);
-                    }
-                    else if (part.startsWith(".d")) {
-                        var text = part.substring(2).trim();
-                        var pause = { kind: ChunkKind.doo, text: text };
-                        parsed.push(pause);
                     }
                     else if (part.startsWith(".m")) {
                         var minigame = { kind: ChunkKind.minigame };
@@ -2517,14 +2521,19 @@ var Game = (function () {
         window.GameInstance = this;
         this.ui = new UI(menuHtml, function () {
             if (skipMenu) {
+                //a brand new game was selected so start it now 
                 options.skipMenu = false;
                 _this.gdata.options = options;
-                _this.update(Op.WAITING);
+                _this.update(Op.STARTING_NEWGAME);
             }
             else {
-                _this.update(Op.MENU_BOOT);
+                //the user just started it's browser. display the menu
+                _this.update(Op.MENU_F5);
             }
-        }, function () { _this.update(Op.MENU_INGAME); });
+        }, 
+        //the sandwich was clicked
+        //the sandwich was clicked
+        function () { _this.update(Op.MENU_INGAME); });
     }
     Game.getCommands = function (text) {
         if (text == undefined)

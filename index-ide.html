@@ -144,6 +144,9 @@
             position: absolute;
             bottom: 0;
         }
+        a.studio {
+            text-decoration: none;
+        }
         @font-face {
             font-family: "My Magneto";
             src: url(dist/game/assets/MAGNETOB.TTF) format("truetype");
@@ -153,7 +156,9 @@
             src: url(dist/game/assets/pupcat__.ttf) format("truetype");
         }
         .studio-inner {
-            margin: 6px 12px;
+            margin: 3px 6px;
+            padding: 6px 6px 3px 6px;
+            border: 1px dotted yellow;
         }
         .studio-inner div:nth-child(1) {
             font-family: 'My Magneto';
@@ -201,12 +206,12 @@
                 </div>
             </div>
         </div>
-        <div class="studio">
+        <a href="https://github.com/gauchedroite/teller-man" target="_blank" class="studio">
             <div class="studio-inner">
                 <div>Studio</div>
                 <div>Gauche-Droite</div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="ide-game">

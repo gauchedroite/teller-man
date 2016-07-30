@@ -141,12 +141,12 @@
                 if (id == "new-game") {
                     if (myconfirm == false) {
                         btnnewgame.classList.add("confirm");
-                        btnnewgame.innerText = "Les données seront effacées. Ok?";
+                        btnnewgame.innerText = "Votre progrès sera effacé. Ok?";
                         myconfirm = true;
                     }
                     else {
                         btnnewgame.classList.add("confirmed");
-                        btnnewgame.innerText = "Les données seront effacées.";
+                        btnnewgame.innerText = "Données effacées.";
                         setTimeout(function() { mycallback("new-game"); }, 0); 
                     }
                 }
