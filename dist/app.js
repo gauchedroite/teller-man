@@ -1800,12 +1800,12 @@ var UI = (function () {
         if ("addEventListener" in document) {
             document.addEventListener("DOMContentLoaded", function () {
                 FastClick.attach(document.body);
-                var format = (window.innerWidth > 600 ? "landscape" : "portrait");
+                var format = (window.innerWidth > 750 ? "landscape" : "portrait");
                 document.body.classList.add(format);
             }, false);
         }
         window.onresize = function () {
-            var format = (window.innerWidth > 600 ? "landscape" : "portrait");
+            var format = (window.innerWidth > 750 ? "landscape" : "portrait");
             if (document.body.classList.contains(format) == false) {
                 document.body.removeAttribute("class");
                 document.body.classList.add(format);
@@ -1860,6 +1860,7 @@ var Game = (function () {
             else if (op == Op.BLURB) {
                 if (_this.cix < _this.chunks.length) {
                     var chunk = _this.chunks[_this.cix++];
+                    var first = _this.cix == 1;
                     var notLast = _this.cix < _this.chunks.length;
                     var goFast = _this.gdata.options.fastStory && notLast;
                     if (goFast) {
@@ -1875,11 +1876,17 @@ var Game = (function () {
                                 var text = (result.win == true ? minigame_1.winText : minigame_1.loseText);
                                 var resultChunk = { kind: ChunkKind.gameresult, text: text };
                                 _this.chunks.splice(_this.cix, 0, resultChunk);
-                                setTimeout(function () { _this.update(Op.BLURB); }, 50);
+                                setTimeout(function () { _this.update(Op.BLURB); }, 500);
                             });
                         }
                         else {
-                            ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+                            var showBlurb_1 = function () {
+                                ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+                            };
+                            if (first)
+                                setTimeout(function () { showBlurb_1(); }, 500);
+                            else
+                                showBlurb_1();
                         }
                     }
                 }

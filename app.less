@@ -8,8 +8,8 @@
 @navbar-height: 36px;
 @navbar-height-portrait: 46px;
 
-::-webkit-scrollbar { display: none; }
-html { overflow: -moz-scrollbars-none; }
+//::-webkit-scrollbar { display: none; }
+//html { overflow: -moz-scrollbars-none; }
 
 .noselect {
   -webkit-touch-callout: none; // iOS Safari
@@ -29,7 +29,8 @@ html, body {
 body {
     font-family: "Roboto Slab", serif;
     color: rgba(0, 0, 0, 0.8);
-    .noselect
+    overflow: hidden;
+    .noselect;
 }
 
 .story {
@@ -118,9 +119,10 @@ body {
     height: calc(100% - @navbar-height);
     width: 100%;
     background-color: #ccc;
-    //theme2: opacity: 0.6;
     cursor: default;
     overflow: scroll;
+    &::-webkit-scrollbar { display: none; }
+    -ms-overflow-style: none;
     .content-spacer {
         height: @navbar-height;
         width: 100%;

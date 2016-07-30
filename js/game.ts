@@ -61,6 +61,7 @@ class Game {
             if (this.cix < this.chunks.length) {
                 var chunk = this.chunks[this.cix++];
 
+                let first = this.cix == 1;
                 let notLast = this.cix < this.chunks.length;
                 let goFast = this.gdata.options.fastStory && notLast;
                 if (goFast) {
@@ -78,11 +79,17 @@ class Game {
                             let resultChunk = <IGameResult> { kind: ChunkKind.gameresult, text: text }; 
                             this.chunks.splice(this.cix, 0, resultChunk);
 
-                            setTimeout(() => { this.update(Op.BLURB); }, 50);
+                            setTimeout(() => { this.update(Op.BLURB); }, 500);
                         });
                     }
                     else {
-                        ui.addBlurb(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
+                        const showBlurb = () => {
+                            ui.addBlurb(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
+                        };
+                        if (first)
+                            setTimeout(() => { showBlurb(); }, 500);
+                        else
+                            showBlurb();
                     }
                 }
             }
