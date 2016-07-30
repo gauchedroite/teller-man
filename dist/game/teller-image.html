@@ -33,14 +33,23 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var assetName = "assets/" + localStorage.getItem("_image_file");
-            var image = new Image();
-            image.onload = function () {
-                var content = document.querySelector(".content");
-                content.style.backgroundImage = "url(" + assetName  + ")";
-                localStorage.setItem("ding", '{"content":"ready"}');
+            var myoptions;
+            var mycallback;
+
+            window.TellerRun = function(options, callback) {
+                myoptions = options;
+                mycallback = callback;
+
+                var assetName = "assets/" + options.imageFile;
+                var image = new Image();
+                image.onload = function() {
+                    var content = document.querySelector(".content");
+                    content.style.backgroundImage = "url(" + assetName  + ")";
+                    callback({ content: "ready" });
+                };
+                image.src = assetName;
             };
-            image.src = assetName;
+            
         }, false);
     </script>
 

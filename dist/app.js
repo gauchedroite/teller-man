@@ -1578,18 +1578,18 @@ var UI = (function () {
         };
         this.showMenu = function (opNewGame, opContinue, onmenu) {
             var menu = document.querySelector(".menu");
+            var menuFrame = menu.firstElementChild;
             menu.style.right = "0";
             var options = { continue: "disabled" };
             if (opContinue != undefined)
                 options.continue = "enabled";
-            var iframe = document.querySelector("div.menu iframe");
-            var configureMenu = iframe.contentWindow.configureMenu;
-            configureMenu(options, function (name) {
-                if (name == "continue") {
+            var run = menuFrame.contentWindow.TellerRun;
+            run(options, function (result) {
+                if (result.menu == "continue") {
                     menu.style.right = "100%";
                     setTimeout(function () { onmenu(opContinue); }, 250);
                 }
-                else {
+                else if (result.menu == "new-game") {
                     setTimeout(function () { onmenu(opNewGame); }, 500);
                 }
             });
@@ -1619,17 +1619,15 @@ var UI = (function () {
             _this.fader(true);
             var preloader = document.querySelector(".preloader");
             preloader.classList.add("change-bg");
-            localStorage.setItem("ding", null);
-            localStorage.setItem("_image_file", assetName);
-            var me = _this;
-            window.addEventListener("storage", function done(e) {
-                if (e.key == "ding") {
-                    var newValue = JSON.parse(e.newValue);
-                    if (newValue != undefined && newValue.content == "ready") {
-                        window.removeEventListener("storage", done);
+            var configure = function () {
+                var run = backFrame.contentWindow.TellerRun;
+                if (run == undefined)
+                    return setTimeout(configure, 100);
+                run({ imageFile: assetName }, function (result) {
+                    if (result.content == "ready") {
                         back.style.opacity = "1";
                         front.style.opacity = "0";
-                        me.fader(false);
+                        _this.fader(false);
                         preloader.classList.remove("change-bg");
                         setTimeout(function () {
                             back.style.zIndex = "1";
@@ -1637,8 +1635,9 @@ var UI = (function () {
                             callback();
                         }, 500);
                     }
-                }
-            });
+                });
+            };
+            configure();
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
         };
@@ -1693,11 +1692,11 @@ var UI = (function () {
             var gameFrame = game.firstElementChild;
             gameFrame.setAttribute("src", src);
             var configure = function () {
-                var configureMiniGame = gameFrame.contentWindow.configureMiniGame;
-                if (configureMiniGame == undefined)
+                var run = gameFrame.contentWindow.TellerRun;
+                if (run == undefined)
                     return setTimeout(configure, 100);
                 callback({ ready: true });
-                configureMiniGame({}, function (result) {
+                run({}, function (result) {
                     setTimeout(function () { callback(result); }, 0);
                 });
             };
@@ -1811,12 +1810,16 @@ var UI = (function () {
                 document.body.classList.add(format);
             }
         };
-        localStorage.setItem("ding", null);
-        window.addEventListener("storage", function done(e) {
-            if (e.key == "ding") {
-                var newValue = JSON.parse(e.newValue);
-                if (newValue != undefined && newValue.menu == "ready") {
-                    window.removeEventListener("storage", done);
+        //menu
+        var menu = document.querySelector(".menu");
+        var menuFrame = menu.firstElementChild;
+        menuFrame.setAttribute("src", "game/" + menuPage);
+        var configure = function () {
+            var run = menuFrame.contentWindow.TellerRun;
+            if (run == undefined)
+                return setTimeout(configure, 100);
+            run({}, function (result) {
+                if (result.menu == "ready") {
                     var preloader = document.querySelector(".preloader");
                     setTimeout(function () {
                         preloader.style.opacity = "0";
@@ -1830,10 +1833,9 @@ var UI = (function () {
                     }, 750);
                     setTimeout(ready, 0);
                 }
-            }
-        });
-        var menuUrl = "game/" + menuPage;
-        document.querySelector(".menu iframe").setAttribute("src", menuUrl);
+            });
+        };
+        configure();
     }
     return UI;
 }());

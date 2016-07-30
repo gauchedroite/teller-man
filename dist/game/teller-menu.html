@@ -45,6 +45,7 @@
         }
         h2 {
             font-family: 'Merriweather', serif;
+            font-style: italic;
             font-size: 18pt;
             line-height: 28pt;
             letter-spacing: 0.22em;
@@ -106,15 +107,6 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var assetName = "assets/menu.jpg";
-            var image = new Image();
-            image.onload = function() {
-                var content = document.querySelector(".content");
-                content.style.backgroundImage = "url(" + assetName  + ")";
-                localStorage.setItem("ding", '{"menu":"ready"}');
-            };
-            image.src = assetName;
-
             var btnnewgame = document.querySelector("button#new-game");
             var btncontinue = document.querySelector("button#continue");
             var btnoptions = document.querySelector("button#options");
@@ -123,7 +115,7 @@
             var mycallback;
             var myconfirm = false;
 
-            window.configureMenu = function(options, callback) {
+            window.TellerRun = function(options, callback) {
                 myoptions = options;
                 mycallback = callback;
                 myconfirm = false;
@@ -133,13 +125,22 @@
                     btncontinue.setAttribute("disabled", "disabled");
                 else
                     btncontinue.removeAttribute("disabled");
+
+                var assetName = "assets/menu.jpg";
+                var image = new Image();
+                image.onload = function() {
+                    var content = document.querySelector(".content");
+                    content.style.backgroundImage = "url(" + assetName  + ")";
+                    callback({ menu: "ready" });
+                };
+                image.src = assetName;
             };
 
             document.addEventListener("click", function click(e) {
                 var id = e.target.id;
                 if (id == "new-game") {
                     if (myoptions.continue == "disabled") {
-                        setTimeout(function() { mycallback("new-game"); }, 0); 
+                        setTimeout(function() { mycallback({ menu: "new-game" }); }, 0); 
                     }
                     else {
                         if (myconfirm == false) {
@@ -150,14 +151,15 @@
                         else {
                             btnnewgame.classList.add("confirmed");
                             btnnewgame.innerText = "Données effacées.";
-                            setTimeout(function() { mycallback("new-game"); }, 0); 
+                            setTimeout(function() { mycallback({ menu: "new-game" }); }, 0); 
                         }
                     }
                 }
                 else if (id == "continue") {
-                    setTimeout(function() { mycallback("continue"); }, 0); 
+                    setTimeout(function() { mycallback({ menu: "continue" }); }, 0); 
                 }
             });
+
         }, false);
     </script>
 </body>

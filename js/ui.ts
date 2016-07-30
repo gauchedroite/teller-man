@@ -48,12 +48,15 @@ class UI {
             }
         };
 
-        localStorage.setItem("ding", null);
-        window.addEventListener("storage", function done(e: StorageEvent) {
-            if (e.key == "ding") {
-                let newValue = JSON.parse(e.newValue);
-                if (newValue != undefined && newValue.menu == "ready") {
-                    window.removeEventListener("storage", done);
+        //menu
+        let menu = <HTMLDivElement>document.querySelector(".menu");
+        let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
+        menuFrame.setAttribute("src", `game/${menuPage}`);
+        const configure = () => {
+            var run = (<any>menuFrame.contentWindow).TellerRun;
+            if (run == undefined) return setTimeout(configure, 100);
+            run({}, (result: any) => {
+                if (result.menu == "ready") {
                     var preloader = <HTMLDivElement>document.querySelector(".preloader");
                     setTimeout(() => { 
                         preloader.style.opacity = "0";
@@ -67,11 +70,9 @@ class UI {
                     }, 750);
                     setTimeout(ready, 0);
                 }
-            }
-        });
-
-        var menuUrl = `game/${menuPage}`;
-        document.querySelector(".menu iframe").setAttribute("src", menuUrl);
+            });
+        };
+        configure();
     }
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
@@ -313,20 +314,19 @@ class UI {
 
     showMenu = (opNewGame: Op, opContinue: Op, onmenu: (choice: Op) => void) => {
         let menu = <HTMLElement>document.querySelector(".menu");
+        let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
         menu.style.right = "0";
 
         var options: any = { continue: "disabled" };
         if (opContinue != undefined) options.continue = "enabled";
 
-        var iframe = <HTMLIFrameElement>document.querySelector("div.menu iframe");
-        var configureMenu = (<any>iframe.contentWindow).configureMenu;
-
-        configureMenu(options, (name: string) => {
-            if (name == "continue") {
+        var run = (<any>menuFrame.contentWindow).TellerRun;
+        run(options, (result: any) => {
+            if (result.menu == "continue") {
                 menu.style.right = "100%";
                 setTimeout(() => { onmenu(opContinue); }, 250);
             }
-            else {
+            else if (result.menu == "new-game") {
                 setTimeout(() => { onmenu(opNewGame); }, 500);
             }
         });
@@ -360,26 +360,24 @@ class UI {
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
         preloader.classList.add("change-bg");
 
-        localStorage.setItem("ding", null);
-        localStorage.setItem("_image_file", assetName);
-        var me = this;
-        window.addEventListener("storage", function done(e: StorageEvent) {
-            if (e.key == "ding") {
-                let newValue = JSON.parse(e.newValue);
-                if (newValue != undefined && newValue.content == "ready") {
-                    window.removeEventListener("storage", done);
+        const configure = () => {
+            var run = (<any>backFrame.contentWindow).TellerRun;
+            if (run == undefined) return setTimeout(configure, 100);
+            run({ imageFile: assetName }, (result: any) => {
+                if (result.content == "ready") {
                     back.style.opacity = "1";
                     front.style.opacity = "0";
-                    me.fader(false);
+                    this.fader(false);
                     preloader.classList.remove("change-bg");
-                    setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the delay instead*/
+                    setTimeout(() => { //do not use "transitionend" here as it was failing on me. hardcode the delay instead
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
                         callback();
                     }, 500);
                 }
-            }
-        });
+            });
+        };
+        configure();
 
         back.style.opacity = "0";
         backFrame.setAttribute("src", sceneUrl);
@@ -438,10 +436,10 @@ class UI {
         gameFrame.setAttribute("src", src);
 
         const configure = () => {
-            var configureMiniGame = (<any>gameFrame.contentWindow).configureMiniGame;
-            if (configureMiniGame == undefined) return setTimeout(configure, 100);
+            var run = (<any>gameFrame.contentWindow).TellerRun;
+            if (run == undefined) return setTimeout(configure, 100);
             callback({ready:true});
-            configureMiniGame({}, (result: any) => {
+            run({}, (result: any) => {
                 setTimeout(() => { callback(result); }, 0);
             });
         };
