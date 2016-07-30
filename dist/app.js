@@ -1623,17 +1623,20 @@ var UI = (function () {
             localStorage.setItem("_image_file", assetName);
             var me = _this;
             window.addEventListener("storage", function done(e) {
-                if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
-                    window.removeEventListener("storage", done);
-                    back.style.opacity = "1";
-                    front.style.opacity = "0";
-                    me.fader(false);
-                    preloader.classList.remove("change-bg");
-                    setTimeout(function () {
-                        back.style.zIndex = "1";
-                        front.style.zIndex = "0";
-                        callback();
-                    }, 500);
+                if (e.key == "ding") {
+                    var newValue = JSON.parse(e.newValue);
+                    if (newValue != undefined && newValue.content == "ready") {
+                        window.removeEventListener("storage", done);
+                        back.style.opacity = "1";
+                        front.style.opacity = "0";
+                        me.fader(false);
+                        preloader.classList.remove("change-bg");
+                        setTimeout(function () {
+                            back.style.zIndex = "1";
+                            front.style.zIndex = "0";
+                            callback();
+                        }, 500);
+                    }
                 }
             });
             back.style.opacity = "0";
@@ -1810,20 +1813,23 @@ var UI = (function () {
         };
         localStorage.setItem("ding", null);
         window.addEventListener("storage", function done(e) {
-            if (e.key == "ding" && (JSON.parse(e.newValue).menu == "ready")) {
-                window.removeEventListener("storage", done);
-                var preloader = document.querySelector(".preloader");
-                setTimeout(function () {
-                    preloader.style.opacity = "0";
-                    preloader.addEventListener("transitionend", function done() {
-                        preloader.removeEventListener("transitionend", done);
-                        preloader.classList.remove("full-white");
-                        preloader.removeAttribute("style");
-                        var studio = preloader.querySelector(".studio");
-                        studio.style.display = "none";
-                    });
-                }, 750);
-                setTimeout(ready, 0);
+            if (e.key == "ding") {
+                var newValue = JSON.parse(e.newValue);
+                if (newValue != undefined && newValue.menu == "ready") {
+                    window.removeEventListener("storage", done);
+                    var preloader = document.querySelector(".preloader");
+                    setTimeout(function () {
+                        preloader.style.opacity = "0";
+                        preloader.addEventListener("transitionend", function done() {
+                            preloader.removeEventListener("transitionend", done);
+                            preloader.classList.remove("full-white");
+                            preloader.removeAttribute("style");
+                            var studio = preloader.querySelector(".studio");
+                            studio.style.display = "none";
+                        });
+                    }, 750);
+                    setTimeout(ready, 0);
+                }
             }
         });
         var menuUrl = "game/" + menuPage;
@@ -2731,6 +2737,23 @@ var Tide = (function () {
     }
     return Tide;
 }());
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+if (!String.prototype.endsWith) {
+    String.prototype.endsWith = function (searchString, position) {
+        var subjectString = this.toString();
+        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+            position = subjectString.length;
+        }
+        position -= searchString.length;
+        var lastIndex = subjectString.indexOf(searchString, position);
+        return lastIndex !== -1 && lastIndex === position;
+    };
+}
 var TellerMan;
 (function (TellerMan) {
     if (document.title === "Teller Editor") {

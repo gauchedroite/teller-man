@@ -137,6 +137,9 @@ iframe {
 ::-webkit-scrollbar {
   display: none;
 }
+html {
+  overflow: -moz-scrollbars-none;
+}
 .noselect {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -342,6 +345,7 @@ section.image div {
 .choice-panel ul {
   padding: 32px;
   font-size: large;
+  list-style: none;
 }
 .choice-panel ul li {
   padding-bottom: 22px;

@@ -139,15 +139,20 @@
             document.addEventListener("click", function click(e) {
                 var id = e.target.id;
                 if (id == "new-game") {
-                    if (myconfirm == false) {
-                        btnnewgame.classList.add("confirm");
-                        btnnewgame.innerText = "Votre progrès sera effacé. Ok?";
-                        myconfirm = true;
+                    if (myoptions.continue == "disabled") {
+                        setTimeout(function() { mycallback("new-game"); }, 0); 
                     }
                     else {
-                        btnnewgame.classList.add("confirmed");
-                        btnnewgame.innerText = "Données effacées.";
-                        setTimeout(function() { mycallback("new-game"); }, 0); 
+                        if (myconfirm == false) {
+                            btnnewgame.classList.add("confirm");
+                            btnnewgame.innerText = "Votre progrès sera effacé. Ok?";
+                            myconfirm = true;
+                        }
+                        else {
+                            btnnewgame.classList.add("confirmed");
+                            btnnewgame.innerText = "Données effacées.";
+                            setTimeout(function() { mycallback("new-game"); }, 0); 
+                        }
                     }
                 }
                 else if (id == "continue") {

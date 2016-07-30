@@ -50,20 +50,23 @@ class UI {
 
         localStorage.setItem("ding", null);
         window.addEventListener("storage", function done(e: StorageEvent) {
-            if (e.key == "ding" && (JSON.parse(e.newValue).menu == "ready")) {
-                window.removeEventListener("storage", done);
-                var preloader = <HTMLDivElement>document.querySelector(".preloader");
-                setTimeout(() => { 
-                    preloader.style.opacity = "0";
-                    preloader.addEventListener("transitionend", function done() {
-                        preloader.removeEventListener("transitionend", done);
-                        preloader.classList.remove("full-white");
-                        preloader.removeAttribute("style");
-                        var studio = <HTMLDivElement>preloader.querySelector(".studio");
-                        studio.style.display = "none";
-                    });
-                }, 750);
-                setTimeout(ready, 0);
+            if (e.key == "ding") {
+                let newValue = JSON.parse(e.newValue);
+                if (newValue != undefined && newValue.menu == "ready") {
+                    window.removeEventListener("storage", done);
+                    var preloader = <HTMLDivElement>document.querySelector(".preloader");
+                    setTimeout(() => { 
+                        preloader.style.opacity = "0";
+                        preloader.addEventListener("transitionend", function done() {
+                            preloader.removeEventListener("transitionend", done);
+                            preloader.classList.remove("full-white");
+                            preloader.removeAttribute("style");
+                            var studio = <HTMLDivElement>preloader.querySelector(".studio");
+                            studio.style.display = "none";
+                        });
+                    }, 750);
+                    setTimeout(ready, 0);
+                }
             }
         });
 
@@ -361,17 +364,20 @@ class UI {
         localStorage.setItem("_image_file", assetName);
         var me = this;
         window.addEventListener("storage", function done(e: StorageEvent) {
-            if (e.key == "ding" && (JSON.parse(e.newValue).content == "ready")) {
-                window.removeEventListener("storage", done);
-                back.style.opacity = "1";
-                front.style.opacity = "0";
-                me.fader(false);
-                preloader.classList.remove("change-bg");
-                setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the delay instead*/
-                    back.style.zIndex = "1";
-                    front.style.zIndex = "0";
-                    callback();
-                }, 500);
+            if (e.key == "ding") {
+                let newValue = JSON.parse(e.newValue);
+                if (newValue != undefined && newValue.content == "ready") {
+                    window.removeEventListener("storage", done);
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    me.fader(false);
+                    preloader.classList.remove("change-bg");
+                    setTimeout(() => { /*do not use "transitionend" here as it was failing on me. hardcode the delay instead*/
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                        callback();
+                    }, 500);
+                }
             }
         });
 
