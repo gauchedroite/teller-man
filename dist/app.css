@@ -276,14 +276,23 @@ section.dialog {
   position: relative;
   padding: 8px 24px;
 }
+section.dialog .head-placeholder,
 section.dialog .head {
   position: absolute;
   width: 75px;
   height: 75px;
   top: 0;
   left: 40px;
-  background: #bbb;
+  background: #c4c4c4;
   border-radius: 40px;
+}
+section.dialog .head {
+  background: white;
+  transform: scale(0);
+  transition: all 0.15s ease;
+}
+section.dialog .head.show {
+  transform: scale(1);
 }
 section.dialog .text {
   margin-left: 105px;

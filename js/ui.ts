@@ -247,8 +247,21 @@ class UI {
             this.scrollContent(inner.parentElement);
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
-            let spans = section.querySelectorAll("span");
 
+            if (chunk.kind == ChunkKind.dialog) {
+                let dialog = <IDialog>chunk;
+                let assetName = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (assetName.indexOf(".") == -1) assetName += ".jpg";
+                let head = <HTMLDivElement>section.getElementsByClassName("head")[0];
+                let image = new Image();
+                image.onload = function() {
+                    head.style.backgroundImage = "url(" + assetName  + ")";
+                    head.classList.add("show");
+                };
+                image.src = assetName;
+            }
+
+            let spans = section.querySelectorAll("span");
             if (spans.length == 0) {
                 content.addEventListener("click", function onclick() {
                     content.removeEventListener("click", onclick);
@@ -489,9 +502,8 @@ class UI {
             let hasImage = (dialog.mood != undefined);
             html.push("<section class='dialog'>");
             if (hasImage) {
-                let assetName = dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
-                if (assetName.indexOf(".") == -1) assetName += ".jpg";                
-                html.push(`<div class='head' style='background-image:url(game/assets/${assetName})'></div>`);
+                html.push(`<div class='head-placeholder'></div>`);
+                html.push(`<div class='head'></div>`);
                 html.push("<div class='text'>");
             }
             html.push(`<h1>${dialog.actor}</h1>`);
