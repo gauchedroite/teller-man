@@ -250,15 +250,17 @@ class UI {
 
             if (chunk.kind == ChunkKind.dialog) {
                 let dialog = <IDialog>chunk;
-                let assetName = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
-                if (assetName.indexOf(".") == -1) assetName += ".jpg";
-                let head = <HTMLDivElement>section.getElementsByClassName("head")[0];
-                let image = new Image();
-                image.onload = function() {
-                    head.style.backgroundImage = "url(" + assetName  + ")";
-                    head.classList.add("show");
-                };
-                image.src = assetName;
+                if (dialog.mood != undefined) {
+                    let assetName = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                    if (assetName.indexOf(".") == -1) assetName += ".jpg";
+                    let head = <HTMLDivElement>section.getElementsByClassName("head")[0];
+                    let image = new Image();
+                    image.onload = function() {
+                        head.style.backgroundImage = "url(" + assetName  + ")";
+                        head.classList.add("show");
+                    };
+                    setTimeout(() => { image.src = assetName; }, 100);
+                }
             }
 
             let spans = section.querySelectorAll("span");

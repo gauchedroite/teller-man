@@ -1517,16 +1517,18 @@ var UI = (function () {
                 section.style.transition = "all 0.15s ease";
                 if (chunk.kind == ChunkKind.dialog) {
                     var dialog = chunk;
-                    var assetName_2 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
-                    if (assetName_2.indexOf(".") == -1)
-                        assetName_2 += ".jpg";
-                    var head_1 = section.getElementsByClassName("head")[0];
-                    var image = new Image();
-                    image.onload = function () {
-                        head_1.style.backgroundImage = "url(" + assetName_2 + ")";
-                        head_1.classList.add("show");
-                    };
-                    image.src = assetName_2;
+                    if (dialog.mood != undefined) {
+                        var assetName_2 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                        if (assetName_2.indexOf(".") == -1)
+                            assetName_2 += ".jpg";
+                        var head_1 = section.getElementsByClassName("head")[0];
+                        var image_1 = new Image();
+                        image_1.onload = function () {
+                            head_1.style.backgroundImage = "url(" + assetName_2 + ")";
+                            head_1.classList.add("show");
+                        };
+                        setTimeout(function () { image_1.src = assetName_2; }, 100);
+                    }
                 }
                 var spans_1 = section.querySelectorAll("span");
                 if (spans_1.length == 0) {
