@@ -1619,6 +1619,8 @@ var UI = (function () {
             _this.fader(true);
             var preloader = document.querySelector(".preloader");
             preloader.classList.add("change-bg");
+            back.style.opacity = "0";
+            backFrame.setAttribute("src", sceneUrl);
             var configure = function () {
                 var run = backFrame.contentWindow.TellerRun;
                 if (run == undefined)
@@ -1637,9 +1639,7 @@ var UI = (function () {
                     }
                 });
             };
-            configure();
-            back.style.opacity = "0";
-            backFrame.setAttribute("src", sceneUrl);
+            setTimeout(configure, 100); //this minimum value is critical otherwise we're going to be using the previous backFrame url !!
         };
         this.setupMinigame = function (chunk, callback) {
             var minigame = chunk;
@@ -1700,7 +1700,7 @@ var UI = (function () {
                     setTimeout(function () { callback(result); }, 0);
                 });
             };
-            configure();
+            setTimeout(configure, 100);
         };
         this.fader = function (enable) {
             var inner = document.querySelector(".graphics-inner");

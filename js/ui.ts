@@ -360,8 +360,11 @@ class UI {
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
         preloader.classList.add("change-bg");
 
+        back.style.opacity = "0";
+        backFrame.setAttribute("src", sceneUrl);
+
         const configure = () => {
-            var run = (<any>backFrame.contentWindow).TellerRun;
+            let run = (<any>backFrame.contentWindow).TellerRun;
             if (run == undefined) return setTimeout(configure, 100);
             run({ imageFile: assetName }, (result: any) => {
                 if (result.content == "ready") {
@@ -377,10 +380,7 @@ class UI {
                 }
             });
         };
-        configure();
-
-        back.style.opacity = "0";
-        backFrame.setAttribute("src", sceneUrl);
+        setTimeout(configure, 100); //this minimum value is critical otherwise we're going to be using the previous backFrame url !!
     };
 
     setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
@@ -436,14 +436,14 @@ class UI {
         gameFrame.setAttribute("src", src);
 
         const configure = () => {
-            var run = (<any>gameFrame.contentWindow).TellerRun;
+            let run = (<any>gameFrame.contentWindow).TellerRun;
             if (run == undefined) return setTimeout(configure, 100);
             callback({ready:true});
             run({}, (result: any) => {
                 setTimeout(() => { callback(result); }, 0);
             });
         };
-        configure();
+        setTimeout(configure, 100);
     }
 
     fader = (enable: boolean) => {
