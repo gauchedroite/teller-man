@@ -13,6 +13,7 @@ interface IChoice {
 }
 
 class UI {
+    portrait = false;
     sections: Array<string>;
 
     constructor (menuPage: string, ready: () => void, onmenu: () => void) {
@@ -33,15 +34,17 @@ class UI {
         });
 
         if ("addEventListener" in document) {
-            document.addEventListener("DOMContentLoaded", function() {
+            document.addEventListener("DOMContentLoaded", () => {
                 FastClick.attach(document.body);
-                let format = (window.innerWidth > 750 ? "landscape" : "portrait");
+                this.portrait = window.innerWidth < 750;
+                let format = (this.portrait ? "portrait" : "landscape");
                 document.body.classList.add(format);
             }, false);
         }
 
         window.onresize = () => {
-            let format = (window.innerWidth > 750 ? "landscape" : "portrait");
+            this.portrait = window.innerWidth < 750;
+            let format = (this.portrait ? "portrait" : "landscape");
             if (document.body.classList.contains(format) == false) {
                 document.body.removeAttribute("class");
                 document.body.classList.add(format);
@@ -204,7 +207,18 @@ class UI {
         let section = <HTMLDivElement>div.firstChild;
 
         if (chunk.kind == ChunkKind.background) {
-            this.changeBackground((<IBackground>chunk).asset, callback);
+            if (this.portrait) return callback();
+            let bg = <IBackground>chunk;
+            this.changeBackground(bg.asset, () => {
+                if (bg.wait) {
+                    content.addEventListener("click", function onclick() {
+                        content.removeEventListener("click", onclick);
+                        return callback();
+                    });
+                }
+                else
+                    callback();
+            });
         }
         else if (chunk.kind == ChunkKind.inline) {
             section.style.opacity = "0";
@@ -380,7 +394,7 @@ class UI {
                 }
             });
         };
-        setTimeout(configure, 100); //this minimum value is critical otherwise we're going to be using the previous backFrame url !!
+        setTimeout(configure, 250); //a minimum value is critical otherwise we're going to be using the previous backFrame url !!
     };
 
     setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
@@ -443,7 +457,7 @@ class UI {
                 setTimeout(() => { callback(result); }, 0);
             });
         };
-        setTimeout(configure, 100);
+        setTimeout(configure, 250);
     }
 
     fader = (enable: boolean) => {

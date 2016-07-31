@@ -541,7 +541,9 @@ class Game {
                     dialog.parenthetical = part;
                 }
                 else if (part.startsWith(".b")) {
-                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(2).trim() };
+                    let wait = part.endsWith("/w");
+                    if (wait) part = part.substr(0, part.length - 2);
+                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(2).trim(), wait: wait };
                     parsed.push(asset);
                 }
                 else if (part.startsWith(".i")) {

@@ -27,6 +27,7 @@ interface IText extends IChunkKind {
 interface IBackground extends IChunkKind {
     kind: ChunkKind
     asset: string
+    wait: boolean
 }
 interface IInline extends IChunkKind {
     kind: ChunkKind

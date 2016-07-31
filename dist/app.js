@@ -1358,6 +1358,7 @@ var ChoiceKind;
 var UI = (function () {
     function UI(menuPage, ready, onmenu) {
         var _this = this;
+        this.portrait = false;
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
@@ -1473,7 +1474,19 @@ var UI = (function () {
             div.innerHTML = html;
             var section = div.firstChild;
             if (chunk.kind == ChunkKind.background) {
-                _this.changeBackground(chunk.asset, callback);
+                if (_this.portrait)
+                    return callback();
+                var bg_1 = chunk;
+                _this.changeBackground(bg_1.asset, function () {
+                    if (bg_1.wait) {
+                        content.addEventListener("click", function onclick() {
+                            content.removeEventListener("click", onclick);
+                            return callback();
+                        });
+                    }
+                    else
+                        callback();
+                });
             }
             else if (chunk.kind == ChunkKind.inline) {
                 section.style.opacity = "0";
@@ -1639,7 +1652,7 @@ var UI = (function () {
                     }
                 });
             };
-            setTimeout(configure, 100); //this minimum value is critical otherwise we're going to be using the previous backFrame url !!
+            setTimeout(configure, 250); //a minimum value is critical otherwise we're going to be using the previous backFrame url !!
         };
         this.setupMinigame = function (chunk, callback) {
             var minigame = chunk;
@@ -1700,7 +1713,7 @@ var UI = (function () {
                     setTimeout(function () { callback(result); }, 0);
                 });
             };
-            setTimeout(configure, 100);
+            setTimeout(configure, 250);
         };
         this.fader = function (enable) {
             var inner = document.querySelector(".graphics-inner");
@@ -1799,12 +1812,14 @@ var UI = (function () {
         if ("addEventListener" in document) {
             document.addEventListener("DOMContentLoaded", function () {
                 FastClick.attach(document.body);
-                var format = (window.innerWidth > 750 ? "landscape" : "portrait");
+                _this.portrait = window.innerWidth < 750;
+                var format = (_this.portrait ? "portrait" : "landscape");
                 document.body.classList.add(format);
             }, false);
         }
         window.onresize = function () {
-            var format = (window.innerWidth > 750 ? "landscape" : "portrait");
+            _this.portrait = window.innerWidth < 750;
+            var format = (_this.portrait ? "portrait" : "landscape");
             if (document.body.classList.contains(format) == false) {
                 document.body.removeAttribute("class");
                 document.body.classList.add(format);
@@ -2332,7 +2347,10 @@ var Game = (function () {
                         dialog.parenthetical = part;
                     }
                     else if (part.startsWith(".b")) {
-                        var asset = { kind: ChunkKind.background, asset: part.substring(2).trim() };
+                        var wait = part.endsWith("/w");
+                        if (wait)
+                            part = part.substr(0, part.length - 2);
+                        var asset = { kind: ChunkKind.background, asset: part.substring(2).trim(), wait: wait };
                         parsed.push(asset);
                     }
                     else if (part.startsWith(".i")) {
