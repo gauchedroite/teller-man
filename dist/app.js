@@ -1647,33 +1647,28 @@ var UI = (function () {
             _this.fader(true);
             var preloader = document.querySelector(".preloader");
             preloader.classList.add("change-bg");
+            window.eventHubAction = function (result) {
+                if (result.content == "ready") {
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    _this.fader(false);
+                    preloader.classList.remove("change-bg");
+                    setTimeout(function () {
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                        callback();
+                    }, 500);
+                }
+            };
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
-            var configure = function () {
-                var run = backFrame.contentWindow.TellerRun;
-                if (run == undefined)
-                    return setTimeout(configure, 100);
-                run({ imageFile: assetName }, function (result) {
-                    if (result.content == "ready") {
-                        back.style.opacity = "1";
-                        front.style.opacity = "0";
-                        _this.fader(false);
-                        preloader.classList.remove("change-bg");
-                        setTimeout(function () {
-                            back.style.zIndex = "1";
-                            front.style.zIndex = "0";
-                            callback();
-                        }, 500);
-                    }
-                });
-            };
-            setTimeout(configure, 250); //a minimum value is critical otherwise we're going to be using the previous backFrame url !!
         };
         this.setupMinigame = function (chunk, callback) {
             var minigame = chunk;
             var game = document.querySelector(".game");
             var story = document.querySelector(".story-inner");
             var panel = document.querySelector(".choice-panel");
+            var preloader = document.querySelector(".preloader");
             var ready = false;
             var fadedout = false;
             _this.runMinigame(minigame.url, function (result) {
@@ -1682,6 +1677,7 @@ var UI = (function () {
                         game.classList.add("show");
                         story.classList.add("retracted");
                         _this.fader(false);
+                        preloader.classList.remove("change-bg");
                     }
                     ready = true;
                 }
@@ -1707,28 +1703,21 @@ var UI = (function () {
                     story.classList.add("retracted");
                 }
                 else {
-                    _this.fader(true);
                     fadedout = true;
+                    _this.fader(true);
+                    preloader.classList.add("change-bg");
                 }
                 panel.classList.add("disabled");
             });
         };
         this.runMinigame = function (url, callback) {
             var src = "game/" + url.replace(/ /g, "%20").replace(/'/g, "%27");
-            ;
             var game = document.querySelector(".game");
             var gameFrame = game.firstElementChild;
-            gameFrame.setAttribute("src", src);
-            var configure = function () {
-                var run = gameFrame.contentWindow.TellerRun;
-                if (run == undefined)
-                    return setTimeout(configure, 100);
-                callback({ ready: true });
-                run({}, function (result) {
-                    setTimeout(function () { callback(result); }, 0);
-                });
+            window.eventHubAction = function (result) {
+                setTimeout(function () { callback(result); }, 0);
             };
-            setTimeout(configure, 250);
+            gameFrame.setAttribute("src", src);
         };
         this.fader = function (enable) {
             var inner = document.querySelector(".graphics-inner");

@@ -389,27 +389,22 @@ class UI {
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
         preloader.classList.add("change-bg");
 
+        (<any>window).eventHubAction = (result: any) => {
+            if (result.content == "ready") {
+                back.style.opacity = "1";
+                front.style.opacity = "0";
+                this.fader(false);
+                preloader.classList.remove("change-bg");
+                setTimeout(() => { //do not use "transitionend" here as it was failing on me. hardcode the delay instead
+                    back.style.zIndex = "1";
+                    front.style.zIndex = "0";
+                    callback();
+                }, 500);
+            }
+        };
+
         back.style.opacity = "0";
         backFrame.setAttribute("src", sceneUrl);
-
-        const configure = () => {
-            let run = (<any>backFrame.contentWindow).TellerRun;
-            if (run == undefined) return setTimeout(configure, 100);
-            run({ imageFile: assetName }, (result: any) => {
-                if (result.content == "ready") {
-                    back.style.opacity = "1";
-                    front.style.opacity = "0";
-                    this.fader(false);
-                    preloader.classList.remove("change-bg");
-                    setTimeout(() => { //do not use "transitionend" here as it was failing on me. hardcode the delay instead
-                        back.style.zIndex = "1";
-                        front.style.zIndex = "0";
-                        callback();
-                    }, 500);
-                }
-            });
-        };
-        setTimeout(configure, 250); //a minimum value is critical otherwise we're going to be using the previous backFrame url !!
     };
 
     setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
@@ -417,6 +412,7 @@ class UI {
         let game = <HTMLDivElement>document.querySelector(".game");
         let story = document.querySelector(".story-inner");
         let panel = <HTMLDivElement>document.querySelector(".choice-panel");
+        let preloader = <HTMLDivElement>document.querySelector(".preloader");
         let ready = false;
         let fadedout = false;
         this.runMinigame(minigame.url, (result: any) => {
@@ -425,6 +421,7 @@ class UI {
                     game.classList.add("show");
                     story.classList.add("retracted");
                     this.fader(false);
+                    preloader.classList.remove("change-bg");
                 }
                 ready = true;
             }
@@ -450,29 +447,24 @@ class UI {
                 story.classList.add("retracted");
             }
             else {
-                this.fader(true); 
                 fadedout = true;
+                this.fader(true); 
+                preloader.classList.add("change-bg");
             } 
             panel.classList.add("disabled");
         });
     };
 
     runMinigame = (url: string, callback: (result: any) => void) => {
-        let src = `game/${url.replace(/ /g, "%20").replace(/'/g, "%27")}`;;
+        let src = `game/${url.replace(/ /g, "%20").replace(/'/g, "%27")}`;
 
         let game = <HTMLDivElement>document.querySelector(".game");
         let gameFrame = <HTMLIFrameElement>game.firstElementChild;
-        gameFrame.setAttribute("src", src);
 
-        const configure = () => {
-            let run = (<any>gameFrame.contentWindow).TellerRun;
-            if (run == undefined) return setTimeout(configure, 100);
-            callback({ready:true});
-            run({}, (result: any) => {
-                setTimeout(() => { callback(result); }, 0);
-            });
+        (<any>window).eventHubAction = (result: any) => {
+            setTimeout(() => { callback(result); }, 0);
         };
-        setTimeout(configure, 250);
+        gameFrame.setAttribute("src", src);
     }
 
     fader = (enable: boolean) => {

@@ -43,24 +43,20 @@
             var btnwin = document.querySelector("button#win");
             var btnlose = document.querySelector("button#lose");
 
-            var myoptions;
-            var mycallback;
+setTimeout(function() {
+            window.parent.eventHubAction({ ready: true });
 
-//setTimeout(function(){
-            window.TellerRun = function(options, callback) {
-                myoptions = options;
-                mycallback = callback;
-            };
-//},3000);
             document.addEventListener("click", function click(e) {
                 var id = e.target.id;
                 if (id == "win") {
-                    setTimeout(function() { mycallback({win:true}); }, 0); 
+                    window.parent.eventHubAction({ win: true }); 
                 }
                 else if (id == "lose") {
-                    setTimeout(function() { mycallback({win:false}); }, 0); 
+                    window.parent.eventHubAction({ win: false });
                 }
             });
+}, 5000);
+
         }, false);
     </script>
 </body>

@@ -33,22 +33,16 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var myoptions;
-            var mycallback;
 
-            window.TellerRun = function(options, callback) {
-                myoptions = options;
-                mycallback = callback;
-
-                var assetName = "assets/" + options.imageFile;
-                var image = new Image();
-                image.onload = function() {
-                    var content = document.querySelector(".content");
-                    content.style.backgroundImage = "url(" + assetName  + ")";
-                    callback({ content: "ready" });
-                };
-                image.src = assetName;
+            var assetName = "assets/" + window.location.search.substring(1);
+            
+            var image = new Image();
+            image.onload = function() {
+                var content = document.querySelector(".content");
+                content.style.backgroundImage = "url(" + assetName  + ")";
+                window.parent.eventHubAction({ content: "ready" });
             };
+            image.src = assetName;
             
         }, false);
     </script>
