@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Moon Limbo</title>
+    <!--<link rel="icon" href="data:;base64,iVBORw0KGgo=">-->
+    <link rel="icon" href="game/assets/moon-limbo-240x240.png">
+    <link rel="apple-touch-icon" href="game/assets/moon-limbo-240x240.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="ionicons/css/ionicons.min.css"/>
+    <link rel="stylesheet" href="app.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Anton|Farsan|Roboto+Slab|Bungee|Merriweather:300i">
+</head>
+
+<body>
+
+    <div class="page zoome">
+        <div class="menu-wrap">
+            <div class="top-row">
+                <div class="row-wrap">
+                    <div class="left-content"></div>
+                    <div class="center-content"></div>
+                    <div class="right-content">
+                        <div class="title-inner">
+                            <h1>Moon Limbo</h1>
+                            <h2>Entre ciel et terre</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="center-row">
+                <div class="row-wrap">
+                    <div class="left-content"></div>
+                    <div class="center-content"></div>
+                    <div class="right-content">
+                        <div class="right-box">
+                            <div>STATS</div>
+                            <div>SAGA</div>
+                            <div>OPTIONS</div>
+                            <div>AUTRES</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bottom-row"></div>
+        </div>
+
+        <div class="game-wrap">
+            <div class="game-content" onclick="zoome()">
+                <iframe src="index.html"></iframe>
+                <div class="frame-overlay"></div>
+                <span class="play"></span>
+            </div>
+        </div>
+
+        <button onclick="zoome()" style="position:absolute;z-index:9;">zoom</button>
+    </div>
+
+
+    <script src='fastclick.js'></script>
+    <script>
+        function zoome() {
+            var page = document.querySelector(".page");
+            if (page.classList.contains("zoome") == false)
+                page.classList.add("zoome");
+            else
+                page.classList.remove("zoome");
+        };
+    </script>
+</body>
+
+</html>
