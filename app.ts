@@ -22,7 +22,7 @@ namespace TellerMan {
     declare var Framework7: any;
 
 
-    if (document.title === "Teller Editor")
+    if (document.title == "Teller Editor")
     {
         var editor = new Editor();
 
@@ -37,9 +37,12 @@ namespace TellerMan {
 
         editor.init(app, leftView, centerView, rightView);
     }
-    else if (document.title === "Teller IDE")
+    else if (document.title == "Teller IDE")
     {
         var ide = new Tide();
+    }
+    else if (document.title == "Moon Limbo") {
+        var gameman = new GameMan();
     }
     else {
         var game = new Game();
