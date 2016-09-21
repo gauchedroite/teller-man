@@ -60,7 +60,6 @@ iframe {
   height: 100%;
   margin: 0;
   opacity: 1;
-  background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
 }
 .preloader.change-bg {
   z-index: 30;
@@ -110,60 +109,35 @@ iframe {
   font-family: "My Pupcat";
   src: url(game/assets/pupcat__.ttf) format("truetype");
 }
-.studio {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  height: 120px;
-  background-color: rgba(0, 0, 0, 0.2);
-}
-.studio .studio-inner {
-  width: 450px;
-  height: 100%;
-}
-.studio text:nth-child(1) {
-  font-family: "My Magneto";
-  font-size: 48pt;
-  fill: yellow;
-  stroke: lime;
-  stroke-width: 0.25pt;
-  stroke-linejoin: round;
-}
-.studio text:nth-child(2) {
-  font-family: "My Pupcat";
-  font-size: 36pt;
-  fill: rgba(255, 255, 255, 0.9);
-}
 #game-man #canvas {
   position: absolute;
   height: 100%;
   width: 100%;
 }
-#game-man .page {
+#game-man .menu {
   position: relative;
   width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
 }
-#game-man .page .menu-wrap {
+#game-man .menu .menu-wrap {
   position: absolute;
   width: 100%;
   height: 100%;
   transform: scale(0.5);
   transition: all .25s;
 }
-#game-man .page .menu-wrap .top-row {
+#game-man .menu .menu-wrap .top-row {
   position: absolute;
   width: 100%;
   height: 32%;
 }
-#game-man .page .menu-wrap .center-row {
+#game-man .menu .menu-wrap .center-row {
   position: absolute;
   top: 32%;
   width: 100%;
   height: 60%;
 }
-#game-man .page .menu-wrap .center-row .right-box {
+#game-man .menu .menu-wrap .center-row .right-box {
   position: absolute;
   width: calc(75% - 8px);
   height: 100%;
@@ -172,7 +146,7 @@ iframe {
   flex-direction: column;
   justify-content: space-between;
 }
-#game-man .page .menu-wrap .center-row .right-box div {
+#game-man .menu .menu-wrap .center-row .right-box div {
   height: calc(25% - 6px);
   width: 100%;
   background-color: #e0e0e0;
@@ -180,46 +154,46 @@ iframe {
   border: 8px solid #8a7c72;
   padding: 8px;
 }
-#game-man .page .menu-wrap .bottom-row {
+#game-man .menu .menu-wrap .bottom-row {
   position: absolute;
   top: 92%;
   width: 100%;
   height: 25%;
 }
-#game-man .page .row-wrap {
+#game-man .menu .row-wrap {
   position: absolute;
   height: 100%;
   width: 100%;
 }
-#game-man .page .row-wrap .left-content {
+#game-man .menu .row-wrap .left-content {
   position: absolute;
   width: 8%;
   height: 100%;
 }
-#game-man .page .row-wrap .center-content {
+#game-man .menu .row-wrap .center-content {
   position: absolute;
   left: 8%;
   width: 60%;
   height: 100%;
 }
-#game-man .page .row-wrap .right-content {
+#game-man .menu .row-wrap .right-content {
   position: absolute;
   left: 68%;
   width: 32%;
   height: 100%;
 }
-#game-man .page .game-wrap {
+#game-man .menu .game-wrap {
   position: absolute;
   width: 100%;
   height: 100%;
 }
-#game-man .page .game-wrap .game-content {
+#game-man .menu .game-wrap .game-content {
   position: relative;
   width: 100%;
   height: 100%;
   transition: all .25s;
 }
-#game-man .page .game-wrap .game-content iframe {
+#game-man .menu .game-wrap .game-content iframe {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -228,7 +202,7 @@ iframe {
   margin: 0;
   overflow: hidden;
 }
-#game-man .page .game-wrap .game-content .frame-overlay {
+#game-man .menu .game-wrap .game-content .frame-overlay {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -238,7 +212,7 @@ iframe {
   background-color: transparent;
   transition: all .25s;
 }
-#game-man .page .game-wrap .game-content .play {
+#game-man .menu .game-wrap .game-content .play {
   position: absolute;
   opacity: 0;
   width: 150px;
@@ -250,7 +224,7 @@ iframe {
   border-radius: 90px;
   transition: opacity .1s;
 }
-#game-man .page .game-wrap .game-content .play:after {
+#game-man .menu .game-wrap .game-content .play:after {
   content: "";
   position: absolute;
   border-top: 36px solid transparent;
@@ -259,50 +233,131 @@ iframe {
   top: 42px;
   left: 54px;
 }
-#game-man .page.zoome .menu-wrap {
+#game-man .menu.zoome .menu-wrap {
   transform: scale(1);
 }
-#game-man .page.zoome .game-content {
+#game-man .menu.zoome .game-content {
   transform: scale(0.6) translate(-20%, 20%);
 }
-#game-man .page.zoome .game-content .frame-overlay {
+#game-man .menu.zoome .game-content .frame-overlay {
   pointer-events: auto;
   background-color: rgba(0, 0, 0, 0.65);
   /*
-                background: linear-gradient(
-                    to bottom,
-                    rgba(0,0,0,0.2),
-                    rgba(0,0,0,0.2) 50%,
-                    rgba(0,0,0,0) 50%,
-                    rgba(0,0,0,0)
-                );
-                background-size: 100% 12px;
-                */
+                    background: linear-gradient(
+                        to bottom,
+                        rgba(0,0,0,0.2),
+                        rgba(0,0,0,0.2) 50%,
+                        rgba(0,0,0,0) 50%,
+                        rgba(0,0,0,0)
+                    );
+                    background-size: 100% 12px;
+                    */
   border: 24px solid #728a7c;
 }
-#game-man .page.zoome .game-content .play {
+#game-man .menu.zoome .game-content .play {
   opacity: 1;
 }
-#game-man .page .title-inner {
+#game-man .menu .title-inner {
   position: absolute;
   box-sizing: border-box;
   padding-left: 12px;
   padding-top: 20%;
   height: 100%;
 }
-#game-man .page .title-inner h1 {
+#game-man .menu .title-inner h1 {
   font-family: 'Bungee', cursive;
   font-size: 48pt;
   line-height: 48pt;
   color: white;
 }
-#game-man .page .title-inner h2 {
+#game-man .menu .title-inner h2 {
   font-family: 'Merriweather', serif;
   font-style: italic;
   font-size: 18pt;
   line-height: 28pt;
   letter-spacing: 0.22em;
   color: white;
+}
+#game-man .primo-limbo {
+  width: 100%;
+  height: 100%;
+  background: no-repeat center center fixed;
+  background-size: cover;
+}
+#game-man .primo-limbo .wrapper {
+  position: absolute;
+  left: 10%;
+  top: 30%;
+}
+#game-man .primo-limbo .wrapper h1,
+#game-man .primo-limbo .wrapper h2 {
+  margin: 0;
+  padding: 0;
+  text-shadow: 0 4px 3px rgba(0, 0, 0, 0.4), 0 8px 13px rgba(0, 0, 0, 0.1), 0 18px 23px rgba(0, 0, 0, 0.1);
+}
+#game-man .primo-limbo .wrapper h1 {
+  font-family: 'Bungee', cursive;
+  font-size: 48pt;
+  line-height: 48pt;
+  color: #e0e0e0;
+}
+#game-man .primo-limbo .wrapper h2 {
+  font-family: 'Merriweather', serif;
+  font-style: italic;
+  font-size: 18pt;
+  line-height: 28pt;
+  letter-spacing: 0.22em;
+  color: white;
+}
+#game-man .primo-limbo .wrapper .start {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  margin-top: 75px;
+  margin-left: 150px;
+  border: 10px solid #ffffff;
+  border-radius: 90px;
+  box-shadow: 0 0 6px 6px rgba(0, 0, 0, 0.25);
+  background-color: rgba(0, 0, 0, 0.25);
+  opacity: 0.6;
+  transition: all 0.15s ease;
+}
+#game-man .primo-limbo .wrapper .start:after {
+  content: "";
+  position: absolute;
+  border-top: 24px solid transparent;
+  border-bottom: 24px solid transparent;
+  border-left: 40px solid #ffffff;
+  top: 28px;
+  left: 36px;
+}
+#game-man .primo-limbo .wrapper .start:hover {
+  opacity: 1;
+  background-color: initial;
+}
+#game-man .studio {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 80px;
+}
+#game-man .studio .studio-inner {
+  width: 150px;
+  height: 100%;
+  float: right;
+}
+#game-man .studio text:nth-child(1) {
+  font-family: "My Magneto";
+  font-size: 24pt;
+  fill: yellow;
+  stroke: lime;
+  stroke-width: 0.25pt;
+  stroke-linejoin: round;
+}
+#game-man .studio text:nth-child(2) {
+  font-family: "My Pupcat";
+  font-size: 18pt;
+  fill: rgba(255, 255, 255, 0.9);
 }
 .noselect {
   -webkit-touch-callout: none;
@@ -650,25 +705,28 @@ section.image div {
 .heading.showing {
   opacity: 1;
 }
-.menu {
-  z-index: 20;
-  position: absolute;
-  top: 0;
-  right: 100%;
-  width: 100%;
-  height: 100%;
-  transition: right 0.25s ease, opacity 0.25s ease;
-}
-.menu iframe {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-}
+/*.menu {
+    z-index: 20;
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 100%;
+    height: 100%;
+    transition: right 0.25s ease, opacity 0.25s ease;
+    iframe {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+    }
+}*/
 .fader {
   background-color: black;
+}
+.display-none {
+  display: none;
 }
 .landscape .story-inner {
   width: 35%;

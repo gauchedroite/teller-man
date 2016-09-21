@@ -21,30 +21,33 @@ if (!String.prototype.endsWith) {
 namespace TellerMan {
     declare var Framework7: any;
 
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        if (document.title == "Teller Editor")
+        {
+            var editor = new Editor();
 
-    if (document.title == "Teller Editor")
-    {
-        var editor = new Editor();
+            var app = new Framework7({
+                cache: false,
+                preprocess: editor.preprocess.bind(editor)
+            });
 
-        var app = new Framework7({
-            cache: false,
-            preprocess: editor.preprocess.bind(editor)
-        });
+            var leftView = app.addView(".view-left", { dynamicNavbar: true });
+            var centerView = app.addView(".view-center", { dynamicNavbar: true });
+            var rightView = app.addView(".view-right", { dynamicNavbar: true });
 
-        var leftView = app.addView(".view-left", { dynamicNavbar: true });
-        var centerView = app.addView(".view-center", { dynamicNavbar: true });
-        var rightView = app.addView(".view-right", { dynamicNavbar: true });
+            editor.init(app, leftView, centerView, rightView);
+        }
+        else if (document.title == "Teller IDE")
+        {
+            var ide = new Tide();
+        }
+        else if (document.title == "Moon Limbo") {
+            var gameman = new GameMan();
+        }
+        else if (document.title == "Moon Limbo - Main") {
+            var game = new Game();
+        }
 
-        editor.init(app, leftView, centerView, rightView);
-    }
-    else if (document.title == "Teller IDE")
-    {
-        var ide = new Tide();
-    }
-    else if (document.title == "Moon Limbo") {
-        var gameman = new GameMan();
-    }
-    else {
-        var game = new Game();
-    }
+    }, false);
 }

@@ -19,7 +19,7 @@
         height: 100%;
         margin: 0;
         opacity: 1;
-        background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
+        //background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
     }
     &.change-bg {
         z-index: 30;
@@ -50,39 +50,4 @@
     0%   { background: rgba(0, 0, 0, 0.1); }
     50%  { background: rgba(0, 0, 0, 0.3); }
     100% { background: rgba(0, 0, 0, 0.1); }
-}
-
-
-@font-face {
-    font-family: "My Magneto";
-    src: url(game/assets/MAGNETOB.TTF) format("truetype");
-}
-@font-face {
-    font-family: "My Pupcat";
-    src: url(game/assets/pupcat__.ttf) format("truetype");
-}
-
-.studio {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 120px;
-    background-color: rgba(0, 0, 0, 0.2);
-    .studio-inner {
-        width: 450px;
-        height: 100%;
-    }
-    text:nth-child(1) {
-        font-family: "My Magneto";
-        font-size: 48pt;
-        fill: yellow;
-        stroke: lime;
-        stroke-width: 0.25pt;
-        stroke-linejoin: round;
-    }
-    text:nth-child(2) {
-        font-family: "My Pupcat";
-        font-size: 36pt;
-        fill: rgba(255, 255, 255, 0.9);
-    }
 }

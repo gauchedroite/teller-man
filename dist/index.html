@@ -17,8 +17,9 @@
 </head>
 
 <body id="game-man">
-    <div class="page zoome">
-        <canvas id="canvas"></canvas>
+    <canvas id="canvas"></canvas>
+
+    <div class="menu display-none">
         <div class="menu-wrap">
             <div class="top-row">
                 <div class="row-wrap">
@@ -51,13 +52,32 @@
 
         <div class="game-wrap">
             <div class="game-content" onclick="zoome()">
-                <!--<iframe src="main.html"></iframe>-->
+                <iframe id="game-frame" src="main.html"></iframe>
                 <div class="frame-overlay"></div>
-                <span class="play"></span>
+                <div class="play"></div>
             </div>
         </div>
+    </div>
 
-        <button onclick="zoome()" style="position:absolute;z-index:9;">zoom</button>
+    <div class="primo-limbo">
+        <div class="wrapper">
+            <h1>Moon Limbo</h1>
+            <h2>Entre ciel et terre</h2>
+            <div class="start"></div>
+        </div>
+    </div>
+
+    <div class="studio">
+        <div class="studio-inner">
+            <svg viewBox="0 0 150 150" preserveAspectRatio="xMinYMin meet">
+                <text x="15" y="40">Studio</text>
+                <text x="20" y="65">Gauche-Droite</text>
+            </svg>
+        </div>
+        <div style="opacity: 0">
+            <span style="font-family: 'My Magneto'">&nbsp;</span>
+            <span style="font-family: 'My Pupcat'">&nbsp;</span>
+        </div>
     </div>
 
     <script id="vertex-shader" type="x-shader/x-vertex">
@@ -129,15 +149,6 @@
 
 
     <script src='fastclick.js'></script>
-    <script>
-        function zoome() {
-            var page = document.querySelector(".page");
-            if (page.classList.contains("zoome") == false)
-                page.classList.add("zoome");
-            else
-                page.classList.remove("zoome");
-        };
-    </script>
     <script src="app.js"></script>
 </body>
 

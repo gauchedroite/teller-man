@@ -66,11 +66,11 @@ enum Op {
     CURRENT_MOMENT,         //1
     BLURB,                  //2
     BUILD_CHOICES,          //3
-    MENU_F5,                //4
-    MENU_INGAME,            //5
+    //MENU_F5,                //4
+    //MENU_INGAME,            //5
     NEWGAME,                //6
     CONTINUE_SAVEDGAME,     //7
-    CONTINUE_INGAME         //8
+    //CONTINUE_INGAME         //8
 }
 
 interface IOptions {

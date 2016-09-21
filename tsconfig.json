@@ -13,6 +13,7 @@
     "js/editor.ts",
     "js/igame.ts",
     "js/ui.ts",
+    "js/webgl-runner.ts",
     "js/game-man.ts",
     "js/game.ts",
     "js/tide.ts",

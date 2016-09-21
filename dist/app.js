@@ -1336,11 +1336,10 @@ var Op;
     Op[Op["CURRENT_MOMENT"] = 1] = "CURRENT_MOMENT";
     Op[Op["BLURB"] = 2] = "BLURB";
     Op[Op["BUILD_CHOICES"] = 3] = "BUILD_CHOICES";
-    Op[Op["MENU_F5"] = 4] = "MENU_F5";
-    Op[Op["MENU_INGAME"] = 5] = "MENU_INGAME";
-    Op[Op["NEWGAME"] = 6] = "NEWGAME";
-    Op[Op["CONTINUE_SAVEDGAME"] = 7] = "CONTINUE_SAVEDGAME";
-    Op[Op["CONTINUE_INGAME"] = 8] = "CONTINUE_INGAME"; //8
+    //MENU_F5,                //4
+    //MENU_INGAME,            //5
+    Op[Op["NEWGAME"] = 4] = "NEWGAME";
+    Op[Op["CONTINUE_SAVEDGAME"] = 5] = "CONTINUE_SAVEDGAME";
 })(Op || (Op = {}));
 var OpAction;
 (function (OpAction) {
@@ -1356,7 +1355,7 @@ var ChoiceKind;
     ChoiceKind[ChoiceKind["messageFrom"] = 3] = "messageFrom";
 })(ChoiceKind || (ChoiceKind = {}));
 var UI = (function () {
-    function UI(menuPage, ready, onmenu) {
+    function UI(onmenu) {
         var _this = this;
         this.portrait = false;
         this.alert = function (text, canclose, onalert) {
@@ -1604,24 +1603,23 @@ var UI = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
-        this.showMenu = function (opNewGame, opContinue, onmenu) {
-            var menu = document.querySelector(".menu");
-            var menuFrame = menu.firstElementChild;
-            menu.style.right = "0";
-            var options = { continue: "disabled" };
-            if (opContinue != undefined)
-                options.continue = "enabled";
-            var run = menuFrame.contentWindow.TellerRun;
-            run(options, function (result) {
-                if (result.menu == "continue") {
-                    menu.style.right = "100%";
-                    setTimeout(function () { onmenu(opContinue); }, 250);
-                }
-                else if (result.menu == "new-game") {
-                    setTimeout(function () { onmenu(opNewGame); }, 500);
-                }
-            });
-        };
+        // showMenu = (opNewGame: Op, opContinue: Op, onmenu: (choice: Op) => void) => {
+        //     let menu = <HTMLElement>document.querySelector(".menu");
+        //     let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
+        //     menu.style.right = "0";
+        //     var options: any = { continue: "disabled" };
+        //     if (opContinue != undefined) options.continue = "enabled";
+        //     var run = (<any>menuFrame.contentWindow).TellerRun;
+        //     run(options, (result: any) => {
+        //         if (result.menu == "continue") {
+        //             menu.style.right = "100%";
+        //             setTimeout(() => { onmenu(opContinue); }, 250);
+        //         }
+        //         else if (result.menu == "new-game") {
+        //             setTimeout(() => { onmenu(opNewGame); }, 500);
+        //         }
+        //     });
+        // };
         this.changeBackground = function (assetName, callback) {
             if (assetName == undefined)
                 return callback();
@@ -1828,37 +1826,46 @@ var UI = (function () {
             }
         };
         //menu
-        var menu = document.querySelector(".menu");
-        var menuFrame = menu.firstElementChild;
-        menuFrame.setAttribute("src", "game/" + menuPage);
-        var configure = function () {
-            var run = menuFrame.contentWindow.TellerRun;
-            if (run == undefined)
-                return setTimeout(configure, 100);
-            run({}, function (result) {
-                if (result.menu == "ready") {
-                    var preloader = document.querySelector(".preloader");
-                    setTimeout(function () {
-                        preloader.style.opacity = "0";
-                        preloader.addEventListener("transitionend", function done() {
-                            preloader.removeEventListener("transitionend", done);
-                            preloader.classList.remove("full-white");
-                            preloader.removeAttribute("style");
-                            var studio = preloader.querySelector(".studio");
-                            studio.style.display = "none";
-                        });
-                    }, 750);
-                    setTimeout(ready, 0);
-                }
-            });
-        };
-        configure();
+        // let menu = <HTMLDivElement>document.querySelector(".menu");
+        // let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
+        // menuFrame.setAttribute("src", `game/${menuPage}`);
+        // const configure = () => {
+        //     var run = (<any>menuFrame.contentWindow).TellerRun;
+        //     if (run == undefined) return setTimeout(configure, 100);
+        //     run({}, (result: any) => {
+        //         if (result.menu == "ready") {
+        //             var preloader = <HTMLDivElement>document.querySelector(".preloader");
+        //             setTimeout(() => { 
+        //                 preloader.style.opacity = "0";
+        //                 preloader.addEventListener("transitionend", function done() {
+        //                     preloader.removeEventListener("transitionend", done);
+        //                     preloader.classList.remove("full-white");
+        //                     preloader.removeAttribute("style");
+        //                     var studio = <HTMLDivElement>preloader.querySelector(".studio");
+        //                     studio.style.display = "none";
+        //                 });
+        //             }, 750);
+        //             setTimeout(ready, 0);
+        //         }
+        //     });
+        // };
+        // configure();
     }
     return UI;
 }());
-var GameMan = (function () {
-    function GameMan() {
-        this.main = function () {
+var WebglRunner = (function () {
+    function WebglRunner(vsid, fsid) {
+        var _this = this;
+        this.vsid = vsid;
+        this.fsid = fsid;
+        this._pause = false;
+        this.pause = function () {
+            _this._pause = true;
+        };
+        this.resume = function () {
+            _this._pause = false;
+        };
+        this.run = function () {
             // Get context
             var gl = document.getElementById("canvas").getContext("webgl");
             if (!gl)
@@ -1866,7 +1873,7 @@ var GameMan = (function () {
             // Create the program
             var prog = gl.createProgram();
             // Attach the vertex shader
-            var vstext = document.getElementById("vertex-shader").text;
+            var vstext = document.getElementById(_this.vsid).text;
             var vs = gl.createShader(gl.VERTEX_SHADER);
             gl.shaderSource(vs, vstext);
             gl.compileShader(vs);
@@ -1874,7 +1881,7 @@ var GameMan = (function () {
                 return console.log("Could not compile vertex shader: " + gl.getShaderInfoLog(vs));
             gl.attachShader(prog, vs);
             // Attach the fragment shader
-            var fstext = document.getElementById("fragment-shader").text;
+            var fstext = document.getElementById(_this.fsid).text;
             var fs = gl.createShader(gl.FRAGMENT_SHADER);
             gl.shaderSource(fs, fstext);
             gl.compileShader(fs);
@@ -1903,9 +1910,14 @@ var GameMan = (function () {
             gl.enableVertexAttribArray(a_square);
             gl.vertexAttribPointer(a_square, 3, gl.FLOAT, false, 0, 0);
             // Start the draw loop
+            var me = _this;
             requestAnimationFrame(drawScene);
-            // Draw the scene
+            // Draw scene
             function drawScene(now) {
+                if (me._pause) {
+                    requestAnimationFrame(drawScene);
+                    return;
+                }
                 now *= 0.001;
                 // Resize canvas
                 var canvas = gl.canvas;
@@ -1929,13 +1941,60 @@ var GameMan = (function () {
             }
             ;
         };
-        document.addEventListener('DOMContentLoaded', this.main, false);
+    }
+    return WebglRunner;
+}());
+var GameMan = (function () {
+    function GameMan() {
+        var _this = this;
+        this.raiseActionEvent = function (op, param) {
+            if (window != window.top)
+                window.parent.onAction(op, param);
+        };
+        this.showMenu = function () {
+            _this.runner.resume();
+            document.querySelector(".menu").classList.add("zoome");
+        };
+        window.GameManInstance = this;
+        var me = this;
+        this.runner = new WebglRunner("vertex-shader", "fragment-shader");
+        this.runner.run();
+        var game;
+        document.querySelector(".start").addEventListener("click", function () {
+            me.runner.pause();
+            document.querySelector(".menu").classList.remove("display-none");
+            document.querySelector(".primo-limbo").classList.add("display-none");
+            var gameFrame = document.getElementById("game-frame");
+            game = gameFrame.contentWindow.GameInstance;
+            game.startGame();
+        });
+        document.querySelector(".play").addEventListener("click", function () {
+            me.runner.pause();
+            document.querySelector(".menu").classList.remove("zoome");
+            game.resumeGame();
+        });
     }
     return GameMan;
 }());
 var Game = (function () {
     function Game() {
         var _this = this;
+        this.startGame = function () {
+            var run = function (isnew) {
+            };
+            if (_this.gdata.moments.length == 0) {
+                _this.getDataFile("game/app.json", function (text) {
+                    if (text != undefined && text.length > 0)
+                        _this.gdata.saveData(text);
+                    run(true);
+                });
+            }
+            else {
+                run(false);
+            }
+        };
+        this.resumeGame = function () {
+        };
         this.update = function (op) {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
@@ -1949,7 +2008,7 @@ var Game = (function () {
                 _this.saveContinueState();
                 ui.clearBlurb();
                 ui.initScene(_this.parseScene(_this.currentScene), function () {
-                    _this.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
+                    _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
                     setTimeout(function () { _this.update(Op.BLURB); }, 0);
                 });
             }
@@ -1998,7 +2057,7 @@ var Game = (function () {
                 }
             }
             else if (op == Op.BUILD_CHOICES) {
-                _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 var moments = _this.getAllPossibleMoments();
                 var messages = _this.getAllPossibleMessages();
                 var choices = _this.buildChoices(moments, messages);
@@ -2016,21 +2075,6 @@ var Game = (function () {
                         _this.update(Op.BUILD_CHOICES);
                     });
                 }
-            }
-            else if (op == Op.MENU_F5) {
-                if (_this.gdata.options == undefined)
-                    ui.showMenu(Op.NEWGAME, null, function (chosen) {
-                        setTimeout(function () { _this.update(chosen); }, 0);
-                    });
-                else
-                    ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME, function (chosen) {
-                        setTimeout(function () { _this.update(chosen); }, 0);
-                    });
-            }
-            else if (op == Op.MENU_INGAME) {
-                ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME, function (chosen) {
-                    setTimeout(function () { _this.update(chosen); }, 0);
-                });
             }
             else if (op == Op.CONTINUE_SAVEDGAME) {
                 var process_1 = function () {
@@ -2050,13 +2094,11 @@ var Game = (function () {
                     process_1();
                 }
             }
-            else if (op == Op.CONTINUE_INGAME) {
-            }
             else if (op == Op.NEWGAME) {
                 _this.newGame();
             }
             else if (op == Op.STARTING_NEWGAME) {
-                _this.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
                 if (_this.currentMoment != null) {
                     setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
@@ -2105,7 +2147,7 @@ var Game = (function () {
                 };
             options.skipMenu = true;
             _this.gdata.options = options;
-            _this.raiseActionEvent(OpAction.GAME_START);
+            _this.gameMan.raiseActionEvent(OpAction.GAME_START);
             var setInitialState = function () {
                 //initial state is dependent on game data
                 var state = { intro: true };
@@ -2137,10 +2179,6 @@ var Game = (function () {
             _this.ui.alert(text, function () { return refreshed; }, function () {
                 callback();
             });
-        };
-        this.raiseActionEvent = function (op, param) {
-            if (window != window.top)
-                window.parent.onAction(op, param);
         };
         this.getAllPossibleMoments = function () {
             var data = _this.data;
@@ -2624,29 +2662,23 @@ var Game = (function () {
             };
             xhr.send();
         };
+        window.GameInstance = this;
         this.gdata = new GameData();
         var options = this.gdata.options;
-        var skipMenu = (options != undefined && options.skipMenu);
-        var menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
-        if (menuHtml == "")
-            menuHtml = "teller-menu.html";
-        window.GameInstance = this;
-        this.ui = new UI(menuHtml, function () {
-            if (skipMenu) {
-                //a brand new game was selected so start it now 
-                options.skipMenu = false;
-                _this.gdata.options = options;
-                _this.update(Op.STARTING_NEWGAME);
-            }
-            else {
-                //the user just started it's browser. display the menu
-                _this.update(Op.MENU_F5);
-            }
-        }, 
-        //the sandwich was clicked
-        //the sandwich was clicked
-        function () { _this.update(Op.MENU_INGAME); });
+        //let skipMenu = (options != undefined && options.skipMenu);
+        //let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
+        //if (menuHtml == "") 
+        //    menuHtml = "teller-menu.html";
+        //this.ui = new UI(() => { this.update(Op.MENU_INGAME); });
+        this.ui = new UI(function () { _this.gameMan.showMenu(); });
     }
+    Object.defineProperty(Game.prototype, "gameMan", {
+        get: function () {
+            return window.parent.GameManInstance;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Game.getCommands = function (text) {
         if (text == undefined)
             return [];
@@ -2862,25 +2894,27 @@ if (!String.prototype.endsWith) {
 }
 var TellerMan;
 (function (TellerMan) {
-    if (document.title == "Teller Editor") {
-        var editor = new Editor();
-        var app = new Framework7({
-            cache: false,
-            preprocess: editor.preprocess.bind(editor)
-        });
-        var leftView = app.addView(".view-left", { dynamicNavbar: true });
-        var centerView = app.addView(".view-center", { dynamicNavbar: true });
-        var rightView = app.addView(".view-right", { dynamicNavbar: true });
-        editor.init(app, leftView, centerView, rightView);
-    }
-    else if (document.title == "Teller IDE") {
-        var ide = new Tide();
-    }
-    else if (document.title == "Moon Limbo") {
-        var gameman = new GameMan();
-    }
-    else {
-        var game = new Game();
-    }
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.title == "Teller Editor") {
+            var editor = new Editor();
+            var app = new Framework7({
+                cache: false,
+                preprocess: editor.preprocess.bind(editor)
+            });
+            var leftView = app.addView(".view-left", { dynamicNavbar: true });
+            var centerView = app.addView(".view-center", { dynamicNavbar: true });
+            var rightView = app.addView(".view-right", { dynamicNavbar: true });
+            editor.init(app, leftView, centerView, rightView);
+        }
+        else if (document.title == "Teller IDE") {
+            var ide = new Tide();
+        }
+        else if (document.title == "Moon Limbo") {
+            var gameman = new GameMan();
+        }
+        else if (document.title == "Moon Limbo - Main") {
+            var game = new Game();
+        }
+    }, false);
 })(TellerMan || (TellerMan = {}));
 //# sourceMappingURL=app.js.map

@@ -11,31 +11,39 @@ class Game {
     cix: number;
 
     constructor() {
-        this.gdata = new GameData();
-        let options = this.gdata.options;
-        let skipMenu = (options != undefined && options.skipMenu);
-        let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
-        if (menuHtml == "") 
-            menuHtml = "teller-menu.html";
-
         (<any>window).GameInstance = this;
 
-        this.ui = new UI(menuHtml, 
-            () => {
-                if (skipMenu) {
-                    //a brand new game was selected so start it now 
-                    options.skipMenu = false;
-                    this.gdata.options = options;
-                    this.update(Op.STARTING_NEWGAME);
-                }
-                else {
-                    //the user just started it's browser. display the menu
-                    this.update(Op.MENU_F5);
-                }
-            }, 
-            //the sandwich was clicked
-            () => { this.update(Op.MENU_INGAME); });
+        this.gdata = new GameData();
+        let options = this.gdata.options;
+        //let skipMenu = (options != undefined && options.skipMenu);
+        //let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
+        //if (menuHtml == "") 
+        //    menuHtml = "teller-menu.html";
+
+        //this.ui = new UI(() => { this.update(Op.MENU_INGAME); });
+        this.ui = new UI(() => { this.gameMan.showMenu(); });
     }
+
+    get gameMan() : GameMan {
+        return (<any>window.parent).GameManInstance;
+    }
+
+    startGame = () => {
+        const run = (isnew: boolean) => {
+        };
+        if (this.gdata.moments.length == 0) {
+            this.getDataFile("game/app.json", (text: string) => {
+                if (text != undefined && text.length > 0) this.gdata.saveData(text);
+                run(true);
+            });
+        }
+        else {
+            run(false);
+        }
+    };
+
+    resumeGame = () => {
+    };
 
     update = (op: Op): void => {
         this.data = this.gdata.loadGame();
@@ -53,7 +61,7 @@ class Game {
             
             ui.clearBlurb();
             ui.initScene(this.parseScene(this.currentScene), () => {
-                this.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
+                this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
                 setTimeout(() => { this.update(Op.BLURB); }, 0);
             });
         }
@@ -107,7 +115,7 @@ class Game {
             }
         }
         else if (op == Op.BUILD_CHOICES) {
-            this.raiseActionEvent(OpAction.SHOWING_CHOICES);
+            this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
             let moments = this.getAllPossibleMoments();
             let messages = this.getAllPossibleMessages();
             let choices = this.buildChoices(moments, messages);
@@ -126,21 +134,21 @@ class Game {
                 });
             }
         }
-        else if (op == Op.MENU_F5) {
-            if (this.gdata.options == undefined)
-                ui.showMenu(Op.NEWGAME, null, (chosen: Op) => {
-                    setTimeout(() => { this.update(chosen); }, 0);
-                });
-            else
-                ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME, (chosen: Op) => {
-                    setTimeout(() => { this.update(chosen); }, 0);
-                });
-        }
-        else if (op == Op.MENU_INGAME) {
-            ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME, (chosen: Op) => {
-                setTimeout(() => { this.update(chosen); }, 0);
-            });
-        }
+        // else if (op == Op.MENU_F5) {
+        //     if (this.gdata.options == undefined)
+        //         ui.showMenu(Op.NEWGAME, null, (chosen: Op) => {
+        //             setTimeout(() => { this.update(chosen); }, 0);
+        //         });
+        //     else
+        //         ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME, (chosen: Op) => {
+        //             setTimeout(() => { this.update(chosen); }, 0);
+        //         });
+        // }
+        // else if (op == Op.MENU_INGAME) {
+        //     ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME, (chosen: Op) => {
+        //         setTimeout(() => { this.update(chosen); }, 0);
+        //     });
+        // }
         else if (op == Op.CONTINUE_SAVEDGAME) {
             const process = () => {
                 this.restoreContinueState();
@@ -158,13 +166,13 @@ class Game {
                 process();
             }
         }
-        else if (op == Op.CONTINUE_INGAME) {
-        }
+        // else if (op == Op.CONTINUE_INGAME) {
+        // }
         else if (op == Op.NEWGAME) {
             this.newGame();
         }
         else if (op == Op.STARTING_NEWGAME) {
-            this.raiseActionEvent(OpAction.SHOWING_CHOICES);
+            this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
             this.currentMoment = this.selectOne(this.getAllPossibleEverything());
             if (this.currentMoment != null) {
                 setTimeout(() => { this.update(Op.CURRENT_MOMENT); }, 0);
@@ -217,7 +225,7 @@ class Game {
         options.skipMenu = true;
         this.gdata.options = options;
 
-        this.raiseActionEvent(OpAction.GAME_START);
+        this.gameMan.raiseActionEvent(OpAction.GAME_START);
 
         const setInitialState = () => {
             //initial state is dependent on game data
@@ -250,11 +258,6 @@ class Game {
         this.ui.alert(text, () => { return refreshed; }, () => {
             callback();
         }); 
-    };
-
-    raiseActionEvent = (op: OpAction, param?: any) => {
-        if (window != window.top) 
-            (<any>window.parent).onAction(op, param);
     };
 
     getAllPossibleMoments = (): Array<IMoment> => {
