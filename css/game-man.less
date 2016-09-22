@@ -17,9 +17,11 @@
     }
 
     .menu {
-        position: relative;
+        position: absolute;
         width: 100%;
         height: 100%;
+        opacity: 1;
+        transition: opacity 0.5s ease;
         //background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
 
         .menu-wrap {
@@ -172,6 +174,9 @@
             padding-left: 12px;
             padding-top: 20%;
             height: 100%;
+            h1, h2 {
+                text-shadow: 0 4px 3px rgba(0,0,0,0.4), 0 8px 13px rgba(0,0,0,0.1), 0 18px 23px rgba(0,0,0,0.1);
+            }
             h1 {
                 font-family: 'Bungee', cursive;
                 font-size: 48pt;
@@ -187,13 +192,20 @@
                 color: white;
             }
         }
+
+        &.hidden {
+            display: none;
+        }
     }
 
     .primo-limbo {
+        position: absolute;
         width: 100%;
         height: 100%;
         background: no-repeat center center fixed;
         background-size: cover;
+        opacity: 1;
+        transition: opacity 0.5s ease;
         .wrapper {
             position: absolute;
             left: 10%;
@@ -244,6 +256,10 @@
                     background-color: initial;
                 }
             }
+        }
+        &.hidden {
+            opacity: 0;
+            pointer-events: none;
         }
     }
 

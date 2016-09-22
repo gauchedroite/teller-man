@@ -26,7 +26,8 @@ function resize(gl) {
 
 function main() {
     // Get context
-    var gl = document.getElementById("canvas").getContext("webgl");
+    var canvas = document.getElementById("canvas");
+    var gl = canvas.getContext("experimental-webgl");
     if (!gl)
         return alert("Your web browser does not support WebGL");
 

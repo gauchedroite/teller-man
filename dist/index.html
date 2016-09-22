@@ -11,7 +11,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="ionicons/css/ionicons.min.css"/>
     <link rel="stylesheet" href="app.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Anton|Farsan|Roboto+Slab|Bungee|Merriweather:300i">
 </head>
@@ -19,7 +18,20 @@
 <body id="game-man">
     <canvas id="canvas"></canvas>
 
-    <div class="menu display-none">
+    <div class="studio">
+        <div class="studio-inner">
+            <svg viewBox="0 0 150 150" preserveAspectRatio="xMinYMin meet">
+                <text x="15" y="40">Studio</text>
+                <text x="20" y="65">Gauche-Droite</text>
+            </svg>
+        </div>
+        <div style="opacity: 0">
+            <span style="font-family: 'My Magneto'">&nbsp;</span>
+            <span style="font-family: 'My Pupcat'">&nbsp;</span>
+        </div>
+    </div>
+
+    <div class="menu hidden">
         <div class="menu-wrap">
             <div class="top-row">
                 <div class="row-wrap">
@@ -51,32 +63,19 @@
         </div>
 
         <div class="game-wrap">
-            <div class="game-content" onclick="zoome()">
-                <iframe id="game-frame" src="main.html"></iframe>
+            <div class="game-content">
+                <iframe id="game-frame"></iframe>
                 <div class="frame-overlay"></div>
                 <div class="play"></div>
             </div>
         </div>
     </div>
 
-    <div class="primo-limbo">
+    <div class="primo-limbo hidden">
         <div class="wrapper">
             <h1>Moon Limbo</h1>
             <h2>Entre ciel et terre</h2>
             <div class="start"></div>
-        </div>
-    </div>
-
-    <div class="studio">
-        <div class="studio-inner">
-            <svg viewBox="0 0 150 150" preserveAspectRatio="xMinYMin meet">
-                <text x="15" y="40">Studio</text>
-                <text x="20" y="65">Gauche-Droite</text>
-            </svg>
-        </div>
-        <div style="opacity: 0">
-            <span style="font-family: 'My Magneto'">&nbsp;</span>
-            <span style="font-family: 'My Pupcat'">&nbsp;</span>
         </div>
     </div>
 

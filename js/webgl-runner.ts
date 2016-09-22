@@ -15,7 +15,8 @@ class WebglRunner {
     
     run = () => {
         // Get context
-        var gl = <WebGLRenderingContext>(<HTMLCanvasElement>document.getElementById("canvas")).getContext("webgl");
+        var canvas = <HTMLCanvasElement>document.getElementById("canvas");
+        var gl = <WebGLRenderingContext>canvas.getContext("experimental-webgl");
         if (!gl)
             return alert("Your web browser does not support WebGL");
 

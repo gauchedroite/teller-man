@@ -14,7 +14,7 @@ class Game {
         (<any>window).GameInstance = this;
 
         this.gdata = new GameData();
-        let options = this.gdata.options;
+        //let options = this.gdata.options;
         //let skipMenu = (options != undefined && options.skipMenu);
         //let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
         //if (menuHtml == "") 

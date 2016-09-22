@@ -115,9 +115,11 @@ iframe {
   width: 100%;
 }
 #game-man .menu {
-  position: relative;
+  position: absolute;
   width: 100%;
   height: 100%;
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 #game-man .menu .menu-wrap {
   position: absolute;
@@ -264,6 +266,10 @@ iframe {
   padding-top: 20%;
   height: 100%;
 }
+#game-man .menu .title-inner h1,
+#game-man .menu .title-inner h2 {
+  text-shadow: 0 4px 3px rgba(0, 0, 0, 0.4), 0 8px 13px rgba(0, 0, 0, 0.1), 0 18px 23px rgba(0, 0, 0, 0.1);
+}
 #game-man .menu .title-inner h1 {
   font-family: 'Bungee', cursive;
   font-size: 48pt;
@@ -278,11 +284,17 @@ iframe {
   letter-spacing: 0.22em;
   color: white;
 }
+#game-man .menu.hidden {
+  display: none;
+}
 #game-man .primo-limbo {
+  position: absolute;
   width: 100%;
   height: 100%;
   background: no-repeat center center fixed;
   background-size: cover;
+  opacity: 1;
+  transition: opacity 0.5s ease;
 }
 #game-man .primo-limbo .wrapper {
   position: absolute;
@@ -334,6 +346,10 @@ iframe {
 #game-man .primo-limbo .wrapper .start:hover {
   opacity: 1;
   background-color: initial;
+}
+#game-man .primo-limbo.hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 #game-man .studio {
   position: absolute;
@@ -724,9 +740,6 @@ section.image div {
 }*/
 .fader {
   background-color: black;
-}
-.display-none {
-  display: none;
 }
 .landscape .story-inner {
   width: 35%;
