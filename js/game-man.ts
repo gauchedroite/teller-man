@@ -37,11 +37,13 @@ class GameMan {
         });
     }
 
+
     // Proxy this game frame call to the IDE if there's one
     raiseActionEvent = (op: OpAction, param?: any) => {
         if (window != window.top) 
             (<any>window.parent).onAction(op, param);
     };
+
 
     // Called from the game frame
     showMenu = () => {

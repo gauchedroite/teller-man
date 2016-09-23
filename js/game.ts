@@ -30,7 +30,44 @@ class Game {
 
     startGame = () => {
         const run = (isnew: boolean) => {
+            if (isnew) {
+                this.gdata.history = [];    //init the list of showned moments
+                this.gdata.continueState = null;
+
+                let options = this.gdata.options;
+                if (options == undefined) options = <IOptions>{ 
+                    skipFileLoad: false,
+                    syncEditor: false,
+                    fastStory: false
+                };
+                this.gdata.options = options;
+
+                let state = { intro: true };
+                state[this.gdata.game.initialstate] = true;
+                this.gdata.state = state;
+
+                this.gameMan.raiseActionEvent(OpAction.GAME_START);
+
+                this.data = this.gdata.loadGame();
+                this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                this.currentMoment = this.selectOne(this.getAllPossibleEverything());
+                if (this.currentMoment != null) {
+                    setTimeout(() => { this.update(Op.CURRENT_MOMENT); }, 0);
+                }
+                else {
+                    this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", () => {
+                        this.update(Op.BUILD_CHOICES);
+                    });
+                }
+            }
+            else {
+                this.restoreContinueState();
+                this.ui.initScene(this.parseScene(this.currentScene), () => {
+                    this.update(this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+                });
+            }
         };
+
         if (this.gdata.moments.length == 0) {
             this.getDataFile("game/app.json", (text: string) => {
                 if (text != undefined && text.length > 0) this.gdata.saveData(text);
@@ -134,55 +171,6 @@ class Game {
                 });
             }
         }
-        // else if (op == Op.MENU_F5) {
-        //     if (this.gdata.options == undefined)
-        //         ui.showMenu(Op.NEWGAME, null, (chosen: Op) => {
-        //             setTimeout(() => { this.update(chosen); }, 0);
-        //         });
-        //     else
-        //         ui.showMenu(Op.NEWGAME, Op.CONTINUE_SAVEDGAME, (chosen: Op) => {
-        //             setTimeout(() => { this.update(chosen); }, 0);
-        //         });
-        // }
-        // else if (op == Op.MENU_INGAME) {
-        //     ui.showMenu(Op.NEWGAME, Op.CONTINUE_INGAME, (chosen: Op) => {
-        //         setTimeout(() => { this.update(chosen); }, 0);
-        //     });
-        // }
-        else if (op == Op.CONTINUE_SAVEDGAME) {
-            const process = () => {
-                this.restoreContinueState();
-                ui.initScene(this.parseScene(this.currentScene), () => {
-                    this.update(this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
-                });
-            };
-            if (this.gdata.options == undefined || this.gdata.options.skipFileLoad == false) {
-                this.getDataFile("game/app.json", (text: string) => {
-                    if (text != undefined && text.length > 0) this.gdata.saveData(text);
-                    process();
-                });
-            }
-            else {
-                process();
-            }
-        }
-        // else if (op == Op.CONTINUE_INGAME) {
-        // }
-        else if (op == Op.NEWGAME) {
-            this.newGame();
-        }
-        else if (op == Op.STARTING_NEWGAME) {
-            this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-            this.currentMoment = this.selectOne(this.getAllPossibleEverything());
-            if (this.currentMoment != null) {
-                setTimeout(() => { this.update(Op.CURRENT_MOMENT); }, 0);
-            }
-            else {
-                this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", () => {
-                    this.update(Op.BUILD_CHOICES);
-                });
-            }
-        }
         else {
             this.refreshGameAndAlert("!!! DEAD END !!!", () => {
                 this.update(Op.BUILD_CHOICES);
@@ -208,42 +196,6 @@ class Game {
             this.forbiddenSceneId = cstate.forbiddenSceneId;
             this.gdata.state = cstate.state; 
             this.gdata.history = cstate.history;
-        }
-    };
-
-    newGame = () => {
-        this.gdata.history = [];    //init the list of showned moments
-        this.gdata.continueState = null;
-
-        let options = this.gdata.options;
-        if (options == undefined) options = <IOptions>{ 
-            skipFileLoad: false,
-            skipMenu: true,
-            syncEditor: false,
-            fastStory: false
-        };
-        options.skipMenu = true;
-        this.gdata.options = options;
-
-        this.gameMan.raiseActionEvent(OpAction.GAME_START);
-
-        const setInitialState = () => {
-            //initial state is dependent on game data
-            let state = { intro: true };
-            state[this.gdata.game.initialstate] = true;
-            this.gdata.state = state;
-        };
-
-        if (options.skipFileLoad == false) {
-            this.getDataFile("game/app.json", (text: any) => {
-                if (text != undefined && text.length > 0) this.gdata.saveData(text);
-                setInitialState();
-                setTimeout(function() { location.href = "index.html"; }, 0);
-            });
-        }
-        else {
-            setInitialState();
-            setTimeout(function() { location.href = "index.html"; }, 0);
         }
     };
 

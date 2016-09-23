@@ -62,14 +62,14 @@ interface IWaitClick extends IChunkKind {
 type IMomentData = IDialog | IText | IBackground | IInline | IHeading | IDo | IMiniGame | IGameResult | IWaitClick;
 
 enum Op {
-    STARTING_NEWGAME,       //0
+    //STARTING_NEWGAME,       //0
     CURRENT_MOMENT,         //1
     BLURB,                  //2
     BUILD_CHOICES,          //3
     //MENU_F5,                //4
     //MENU_INGAME,            //5
-    NEWGAME,                //6
-    CONTINUE_SAVEDGAME,     //7
+    //NEWGAME,                //6
+    //CONTINUE_SAVEDGAME,     //7
     //CONTINUE_INGAME         //8
 }
 

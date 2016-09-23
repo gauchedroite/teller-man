@@ -1332,14 +1332,10 @@ var ChunkKind;
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
-    Op[Op["STARTING_NEWGAME"] = 0] = "STARTING_NEWGAME";
-    Op[Op["CURRENT_MOMENT"] = 1] = "CURRENT_MOMENT";
-    Op[Op["BLURB"] = 2] = "BLURB";
-    Op[Op["BUILD_CHOICES"] = 3] = "BUILD_CHOICES";
-    //MENU_F5,                //4
-    //MENU_INGAME,            //5
-    Op[Op["NEWGAME"] = 4] = "NEWGAME";
-    Op[Op["CONTINUE_SAVEDGAME"] = 5] = "CONTINUE_SAVEDGAME";
+    //STARTING_NEWGAME,       //0
+    Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
+    Op[Op["BLURB"] = 1] = "BLURB";
+    Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
 })(Op || (Op = {}));
 var OpAction;
 (function (OpAction) {
@@ -1992,6 +1988,39 @@ var Game = (function () {
         var _this = this;
         this.startGame = function () {
             var run = function (isnew) {
+                if (isnew) {
+                    _this.gdata.history = []; //init the list of showned moments
+                    _this.gdata.continueState = null;
+                    var options = _this.gdata.options;
+                    if (options == undefined)
+                        options = {
+                            skipFileLoad: false,
+                            syncEditor: false,
+                            fastStory: false
+                        };
+                    _this.gdata.options = options;
+                    var state = { intro: true };
+                    state[_this.gdata.game.initialstate] = true;
+                    _this.gdata.state = state;
+                    _this.gameMan.raiseActionEvent(OpAction.GAME_START);
+                    _this.data = _this.gdata.loadGame();
+                    _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                    _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
+                    if (_this.currentMoment != null) {
+                        setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
+                    }
+                    else {
+                        _this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", function () {
+                            _this.update(Op.BUILD_CHOICES);
+                        });
+                    }
+                }
+                else {
+                    _this.restoreContinueState();
+                    _this.ui.initScene(_this.parseScene(_this.currentScene), function () {
+                        _this.update(_this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+                    });
+                }
             };
             if (_this.gdata.moments.length == 0) {
                 _this.getDataFile("game/app.json", function (text) {
@@ -2087,39 +2116,6 @@ var Game = (function () {
                     });
                 }
             }
-            else if (op == Op.CONTINUE_SAVEDGAME) {
-                var process_1 = function () {
-                    _this.restoreContinueState();
-                    ui.initScene(_this.parseScene(_this.currentScene), function () {
-                        _this.update(_this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
-                    });
-                };
-                if (_this.gdata.options == undefined || _this.gdata.options.skipFileLoad == false) {
-                    _this.getDataFile("game/app.json", function (text) {
-                        if (text != undefined && text.length > 0)
-                            _this.gdata.saveData(text);
-                        process_1();
-                    });
-                }
-                else {
-                    process_1();
-                }
-            }
-            else if (op == Op.NEWGAME) {
-                _this.newGame();
-            }
-            else if (op == Op.STARTING_NEWGAME) {
-                _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-                _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
-                if (_this.currentMoment != null) {
-                    setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
-                }
-                else {
-                    _this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", function () {
-                        _this.update(Op.BUILD_CHOICES);
-                    });
-                }
-            }
             else {
                 _this.refreshGameAndAlert("!!! DEAD END !!!", function () {
                     _this.update(Op.BUILD_CHOICES);
@@ -2143,39 +2139,6 @@ var Game = (function () {
                 _this.forbiddenSceneId = cstate.forbiddenSceneId;
                 _this.gdata.state = cstate.state;
                 _this.gdata.history = cstate.history;
-            }
-        };
-        this.newGame = function () {
-            _this.gdata.history = []; //init the list of showned moments
-            _this.gdata.continueState = null;
-            var options = _this.gdata.options;
-            if (options == undefined)
-                options = {
-                    skipFileLoad: false,
-                    skipMenu: true,
-                    syncEditor: false,
-                    fastStory: false
-                };
-            options.skipMenu = true;
-            _this.gdata.options = options;
-            _this.gameMan.raiseActionEvent(OpAction.GAME_START);
-            var setInitialState = function () {
-                //initial state is dependent on game data
-                var state = { intro: true };
-                state[_this.gdata.game.initialstate] = true;
-                _this.gdata.state = state;
-            };
-            if (options.skipFileLoad == false) {
-                _this.getDataFile("game/app.json", function (text) {
-                    if (text != undefined && text.length > 0)
-                        _this.gdata.saveData(text);
-                    setInitialState();
-                    setTimeout(function () { location.href = "index.html"; }, 0);
-                });
-            }
-            else {
-                setInitialState();
-                setTimeout(function () { location.href = "index.html"; }, 0);
             }
         };
         this.refreshGameAndAlert = function (text, callback) {
