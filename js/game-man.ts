@@ -1,20 +1,24 @@
+/// <reference path="webgl-runner.ts" />
 
 class GameMan {
     runner: WebglRunner;
 
     constructor() {
         (<any>window).GameManInstance = this;
-        let me = this;
-        let game: Game;
+    }
 
-        me.runner = new WebglRunner("vertex-shader", "fragment-shader");
-        me.runner.run();
+    initialize = () => {
+        let me = this;
+        let game: any; //<Game>
+
+        this.runner = new WebglRunner("vertex-shader", "fragment-shader");
+        this.runner.run();
 
         // We have to manually set the iframe source otherwise Chrome will get mixed up because the page and the frame use the same css. 
         setTimeout(function() {
             document.querySelector(".primo-limbo").classList.remove("hidden");
             let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
-            gameFrame.src = "main.html";
+            gameFrame.setAttribute("src", "main.html");
         }, 500);
 
         // START button
@@ -35,11 +39,10 @@ class GameMan {
             document.querySelector(".menu").classList.remove("zoome");
             game.resumeGame();
         });
-    }
+    };
 
-
-    // Proxy this game frame call to the IDE if there's one
-    raiseActionEvent = (op: OpAction, param?: any) => {
+    // Proxy this call from the game frame to the IDE (if there's one)
+    raiseActionEvent = (op: any, param?: any) => {
         if (window != window.top) 
             (<any>window.parent).onAction(op, param);
     };

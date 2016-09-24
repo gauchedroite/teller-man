@@ -1,3 +1,7 @@
+interface String {    
+    startsWith(searchString: string, endPosition?: number): boolean;
+    endsWith(searchString: string, endPosition?: number): boolean;
+};
 declare var FastClick: any;
 
 class Game {
@@ -14,17 +18,14 @@ class Game {
         (<any>window).GameInstance = this;
 
         this.gdata = new GameData();
-        //let options = this.gdata.options;
-        //let skipMenu = (options != undefined && options.skipMenu);
-        //let menuHtml = (this.gdata.game != undefined ? this.gdata.game.desc : "");
-        //if (menuHtml == "") 
-        //    menuHtml = "teller-menu.html";
-
-        //this.ui = new UI(() => { this.update(Op.MENU_INGAME); });
-        this.ui = new UI(() => { this.gameMan.showMenu(); });
+        this.ui = new UI();
     }
 
-    get gameMan() : GameMan {
+    initialize = () => {
+        this.ui.initialize(() => { this.gameMan.showMenu(); });
+    };
+
+    get gameMan() : any/*<GameMan>*/ {
         return (<any>window.parent).GameManInstance;
     }
 
@@ -200,14 +201,14 @@ class Game {
     };
 
     refreshGameAndAlert = (text: string, callback: () => void) => {
-        let refreshed = (this.gdata.options != undefined && this.gdata.options.skipFileLoad);
-        if (refreshed == false) {
+        let skipFileLoad = (this.gdata.options != undefined && this.gdata.options.skipFileLoad);
+        if (skipFileLoad == false) {
             this.getDataFile("game/app.json", (text: string) => {
                 if (text != undefined && text.length > 0) this.gdata.saveData(text);
-                refreshed = true;
+                skipFileLoad = true;
             });
         }
-        this.ui.alert(text, () => { return refreshed; }, () => {
+        this.ui.alert(text, () => { return skipFileLoad; }, () => {
             callback();
         }); 
     };

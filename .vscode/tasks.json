@@ -30,6 +30,18 @@
             "args": ["run", "dev"]
         },
         {
+            "taskName": "dev loop (man)",
+            "args": ["run", "dev-man"]
+        },
+        {
+            "taskName": "dev loop (ide)",
+            "args": ["run", "dev-ide"]
+        },
+        {
+            "taskName": "dev loop (editor)",
+            "args": ["run", "dev-edit"]
+        },
+        {
             "taskName": "update gh-pages",
             "args": ["run", "pages"]
         }

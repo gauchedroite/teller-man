@@ -16,7 +16,35 @@ class UI {
     portrait = false;
     sections: Array<string>;
 
-    constructor (onmenu: () => void) {
+    constructor () {
+        //menu
+        // let menu = <HTMLDivElement>document.querySelector(".menu");
+        // let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
+        // menuFrame.setAttribute("src", `game/${menuPage}`);
+        // const configure = () => {
+        //     var run = (<any>menuFrame.contentWindow).TellerRun;
+        //     if (run == undefined) return setTimeout(configure, 100);
+        //     run({}, (result: any) => {
+        //         if (result.menu == "ready") {
+        //             var preloader = <HTMLDivElement>document.querySelector(".preloader");
+        //             setTimeout(() => { 
+        //                 preloader.style.opacity = "0";
+        //                 preloader.addEventListener("transitionend", function done() {
+        //                     preloader.removeEventListener("transitionend", done);
+        //                     preloader.classList.remove("full-white");
+        //                     preloader.removeAttribute("style");
+        //                     var studio = <HTMLDivElement>preloader.querySelector(".studio");
+        //                     studio.style.display = "none";
+        //                 });
+        //             }, 750);
+        //             setTimeout(ready, 0);
+        //         }
+        //     });
+        // };
+        // configure();
+    }
+
+    initialize = (onmenu: () => void) => {
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
             setTimeout(onmenu, 0);
@@ -50,33 +78,7 @@ class UI {
                 document.body.classList.add(format);
             }
         };
-
-        //menu
-        // let menu = <HTMLDivElement>document.querySelector(".menu");
-        // let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
-        // menuFrame.setAttribute("src", `game/${menuPage}`);
-        // const configure = () => {
-        //     var run = (<any>menuFrame.contentWindow).TellerRun;
-        //     if (run == undefined) return setTimeout(configure, 100);
-        //     run({}, (result: any) => {
-        //         if (result.menu == "ready") {
-        //             var preloader = <HTMLDivElement>document.querySelector(".preloader");
-        //             setTimeout(() => { 
-        //                 preloader.style.opacity = "0";
-        //                 preloader.addEventListener("transitionend", function done() {
-        //                     preloader.removeEventListener("transitionend", done);
-        //                     preloader.classList.remove("full-white");
-        //                     preloader.removeAttribute("style");
-        //                     var studio = <HTMLDivElement>preloader.querySelector(".studio");
-        //                     studio.style.display = "none";
-        //                 });
-        //             }, 750);
-        //             setTimeout(ready, 0);
-        //         }
-        //     });
-        // };
-        // configure();
-    }
+    };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");

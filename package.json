@@ -12,10 +12,22 @@
   "scripts": {
     "tsc": "tsc -p ./",
     "tsc:w": "tsc -p ./ -w",
+    "tsc-man:w": "tsc -p ./config-man -w",
+    "tsc-ide:w": "tsc -p ./config-ide -w",
+    "tsc-edit:w": "tsc -p ./config-edit -w",
+
     "less": "lessc --strict-math=on app.less dist/app.css",
     "less:w": "nodemon -e less -w ./ -x \"npm run less\"",
+    "less-man": "lessc --strict-math=on css/game-man.less dist/app-man.css",
+    "less-man:w": "nodemon -e less -w ./ -x \"npm run less-man\"",
+
     "http": "http-server",
+
     "dev": "concurrently \"npm run tsc:w\" \"npm run less:w\" \"npm run http\" ",
+    "dev-man": "concurrently \"npm run tsc-man:w\" \"npm run less-man:w\" \"npm run http\" ",
+    "dev-ide": "concurrently \"npm run tsc-ide:w\" \"npm run http\" ",
+    "dev-edit": "concurrently \"npm run tsc-edit:w\" \"npm run http\" ",
+
     "pages": "git checkout gh-pages && git merge master && git push origin gh-pages && git checkout master"
   },
   "dependencies": {
@@ -25,7 +37,7 @@
     "concurrently": "^2.1.0",
     "less": "^2.7.1",
     "nodemon": "^1.9.2",
-    "typescript": "^1.8.10"
+    "typescript": "^2.0.3"
   },
   "optionalDependencies": {
     "http-server": "^0.9.0"

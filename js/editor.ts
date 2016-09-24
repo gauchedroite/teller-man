@@ -1,4 +1,7 @@
+/// <reference path="game-data.ts" />
+/// <reference path="game.ts" />
 
+declare var Framework7: any;
 declare var Dom7: any;
 declare var Template7: any;
 
@@ -16,6 +19,8 @@ class Editor {
     rightView: any;
 
     constructor() {
+        (<any>window).EditorInstance = this;
+
         this.gdata = new GameData();
         this.$ = Dom7;
         var $ = Dom7;
@@ -24,9 +29,20 @@ class Editor {
         var content = gameinfo.innerHTML;
         var template = Template7.compile(content);
         gameinfo.innerHTML = template(data);
-
-        (<any>window).EditorInstance = this;
     }
+
+    initialize = () => {
+        var app = new Framework7({
+            cache: false,
+            preprocess: this.preprocess.bind(this)
+        });
+
+        var leftView = app.addView(".view-left", { dynamicNavbar: true });
+        var centerView = app.addView(".view-center", { dynamicNavbar: true });
+        var rightView = app.addView(".view-right", { dynamicNavbar: true });
+
+        this.setup(app, leftView, centerView, rightView);
+    };
 
     preprocess(content: string, url: any, next: any) {
         var gdata = this.gdata;
@@ -161,7 +177,7 @@ class Editor {
         return (content);
     };
 
-    init = (app: any, leftView: any, centerView: any, rightView: any) => {
+    setup = (app: any, leftView: any, centerView: any, rightView: any) => {
         
         this.app = app;
         this.leftView = leftView;

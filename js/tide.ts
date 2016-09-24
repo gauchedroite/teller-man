@@ -1,3 +1,13 @@
+/// <reference path="game-data.ts" />
+/// <reference path="igame.ts" />
+/// <reference path="editor.ts" />
+/// <reference path="game.ts" />
+
+namespace TellerMan {
+    document.addEventListener('DOMContentLoaded', function () {
+        var ide = new Tide();
+    }, false);
+}
 
 class Tide {
 
