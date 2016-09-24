@@ -1,5 +1,7 @@
+/// <reference path="igame.ts" />
 /// <reference path="game-data.ts" />
-/// <reference path="game.ts" />
+/// <reference path="game-helper.ts" />
+/// <reference path="ieditor.ts" />
 
 declare var Framework7: any;
 declare var Dom7: any;
@@ -10,7 +12,7 @@ interface String {
     endsWith(s: string): boolean
 }
 
-class Editor {
+class Editor implements IEditor {
     gdata: GameData;
     $: any;
     app: any;
@@ -83,10 +85,10 @@ class Editor {
                     data.me.moments = gdata.getMomentsOf(me);
                     data.me.actions = gdata.getActionsOf(me);
                     for (var mom of data.me.moments) {
-                        mom.commands = Game.getCommands(mom.text);
+                        mom.commands = GameHelper.getCommands(mom.text);
                     }
                     for (var act of data.me.actions) {
-                        act.commands = Game.getCommands(act.text);
+                        act.commands = GameHelper.getCommands(act.text);
                     }
                     return data;
                 }
@@ -120,7 +122,7 @@ class Editor {
                     data.meid = id;
                     data.me.messages = gdata.getMessageToOf(me);
                     for (var msg of data.me.messages) {
-                        msg.commands = Game.getCommands(msg.text);
+                        msg.commands = GameHelper.getCommands(msg.text);
                     }
                     return data;
                 }
@@ -134,7 +136,7 @@ class Editor {
                     data.meid = id;
                     data.me.messages = gdata.getMessageFromOf(me);
                     for (var msg of data.me.messages) {
-                        msg.commands = Game.getCommands(msg.text);
+                        msg.commands = GameHelper.getCommands(msg.text);
                     }
                     return data;
                 }
@@ -577,7 +579,7 @@ class Editor {
 
         $(document).on("change", "#ted-moment-text", (e: any) => {
             this.gdata.saveMomentText(e.target.value, this.getMeId(e.target));
-            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            var ul = `<ul><li>${GameHelper.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
             $("#ted-moments li.ted-selected div.item-text").html(ul);
         });
 
@@ -593,7 +595,7 @@ class Editor {
 
         $(document).on("change", "#ted-action-text", (e: any) => {
             this.gdata.saveActionText(e.target.value, this.getMeId(e.target));
-            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            var ul = `<ul><li>${GameHelper.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
             $("#ted-actions li.ted-selected div.item-text").html(ul);
         });
 
@@ -626,7 +628,7 @@ class Editor {
 
         $(document).on("change", "#ted-message-to-text", (e: any) => {
             this.gdata.saveMessageToText(e.target.value, this.getMeId(e.target));
-            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            var ul = `<ul><li>${GameHelper.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
             $("#ted-messages-to li.ted-selected div.item-text").html(ul);
         });
 
@@ -637,7 +639,7 @@ class Editor {
 
         $(document).on("change", "#ted-message-from-text", (e: any) => {
             this.gdata.saveMessageFromText(e.target.value, this.getMeId(e.target));
-            var ul = `<ul><li>${Game.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
+            var ul = `<ul><li>${GameHelper.getCommands(e.target.value).join("</li><li>")}</li></ul>`;
             $("#ted-messages-from li.ted-selected div.item-text").html(ul);
         });
     }

@@ -27,6 +27,7 @@ var AKind;
     AKind[AKind["Player"] = 0] = "Player";
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
+/// <reference path="igame-data.ts" />
 var GameData = (function () {
     function GameData() {
         var _this = this;
@@ -738,7 +739,6 @@ var ChunkKind;
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
-    //STARTING_NEWGAME,       //0
     Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
     Op[Op["BLURB"] = 1] = "BLURB";
     Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
@@ -1257,6 +1257,10 @@ var UI = (function () {
     }
     return UI;
 }());
+/// <reference path="helpers.ts" />
+/// <reference path="game-data.ts" />
+/// <reference path="igame.ts" />
+/// <reference path="ui.ts" />
 ;
 var Game = (function () {
     function Game() {
@@ -1420,15 +1424,15 @@ var Game = (function () {
             }
         };
         this.refreshGameAndAlert = function (text, callback) {
-            var refreshed = (_this.gdata.options != undefined && _this.gdata.options.skipFileLoad);
-            if (refreshed == false) {
+            var skipFileLoad = (_this.gdata.options != undefined && _this.gdata.options.skipFileLoad);
+            if (skipFileLoad == false) {
                 _this.getDataFile("game/app.json", function (text) {
                     if (text != undefined && text.length > 0)
                         _this.gdata.saveData(text);
-                    refreshed = true;
+                    skipFileLoad = true;
                 });
             }
-            _this.ui.alert(text, function () { return refreshed; }, function () {
+            _this.ui.alert(text, function () { return skipFileLoad; }, function () {
                 callback();
             });
         };
@@ -1925,41 +1929,6 @@ var Game = (function () {
         enumerable: true,
         configurable: true
     });
-    Game.getCommands = function (text) {
-        if (text == undefined)
-            return [];
-        var inComment = false;
-        var commands = new Array();
-        var parts = text.split("\n");
-        for (var _i = 0, parts_6 = parts; _i < parts_6.length; _i++) {
-            var part = parts_6[_i];
-            if (part.length > 0) {
-                if (part.startsWith("/*")) {
-                    inComment = true;
-                }
-                else if (inComment) {
-                    inComment = (part.startsWith("*/") == false);
-                }
-                else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
-                    commands.push(part);
-                }
-            }
-        }
-        return commands;
-    };
-    Game.getWhens = function (text) {
-        if (text == undefined)
-            return [];
-        var whens = new Array();
-        var parts = text.split(",");
-        for (var _i = 0, parts_7 = parts; _i < parts_7.length; _i++) {
-            var part = parts_7[_i];
-            if (part.length > 0) {
-                whens.push(part.trim());
-            }
-        }
-        return whens;
-    };
     return Game;
 }());
 //# sourceMappingURL=app.js.map

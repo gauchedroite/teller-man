@@ -9,14 +9,21 @@
     "type": "git",
     "url": "git://github.com/gauchedroite/teller-man.git"
   },
+  "config": {
+    "tsc": "-t ES5 -m system --sourceMap --noImplicitAny --suppressImplicitAnyIndexErrors"
+  },
   "scripts": {
-    "tsc": "tsc -p ./",
-    "tsc:w": "tsc -p ./ -w",
-    "tsc-man:w": "tsc -p ./config-man -w",
-    "tsc-ide:w": "tsc -p ./config-ide -w",
-    "tsc-edit:w": "tsc -p ./config-edit -w",
+    "tsc": "tsc %npm_package_config_tsc% --outFile dist/app.js js/game.ts",
+    "tsc-man": "tsc %npm_package_config_tsc% --outFile dist/app-man.js js/game-man.ts",
+    "tsc-ide": "tsc %npm_package_config_tsc% --outFile dist/app-ide.js js/tide.ts",
+    "tsc-edit": "tsc %npm_package_config_tsc% --outFile dist/app-edit.js js/editor.ts",
+    
+    "tsc:w": "npm run tsc -- -w",
+    "tsc-man:w": "npm run tsc-man -- -w",
+    "tsc-ide:w": "npm run tsc-ide -- -w",
+    "tsc-edit:w": "npm run tsc-edit -- -w",
 
-    "less": "lessc --strict-math=on app.less dist/app.css",
+    "less": "lessc --strict-math=on css/app.less dist/app.css",
     "less:w": "nodemon -e less -w ./ -x \"npm run less\"",
     "less-man": "lessc --strict-math=on css/game-man.less dist/app-man.css",
     "less-man:w": "nodemon -e less -w ./ -x \"npm run less-man\"",

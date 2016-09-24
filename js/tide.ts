@@ -1,24 +1,21 @@
-/// <reference path="game-data.ts" />
 /// <reference path="igame.ts" />
-/// <reference path="editor.ts" />
-/// <reference path="game.ts" />
-
-namespace TellerMan {
-    document.addEventListener('DOMContentLoaded', function () {
-        var ide = new Tide();
-    }, false);
-}
+/// <reference path="igame-data.ts" />
+/// <reference path="ieditor.ts" />
+/// <reference path="game-storage.ts" />
+/// <reference path="game-helper.ts" />
 
 class Tide {
 
     prevState: any;
 
     constructor () {
+    }
 
+    initialize = () => {
         var ied = <HTMLElement>document.querySelector("div.ide-editor");
         var igame = <HTMLElement>document.querySelector("div.ide-game");
 
-        var gdata = new GameData();
+        var gdata = new GameStorage();
         var options = gdata.options;
         if (options == undefined) {
             options = <IOptions> { skipFileLoad: false, syncEditor: true };
@@ -101,12 +98,12 @@ class Tide {
         // Load the iframes at run time to make sure the ide is fully loaded first.
         igame.querySelector("iframe").setAttribute("src", "dist/index.html");
         ied.querySelector("iframe").setAttribute("src", "index-edit.html");
-    }
+    };
 
 
     action = (op: OpAction, param?: any) => {
         if (op == OpAction.SHOWING_CHOICES) {
-            var state = new GameData().state;
+            var state = new GameStorage().state;
 
             interface IProp { name: string, prev: any, now: any };
             var all = new Array<IProp>();
@@ -172,17 +169,17 @@ class Tide {
         else if (op == OpAction.SHOWING_MOMENT) {
             if ((<any>document.getElementById("ide-sync")).checked) {
                 let iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
-                let editor = <Editor>(<any>iframe.contentWindow).EditorInstance;
+                let editor = <IEditor>(<any>iframe.contentWindow).EditorInstance;
                 let moment = <IMoment>param;
                 editor.gotoMoment(moment);
 
-                let whens = Game.getWhens(moment.when);
+                let whens = GameHelper.getWhens(moment.when);
                 let divs = Array.prototype.map.call(whens, function (when:string) {
                     return `<div>${when}</div>`;
                 })
                 document.getElementById("id-when").innerHTML = divs.join("");
 
-                var cmds = Game.getCommands(moment.text);
+                var cmds = GameHelper.getCommands(moment.text);
                 divs = Array.prototype.map.call(cmds, function (cmd:string) {
                     return `<div>${cmd}</div>`;
                 })

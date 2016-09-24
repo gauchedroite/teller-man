@@ -226,6 +226,12 @@
     </div>
 
     <script src="dist/app-ide.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ide = new Tide();
+            ide.initialize();
+        }, false);
+    </script>
 </body>
 
 </html>
