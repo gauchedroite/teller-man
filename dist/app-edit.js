@@ -34,6 +34,7 @@ var AKind;
     AKind[AKind["Player"] = 0] = "Player";
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
+/// <reference path="igame.ts" />
 /// <reference path="igame-data.ts" />
 var GameData = (function () {
     function GameData() {
@@ -732,6 +733,7 @@ var GameData = (function () {
     });
     return GameData;
 }());
+;
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (searchString, position) {
         position = position || 0;
@@ -791,6 +793,7 @@ var GameHelper = (function () {
     };
     return GameHelper;
 }());
+/// <reference path="igame-data.ts" />
 /// <reference path="igame.ts" />
 /// <reference path="game-data.ts" />
 /// <reference path="game-helper.ts" />

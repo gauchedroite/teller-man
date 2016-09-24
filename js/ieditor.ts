@@ -1,3 +1,4 @@
+/// <reference path="igame-data.ts" />
 
 interface IEditor {
     initialize: () => void;

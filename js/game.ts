@@ -3,12 +3,6 @@
 /// <reference path="igame.ts" />
 /// <reference path="ui.ts" />
 
-interface String {    
-    startsWith(searchString: string, endPosition?: number): boolean;
-    endsWith(searchString: string, endPosition?: number): boolean;
-};
-declare var FastClick: any;
-
 class Game {
     gdata: GameData;
     ui: UI;

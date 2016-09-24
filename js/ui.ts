@@ -1,3 +1,5 @@
+/// <reference path="igame.ts" />
+
 enum ChoiceKind {
     scene,
     action,

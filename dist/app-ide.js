@@ -35,6 +35,7 @@ var AKind;
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
 /// <reference path="igame-data.ts" />
+/// <reference path="igame-data.ts" />
 /// <reference path="igame.ts" />
 var GameStorage = (function () {
     function GameStorage() {
@@ -161,6 +162,7 @@ var GameStorage = (function () {
     });
     return GameStorage;
 }());
+;
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (searchString, position) {
         position = position || 0;

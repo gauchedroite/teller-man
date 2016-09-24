@@ -1,3 +1,4 @@
+;
 if (!String.prototype.startsWith) {
     String.prototype.startsWith = function (searchString, position) {
         position = position || 0;
@@ -15,6 +16,30 @@ if (!String.prototype.endsWith) {
         return lastIndex !== -1 && lastIndex === position;
     };
 }
+var ChunkKind;
+(function (ChunkKind) {
+    ChunkKind[ChunkKind["dialog"] = 0] = "dialog";
+    ChunkKind[ChunkKind["text"] = 1] = "text";
+    ChunkKind[ChunkKind["background"] = 2] = "background";
+    ChunkKind[ChunkKind["inline"] = 3] = "inline";
+    ChunkKind[ChunkKind["heading"] = 4] = "heading";
+    ChunkKind[ChunkKind["doo"] = 5] = "doo";
+    ChunkKind[ChunkKind["minigame"] = 6] = "minigame";
+    ChunkKind[ChunkKind["gameresult"] = 7] = "gameresult";
+    ChunkKind[ChunkKind["waitclick"] = 8] = "waitclick";
+})(ChunkKind || (ChunkKind = {}));
+var Op;
+(function (Op) {
+    Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
+    Op[Op["BLURB"] = 1] = "BLURB";
+    Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
+})(Op || (Op = {}));
+var OpAction;
+(function (OpAction) {
+    OpAction[OpAction["SHOWING_CHOICES"] = 0] = "SHOWING_CHOICES";
+    OpAction[OpAction["GAME_START"] = 1] = "GAME_START";
+    OpAction[OpAction["SHOWING_MOMENT"] = 2] = "SHOWING_MOMENT";
+})(OpAction || (OpAction = {}));
 var Kind;
 (function (Kind) {
     Kind[Kind["Moment"] = 0] = "Moment";
@@ -27,6 +52,7 @@ var AKind;
     AKind[AKind["Player"] = 0] = "Player";
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
+/// <reference path="igame.ts" />
 /// <reference path="igame-data.ts" />
 var GameData = (function () {
     function GameData() {
@@ -725,30 +751,7 @@ var GameData = (function () {
     });
     return GameData;
 }());
-var ChunkKind;
-(function (ChunkKind) {
-    ChunkKind[ChunkKind["dialog"] = 0] = "dialog";
-    ChunkKind[ChunkKind["text"] = 1] = "text";
-    ChunkKind[ChunkKind["background"] = 2] = "background";
-    ChunkKind[ChunkKind["inline"] = 3] = "inline";
-    ChunkKind[ChunkKind["heading"] = 4] = "heading";
-    ChunkKind[ChunkKind["doo"] = 5] = "doo";
-    ChunkKind[ChunkKind["minigame"] = 6] = "minigame";
-    ChunkKind[ChunkKind["gameresult"] = 7] = "gameresult";
-    ChunkKind[ChunkKind["waitclick"] = 8] = "waitclick";
-})(ChunkKind || (ChunkKind = {}));
-var Op;
-(function (Op) {
-    Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
-    Op[Op["BLURB"] = 1] = "BLURB";
-    Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
-})(Op || (Op = {}));
-var OpAction;
-(function (OpAction) {
-    OpAction[OpAction["SHOWING_CHOICES"] = 0] = "SHOWING_CHOICES";
-    OpAction[OpAction["GAME_START"] = 1] = "GAME_START";
-    OpAction[OpAction["SHOWING_MOMENT"] = 2] = "SHOWING_MOMENT";
-})(OpAction || (OpAction = {}));
+/// <reference path="igame.ts" />
 var ChoiceKind;
 (function (ChoiceKind) {
     ChoiceKind[ChoiceKind["scene"] = 0] = "scene";
@@ -1261,7 +1264,6 @@ var UI = (function () {
 /// <reference path="game-data.ts" />
 /// <reference path="igame.ts" />
 /// <reference path="ui.ts" />
-;
 var Game = (function () {
     function Game() {
         var _this = this;

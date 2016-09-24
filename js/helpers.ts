@@ -1,3 +1,9 @@
+interface String {    
+    startsWith(searchString: string, endPosition?: number): boolean;
+    endsWith(searchString: string, endPosition?: number): boolean;
+};
+
+declare var FastClick: any;
 
 if (!(<any>String).prototype.startsWith) {
     (<any>String).prototype.startsWith = function (searchString: string, position: number) {
@@ -17,4 +23,3 @@ if (!(<any>String).prototype.endsWith) {
         return lastIndex !== -1 && lastIndex === position;
     };
 }
-

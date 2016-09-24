@@ -1,3 +1,4 @@
+/// <reference path="igame.ts" />
 /// <reference path="igame-data.ts" />
 
 class GameData {
