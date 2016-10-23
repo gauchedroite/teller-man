@@ -631,6 +631,15 @@ var GameData = (function () {
         this.clearStorage = function () {
             localStorage.clear();
         };
+        this.clearState = function () {
+            localStorage.removeItem("state");
+        };
+        this.clearHistory = function () {
+            localStorage.removeItem("history");
+        };
+        this.clearContinueState = function () {
+            localStorage.removeItem("continueState");
+        };
     }
     Object.defineProperty(GameData.prototype, "game", {
         //
@@ -1272,39 +1281,10 @@ var Game = (function () {
         };
         this.startGame = function () {
             var run = function (isnew) {
-                if (isnew) {
-                    _this.gdata.history = []; //init the list of showned moments
-                    _this.gdata.continueState = null;
-                    var options = _this.gdata.options;
-                    if (options == undefined)
-                        options = {
-                            skipFileLoad: false,
-                            syncEditor: false,
-                            fastStory: false
-                        };
-                    _this.gdata.options = options;
-                    var state = { intro: true };
-                    state[_this.gdata.game.initialstate] = true;
-                    _this.gdata.state = state;
-                    _this.gameMan.raiseActionEvent(OpAction.GAME_START);
-                    _this.data = _this.gdata.loadGame();
-                    _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-                    _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
-                    if (_this.currentMoment != null) {
-                        setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
-                    }
-                    else {
-                        _this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", function () {
-                            _this.update(Op.BUILD_CHOICES);
-                        });
-                    }
-                }
-                else {
-                    _this.restoreContinueState();
-                    _this.ui.initScene(_this.parseScene(_this.currentScene), function () {
-                        _this.update(_this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
-                    });
-                }
+                if (isnew)
+                    _this.startNewGame();
+                else
+                    _this.continueExistingGame();
             };
             if (_this.gdata.moments.length == 0) {
                 _this.getDataFile("game/app.json", function (text) {
@@ -1317,7 +1297,54 @@ var Game = (function () {
                 run(false);
             }
         };
+        this.startNewGame = function () {
+            _this.gdata.history = []; //init the list of showed moments
+            _this.gdata.continueState = null;
+            var options = _this.gdata.options;
+            if (options == undefined)
+                options = {
+                    skipFileLoad: false,
+                    syncEditor: false,
+                    fastStory: false
+                };
+            _this.gdata.options = options;
+            var state = { intro: true };
+            state[_this.gdata.game.initialstate] = true;
+            _this.gdata.state = state;
+            _this.gameMan.raiseActionEvent(OpAction.GAME_START);
+            _this.data = _this.gdata.loadGame();
+            _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+            _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
+            if (_this.currentMoment != null) {
+                setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
+            }
+            else {
+                _this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", function () {
+                    _this.update(Op.BUILD_CHOICES);
+                });
+            }
+        };
+        this.continueExistingGame = function () {
+            _this.restoreContinueState();
+            _this.ui.initScene(_this.parseScene(_this.currentScene), function () {
+                _this.update(_this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+            });
+        };
         this.resumeGame = function () {
+        };
+        this.clearAllGameData = function () {
+            var options = _this.gdata.options;
+            if (options.skipFileLoad) {
+                _this.gdata.clearContinueState();
+                _this.gdata.clearHistory();
+                _this.gdata.clearState();
+                //
+                _this.startNewGame();
+            }
+            else {
+                _this.gdata.clearStorage();
+            }
+            _this.gdata.options = options;
         };
         this.update = function (op) {
             _this.data = _this.gdata.loadGame();

@@ -10,16 +10,15 @@ class GameMan {
     initialize = () => {
         let me = this;
         let game: any; //<Game>
+        let confirming = false;
 
         this.runner = new WebglRunner("vertex-shader", "fragment-shader");
         this.runner.run();
 
-        // We have to manually set the iframe source otherwise Chrome will get mixed up because the page and the frame use the same css. 
-        setTimeout(function() {
-            document.querySelector(".primo-limbo").classList.remove("hidden");
-            let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
-            gameFrame.setAttribute("src", "main.html");
-        }, 500);
+        // Set main game url
+        document.querySelector(".primo-limbo").classList.remove("hidden");
+        let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
+        gameFrame.setAttribute("src", "main.html");
 
         // START button
         document.querySelector(".start").addEventListener("click", () => {
@@ -38,6 +37,30 @@ class GameMan {
             me.runner.pause();
             document.querySelector(".menu").classList.remove("zoome");
             game.resumeGame();
+        });
+
+        // NEW GAME button
+        document.querySelector(".new-game div").addEventListener("click", (e) => {
+            if (confirming) {
+                me.runner.pause();
+                game.clearAllGameData();
+                location.reload(true);
+            }
+            else {
+                let div = document.querySelector(".new-game div");
+                div.classList.add("confirm");
+                div.querySelector("h3").innerText = "Votre progrès sera effacé. OK?";
+                confirming = true;
+            }
+            e.stopPropagation();
+        });
+
+        // Whole screen
+        document.querySelector(".menu-wrap").addEventListener("click", () => {
+            let div = document.querySelector(".new-game div");
+            div.classList.remove("confirm");
+            div.querySelector("h3").innerText = "Nouvelle partie";
+            confirming = false;
         });
     };
 

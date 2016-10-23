@@ -69,37 +69,47 @@ body {
   font-family: "My Pupcat";
   src: url(game/assets/pupcat__.ttf) format("truetype");
 }
-#game-man #canvas {
+body {
+  font-family: "Roboto Slab", serif;
+  color: rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+#canvas {
   position: absolute;
   height: 100%;
   width: 100%;
 }
-#game-man .menu {
+.menu {
   position: absolute;
   width: 100%;
   height: 100%;
   opacity: 1;
   transition: opacity 0.5s ease;
 }
-#game-man .menu .menu-wrap {
+.menu .menu-wrap {
   position: absolute;
   width: 100%;
   height: 100%;
   transform: scale(0.5);
   transition: all .25s;
 }
-#game-man .menu .menu-wrap .top-row {
+.menu .menu-wrap .top-row {
   position: absolute;
   width: 100%;
   height: 32%;
 }
-#game-man .menu .menu-wrap .center-row {
+.menu .menu-wrap .center-row {
   position: absolute;
   top: 32%;
   width: 100%;
   height: 60%;
 }
-#game-man .menu .menu-wrap .center-row .right-box {
+.menu .menu-wrap .center-row .right-box {
   position: absolute;
   width: calc(75% - 8px);
   height: 100%;
@@ -108,7 +118,7 @@ body {
   flex-direction: column;
   justify-content: space-between;
 }
-#game-man .menu .menu-wrap .center-row .right-box div {
+.menu .menu-wrap .center-row .right-box > div {
   height: calc(25% - 6px);
   width: 100%;
   background-color: #e0e0e0;
@@ -116,46 +126,48 @@ body {
   border: 8px solid #8a7c72;
   padding: 8px;
 }
-#game-man .menu .menu-wrap .bottom-row {
+.menu .menu-wrap .bottom-row {
   position: absolute;
   top: 92%;
   width: 100%;
   height: 25%;
 }
-#game-man .menu .row-wrap {
+.menu .row-wrap {
   position: absolute;
   height: 100%;
   width: 100%;
 }
-#game-man .menu .row-wrap .left-content {
+.menu .row-wrap .left-content {
   position: absolute;
   width: 8%;
   height: 100%;
 }
-#game-man .menu .row-wrap .center-content {
+.menu .row-wrap .center-content {
   position: absolute;
   left: 8%;
   width: 60%;
   height: 100%;
 }
-#game-man .menu .row-wrap .right-content {
+.menu .row-wrap .right-content {
   position: absolute;
   left: 68%;
   width: 32%;
   height: 100%;
 }
-#game-man .menu .game-wrap {
+.menu .game-wrap {
   position: absolute;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
-#game-man .menu .game-wrap .game-content {
+.menu .game-wrap .game-content {
   position: relative;
   width: 100%;
   height: 100%;
   transition: all .25s;
+  pointer-events: auto;
 }
-#game-man .menu .game-wrap .game-content iframe {
+.menu .game-wrap .game-content iframe {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -164,7 +176,7 @@ body {
   margin: 0;
   overflow: hidden;
 }
-#game-man .menu .game-wrap .game-content .frame-overlay {
+.menu .game-wrap .game-content .frame-overlay {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -174,7 +186,7 @@ body {
   background-color: transparent;
   transition: all .25s;
 }
-#game-man .menu .game-wrap .game-content .play {
+.menu .game-wrap .game-content .play {
   position: absolute;
   opacity: 0;
   width: 150px;
@@ -185,8 +197,9 @@ body {
   margin: -90px;
   border-radius: 90px;
   transition: opacity .1s;
+  cursor: pointer;
 }
-#game-man .menu .game-wrap .game-content .play:after {
+.menu .game-wrap .game-content .play:after {
   content: "";
   position: absolute;
   border-top: 36px solid transparent;
@@ -195,48 +208,50 @@ body {
   top: 42px;
   left: 54px;
 }
-#game-man .menu.zoome .menu-wrap {
+.menu .game-wrap .game-content .play:hover {
+  border: 12px solid rgba(255, 255, 255, 0.85);
+}
+.menu .game-wrap .game-content .play:hover:after {
+  border-left: 60px solid rgba(255, 255, 255, 0.85);
+}
+.menu.zoome .menu-wrap {
   transform: scale(1);
 }
-#game-man .menu.zoome .game-content {
+.menu.zoome .game-content {
   transform: scale(0.6) translate(-20%, 20%);
 }
-#game-man .menu.zoome .game-content .frame-overlay {
+.menu.zoome .game-content .frame-overlay {
   pointer-events: auto;
   background-color: rgba(0, 0, 0, 0.65);
-  /*
-                    background: linear-gradient(
-                        to bottom,
-                        rgba(0,0,0,0.2),
-                        rgba(0,0,0,0.2) 50%,
-                        rgba(0,0,0,0) 50%,
-                        rgba(0,0,0,0)
-                    );
-                    background-size: 100% 12px;
-                    */
   border: 24px solid #728a7c;
 }
-#game-man .menu.zoome .game-content .play {
+.menu.zoome .game-content .play {
   opacity: 1;
 }
-#game-man .menu .title-inner {
-  position: absolute;
+.menu .title-inner {
+  position: relative;
   box-sizing: border-box;
   padding-left: 12px;
   padding-top: 20%;
   height: 100%;
 }
-#game-man .menu .title-inner h1,
-#game-man .menu .title-inner h2 {
+.menu .title-inner div {
+  position: absolute;
+  width: 100%;
+  height: 80%;
+  bottom: 0;
+}
+.menu .title-inner div h1,
+.menu .title-inner div h2 {
   text-shadow: 0 4px 3px rgba(0, 0, 0, 0.4), 0 8px 13px rgba(0, 0, 0, 0.1), 0 18px 23px rgba(0, 0, 0, 0.1);
 }
-#game-man .menu .title-inner h1 {
+.menu .title-inner div h1 {
   font-family: 'Bungee', cursive;
   font-size: 48pt;
   line-height: 48pt;
   color: white;
 }
-#game-man .menu .title-inner h2 {
+.menu .title-inner div h2 {
   font-family: 'Merriweather', serif;
   font-style: italic;
   font-size: 18pt;
@@ -244,10 +259,47 @@ body {
   letter-spacing: 0.22em;
   color: white;
 }
-#game-man .menu.hidden {
+.menu .new-game {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+.menu .new-game > div {
+  position: absolute;
+  top: 20%;
+  font-size: 16pt;
+  color: #e0e0e0;
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 6px;
+}
+.menu .new-game > div.confirm {
+  background-color: red;
+}
+.menu .new-game > div .quit {
+  width: 40px;
+  height: 40px;
+  border: 6px solid #e0e0e0;
+  border-radius: 40px;
+  float: left;
+}
+.menu .new-game > div .quit:after {
+  content: "";
+  position: absolute;
+  border: 8px solid #e0e0e0;
+  top: 24px;
+  left: 24px;
+}
+.menu .new-game > div h3 {
+  margin: 15px 0 0 65px;
+}
+.menu .new-game > div:hover {
+  opacity: 1;
+}
+.menu.hidden {
   display: none;
 }
-#game-man .primo-limbo {
+.primo-limbo {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -256,24 +308,24 @@ body {
   opacity: 1;
   transition: opacity 0.5s ease;
 }
-#game-man .primo-limbo .wrapper {
+.primo-limbo .wrapper {
   position: absolute;
   left: 10%;
   top: 30%;
 }
-#game-man .primo-limbo .wrapper h1,
-#game-man .primo-limbo .wrapper h2 {
+.primo-limbo .wrapper h1,
+.primo-limbo .wrapper h2 {
   margin: 0;
   padding: 0;
   text-shadow: 0 4px 3px rgba(0, 0, 0, 0.4), 0 8px 13px rgba(0, 0, 0, 0.1), 0 18px 23px rgba(0, 0, 0, 0.1);
 }
-#game-man .primo-limbo .wrapper h1 {
+.primo-limbo .wrapper h1 {
   font-family: 'Bungee', cursive;
   font-size: 48pt;
   line-height: 48pt;
   color: #e0e0e0;
 }
-#game-man .primo-limbo .wrapper h2 {
+.primo-limbo .wrapper h2 {
   font-family: 'Merriweather', serif;
   font-style: italic;
   font-size: 18pt;
@@ -281,7 +333,7 @@ body {
   letter-spacing: 0.22em;
   color: white;
 }
-#game-man .primo-limbo .wrapper .start {
+.primo-limbo .wrapper .start {
   position: absolute;
   width: 100px;
   height: 100px;
@@ -294,7 +346,7 @@ body {
   opacity: 0.6;
   transition: all 0.15s ease;
 }
-#game-man .primo-limbo .wrapper .start:after {
+.primo-limbo .wrapper .start:after {
   content: "";
   position: absolute;
   border-top: 24px solid transparent;
@@ -303,26 +355,26 @@ body {
   top: 28px;
   left: 36px;
 }
-#game-man .primo-limbo .wrapper .start:hover {
+.primo-limbo .wrapper .start:hover {
   opacity: 1;
   background-color: initial;
 }
-#game-man .primo-limbo.hidden {
+.primo-limbo.hidden {
   opacity: 0;
   pointer-events: none;
 }
-#game-man .studio {
+.studio {
   position: absolute;
   bottom: 0;
   width: 100%;
   height: 80px;
 }
-#game-man .studio .studio-inner {
+.studio .studio-inner {
   width: 150px;
   height: 100%;
   float: right;
 }
-#game-man .studio text:nth-child(1) {
+.studio text:nth-child(1) {
   font-family: "My Magneto";
   font-size: 24pt;
   fill: yellow;
@@ -330,7 +382,7 @@ body {
   stroke-width: 0.25pt;
   stroke-linejoin: round;
 }
-#game-man .studio text:nth-child(2) {
+.studio text:nth-child(2) {
   font-family: "My Pupcat";
   font-size: 18pt;
   fill: rgba(255, 255, 255, 0.9);

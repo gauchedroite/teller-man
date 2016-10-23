@@ -668,6 +668,10 @@ class GameData {
         localStorage.setItem("state", JSON.stringify(moms));
     }
 
+    clearState = () => {
+        localStorage.removeItem("state");
+    }
+
     //
     // history
     //
@@ -677,6 +681,10 @@ class GameData {
 
     set history(mids: Array<number>) {
         localStorage.setItem("history", JSON.stringify(mids));
+    }
+
+    clearHistory = () => {
+        localStorage.removeItem("history");
     }
 
     //
@@ -699,5 +707,9 @@ class GameData {
 
     set continueState(moms: any) {
         localStorage.setItem("continueState", JSON.stringify(moms));
+    }
+
+    clearContinueState = () => {
+        localStorage.removeItem("continueState");
     }
 }

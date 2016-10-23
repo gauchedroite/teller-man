@@ -30,42 +30,10 @@ class Game {
 
     startGame = () => {
         const run = (isnew: boolean) => {
-            if (isnew) {
-                this.gdata.history = [];    //init the list of showned moments
-                this.gdata.continueState = null;
-
-                let options = this.gdata.options;
-                if (options == undefined) options = <IOptions>{ 
-                    skipFileLoad: false,
-                    syncEditor: false,
-                    fastStory: false
-                };
-                this.gdata.options = options;
-
-                let state = { intro: true };
-                state[this.gdata.game.initialstate] = true;
-                this.gdata.state = state;
-
-                this.gameMan.raiseActionEvent(OpAction.GAME_START);
-
-                this.data = this.gdata.loadGame();
-                this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-                this.currentMoment = this.selectOne(this.getAllPossibleEverything());
-                if (this.currentMoment != null) {
-                    setTimeout(() => { this.update(Op.CURRENT_MOMENT); }, 0);
-                }
-                else {
-                    this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", () => {
-                        this.update(Op.BUILD_CHOICES);
-                    });
-                }
-            }
-            else {
-                this.restoreContinueState();
-                this.ui.initScene(this.parseScene(this.currentScene), () => {
-                    this.update(this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
-                });
-            }
+            if (isnew)
+                this.startNewGame();
+            else
+                this.continueExistingGame();
         };
 
         if (this.gdata.moments.length == 0) {
@@ -79,7 +47,60 @@ class Game {
         }
     };
 
+    private startNewGame = () => {
+        this.gdata.history = [];    //init the list of showed moments
+        this.gdata.continueState = null;
+
+        let options = this.gdata.options;
+        if (options == undefined) options = <IOptions>{ 
+            skipFileLoad: false,
+            syncEditor: false,
+            fastStory: false
+        };
+        this.gdata.options = options;
+
+        let state = { intro: true };
+        state[this.gdata.game.initialstate] = true;
+        this.gdata.state = state;
+
+        this.gameMan.raiseActionEvent(OpAction.GAME_START);
+
+        this.data = this.gdata.loadGame();
+        this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+        this.currentMoment = this.selectOne(this.getAllPossibleEverything());
+        if (this.currentMoment != null) {
+            setTimeout(() => { this.update(Op.CURRENT_MOMENT); }, 0);
+        }
+        else {
+            this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", () => {
+                this.update(Op.BUILD_CHOICES);
+            });
+        }
+    };
+
+    private continueExistingGame = () => {
+        this.restoreContinueState();
+        this.ui.initScene(this.parseScene(this.currentScene), () => {
+            this.update(this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+        });
+    };
+
     resumeGame = () => {
+    };
+
+    clearAllGameData = () => {
+        var options = this.gdata.options;
+        if (options.skipFileLoad) {
+            this.gdata.clearContinueState();
+            this.gdata.clearHistory();
+            this.gdata.clearState();
+            //
+            this.startNewGame();
+        }
+        else {
+            this.gdata.clearStorage();
+        }
+        this.gdata.options = options;
     };
 
     update = (op: Op): void => {

@@ -21,173 +21,181 @@ body {
     src: url(game/assets/pupcat__.ttf) format("truetype");
 }
 
+body {
+    font-family: "Roboto Slab", serif;
+    color: rgba(0, 0, 0, 0.8);
+    overflow: hidden;
+    .noselect;
+}
 
-#game-man {
-        
-    #canvas {
+#canvas {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.menu {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+    //background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
+
+    .menu-wrap {
         position: absolute;
-        height: 100%;
         width: 100%;
+        height: 100%;
+        transform: scale(0.5);
+        transition: all .25s;
+        .top-row {
+            position: absolute;
+            width: 100%;
+            height: 32%;
+        }
+        .center-row {
+            position: absolute;
+            top: 32%;
+            width: 100%;
+            height: 60%;
+            .right-box {
+                position: absolute;
+                width: calc(75% - 8px);
+                height: 100%;
+                display: flex;
+                margin-left: 8px;
+                flex-direction: column;
+                justify-content: space-between;
+                &>div {
+                    height: calc(25% - 6px);
+                    width: 100%;
+                    background-color: #e0e0e0;
+                    box-sizing: border-box;
+                    border: 8px solid #8a7c72; //gradient mid color (triadic)
+                    padding: 8px;
+                }
+            }
+        }
+        .bottom-row {
+            position: absolute;
+            top: 92%;
+            width: 100%;
+            height: 25%;
+        }
     }
 
-    .menu {
+    .row-wrap {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        .left-content {
+            position: absolute;
+            width: 8%;
+            height: 100%;
+        }
+        .center-content {
+            position: absolute;
+            left: 8%;
+            width: 60%;
+            height: 100%;
+        }
+        .right-content {
+            position: absolute;
+            left: 68%;
+            width: 32%;
+            height: 100%;
+        }
+    }
+
+    .game-wrap {
         position: absolute;
         width: 100%;
         height: 100%;
-        opacity: 1;
-        transition: opacity 0.5s ease;
-        //background: linear-gradient(to bottom, #1e528e 0%, #728a7c 50%, #e9ce5d 100%);
-
-        .menu-wrap {
-            position: absolute;
+        pointer-events: none;
+        .game-content {
+            position: relative;
             width: 100%;
             height: 100%;
-            transform: scale(0.5);
             transition: all .25s;
-            .top-row {
+            pointer-events: auto;
+            iframe {
                 position: absolute;
                 width: 100%;
-                height: 32%;
-            }
-            .center-row {
-                position: absolute;
-                top: 32%;
-                width: 100%;
-                height: 60%;
-                .right-box {
-                    position: absolute;
-                    width: calc(75% - 8px);
-                    height: 100%;
-                    display: flex;
-                    margin-left: 8px;
-                    flex-direction: column;
-                    justify-content: space-between;
-                    div {
-                        height: calc(25% - 6px);
-                        width: 100%;
-                        background-color: #e0e0e0;
-                        box-sizing: border-box;
-                        border: 8px solid #8a7c72; //gradient mid color (triadic)
-                        padding: 8px;
-                    }
-                }
-            }
-            .bottom-row {
-                position: absolute;
-                top: 92%;
-                width: 100%;
-                height: 25%;
-            }
-        }
-
-        .row-wrap {
-            position: absolute;
-            height: 100%;
-            width: 100%;
-            .left-content {
-                position: absolute;
-                width: 8%;
                 height: 100%;
+                border: 0;
+                padding: 0;
+                margin: 0;
+                overflow: hidden;
             }
-            .center-content {
+            .frame-overlay {
                 position: absolute;
-                left: 8%;
-                width: 60%;
-                height: 100%;
-            }
-            .right-content {
-                position: absolute;
-                left: 68%;
-                width: 32%;
-                height: 100%;
-            }
-        }
-
-        .game-wrap {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            .game-content {
-                position: relative;
                 width: 100%;
                 height: 100%;
+                border: 0;
+                box-sizing: border-box;
+                pointer-events: none;
+                background-color: transparent;
                 transition: all .25s;
-                iframe {
+            }
+            .play {
+                position: absolute;
+                opacity: 0;
+                width: 150px;
+                height: 150px;
+                border: 12px solid rgba(255,255,255,0.5);
+                top: 50%;
+                right: 50%;
+                margin: -90px;
+                border-radius: 90px;
+                transition: opacity .1s;
+                cursor: pointer;
+                &:after {
+                    content: "";
                     position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    border: 0;
-                    padding: 0;
-                    margin: 0;
-                    overflow: hidden;
+                    border-top: 36px solid transparent;
+                    border-bottom: 36px solid transparent;
+                    border-left: 60px solid rgba(255,255,255,0.5);
+                    top: 42px;
+                    left: 54px;
                 }
-                .frame-overlay {
-                    position: absolute;
-                    width: 100%;
-                    height: 100%;
-                    border: 0;
-                    box-sizing: border-box;
-                    pointer-events: none;
-                    background-color: transparent;
-                    transition: all .25s;
-                }
-                .play {
-                    position: absolute;
-                    opacity: 0;
-                    width: 150px;
-                    height: 150px;
-                    border: 12px solid rgba(255,255,255,0.5);
-                    top: 50%;
-                    right: 50%;
-                    margin: -90px;
-                    border-radius: 90px;
-                    transition: opacity .1s;
+                &:hover {
+                    border: 12px solid rgba(255,255,255,0.85);
                     &:after {
-                        content: "";
-                        position: absolute;
-                        border-top: 36px solid transparent;
-                        border-bottom: 36px solid transparent;
-                        border-left: 60px solid rgba(255,255,255,0.5);
-                        top: 42px;
-                        left: 54px;
+                        border-left: 60px solid rgba(255,255,255,0.85);
                     }
                 }
             }
         }
+    }
 
-        &.zoome {
-            .menu-wrap {
-                transform: scale(1);
+    &.zoome {
+        .menu-wrap {
+            transform: scale(1);
+        }
+        .game-content{
+            transform: scale(0.6) translate(-20%, 20%);
+            .frame-overlay {
+                pointer-events: auto;
+                background-color: rgba(0, 0, 0, 0.65);
+                border: 24px solid #728a7c; //gradient mid color
             }
-            .game-content{
-                transform: scale(0.6) translate(-20%, 20%);
-                .frame-overlay {
-                    pointer-events: auto;
-                    background-color: rgba(0, 0, 0, 0.65);
-                    /*
-                    background: linear-gradient(
-                        to bottom,
-                        rgba(0,0,0,0.2),
-                        rgba(0,0,0,0.2) 50%,
-                        rgba(0,0,0,0) 50%,
-                        rgba(0,0,0,0)
-                    );
-                    background-size: 100% 12px;
-                    */
-                    border: 24px solid #728a7c; //gradient mid color
-                }
-                .play {
-                    opacity: 1;
-                }
+            .play {
+                opacity: 1;
             }
         }
+    }
 
-        .title-inner {
+    .title-inner {
+        position: relative;
+        box-sizing: border-box;
+        padding-left: 12px;
+        padding-top: 20%;
+        height: 100%;
+        div {
             position: absolute;
-            box-sizing: border-box;
-            padding-left: 12px;
-            padding-top: 20%;
-            height: 100%;
+            width: 100%;
+            height: 80%;
+            bottom: 0;
             h1, h2 {
                 text-shadow: 0 4px 3px rgba(0,0,0,0.4), 0 8px 13px rgba(0,0,0,0.1), 0 18px 23px rgba(0,0,0,0.1);
             }
@@ -206,100 +214,137 @@ body {
                 color: white;
             }
         }
-
-        &.hidden {
-            display: none;
-        }
     }
 
-    .primo-limbo {
-        position: absolute;
-        width: 100%;
+    .new-game {
+        position: relative;
         height: 100%;
-        background: no-repeat center center fixed;
-        background-size: cover;
-        opacity: 1;
-        transition: opacity 0.5s ease;
-        .wrapper {
+        width: 100%;
+        &>div {
             position: absolute;
-            left: 10%;
-            top: 30%;
-            h1, h2, { 
-                margin: 0; 
-                padding: 0; 
-                text-shadow: 0 4px 3px rgba(0,0,0,0.4), 0 8px 13px rgba(0,0,0,0.1), 0 18px 23px rgba(0,0,0,0.1);
-                //text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px black, 0 0 30px black, 0 0 40px black, 0 0 50px black, 0 0 75px black;
+            top: 20%;
+            font-size: 16pt;
+            color: #e0e0e0;
+            opacity: 0.5;
+            cursor: pointer;
+            padding: 6px;
+            &.confirm {
+                background-color: red;
             }
-            h1 {
-                font-family: 'Bungee', cursive;
-                font-size: 48pt;
-                line-height: 48pt;
-                color: #e0e0e0;
-            }
-            h2 {
-                font-family: 'Merriweather', serif;
-                font-style: italic;
-                font-size: 18pt;
-                line-height: 28pt;
-                letter-spacing: 0.22em;
-                color: white;
-            }
-            .start {
-                position: absolute;
-                width: 100px;
-                height: 100px;
-                margin-top: 75px;
-                margin-left: 150px;
-                border: 10px solid rgba(255,255,255,1);
-                border-radius: 90px;
-                box-shadow: 0 0 6px 6px rgba(0,0,0,0.25);
-                background-color: rgba(0,0,0,0.25);
-                opacity: 0.6;
-                transition: all 0.15s ease;
+            .quit {
+                width: 40px;
+                height: 40px;
+                border: 6px solid #e0e0e0;
+                border-radius: 40px;
+                float: left;
                 &:after {
                     content: "";
                     position: absolute;
-                    border-top: 24px solid transparent;
-                    border-bottom: 24px solid transparent;
-                    border-left: 40px solid rgba(255,255,255,1);
-                    top: 28px;
-                    left: 36px;
-                }
-                &:hover {
-                    opacity: 1;
-                    background-color: initial;
+                    border: 8px solid #e0e0e0;
+                    top: 24px;
+                    left: 24px;
                 }
             }
-        }
-        &.hidden {
-            opacity: 0;
-            pointer-events: none;
+            h3 {
+                margin: 15px 0 0 65px; 
+            }
+            &:hover {
+                opacity: 1;
+            }
         }
     }
 
-    .studio {
+    &.hidden {
+        display: none;
+    }
+}
+
+.primo-limbo {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: no-repeat center center fixed;
+    background-size: cover;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+    .wrapper {
         position: absolute;
-        bottom: 0;
-        width: 100%;
-        height: 80px;
-        .studio-inner {
-            width: 150px;
-            height: 100%;
-            float: right;
+        left: 10%;
+        top: 30%;
+        h1, h2, { 
+            margin: 0; 
+            padding: 0; 
+            text-shadow: 0 4px 3px rgba(0,0,0,0.4), 0 8px 13px rgba(0,0,0,0.1), 0 18px 23px rgba(0,0,0,0.1);
+            //text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px black, 0 0 30px black, 0 0 40px black, 0 0 50px black, 0 0 75px black;
         }
-        text:nth-child(1) {
-            font-family: "My Magneto";
-            font-size: 24pt;
-            fill: yellow;
-            stroke: lime;
-            stroke-width: 0.25pt;
-            stroke-linejoin: round;
+        h1 {
+            font-family: 'Bungee', cursive;
+            font-size: 48pt;
+            line-height: 48pt;
+            color: #e0e0e0;
         }
-        text:nth-child(2) {
-            font-family: "My Pupcat";
+        h2 {
+            font-family: 'Merriweather', serif;
+            font-style: italic;
             font-size: 18pt;
-            fill: rgba(255, 255, 255, 0.9);
+            line-height: 28pt;
+            letter-spacing: 0.22em;
+            color: white;
+        }
+        .start {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            margin-top: 75px;
+            margin-left: 150px;
+            border: 10px solid rgba(255,255,255,1);
+            border-radius: 90px;
+            box-shadow: 0 0 6px 6px rgba(0,0,0,0.25);
+            background-color: rgba(0,0,0,0.25);
+            opacity: 0.6;
+            transition: all 0.15s ease;
+            &:after {
+                content: "";
+                position: absolute;
+                border-top: 24px solid transparent;
+                border-bottom: 24px solid transparent;
+                border-left: 40px solid rgba(255,255,255,1);
+                top: 28px;
+                left: 36px;
+            }
+            &:hover {
+                opacity: 1;
+                background-color: initial;
+            }
         }
     }
+    &.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
 
+.studio {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 80px;
+    .studio-inner {
+        width: 150px;
+        height: 100%;
+        float: right;
+    }
+    text:nth-child(1) {
+        font-family: "My Magneto";
+        font-size: 24pt;
+        fill: yellow;
+        stroke: lime;
+        stroke-width: 0.25pt;
+        stroke-linejoin: round;
+    }
+    text:nth-child(2) {
+        font-family: "My Pupcat";
+        font-size: 18pt;
+        fill: rgba(255, 255, 255, 0.9);
+    }
 }
