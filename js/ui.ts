@@ -19,31 +19,6 @@ class UI {
     sections: Array<string>;
 
     constructor () {
-        //menu
-        // let menu = <HTMLDivElement>document.querySelector(".menu");
-        // let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
-        // menuFrame.setAttribute("src", `game/${menuPage}`);
-        // const configure = () => {
-        //     var run = (<any>menuFrame.contentWindow).TellerRun;
-        //     if (run == undefined) return setTimeout(configure, 100);
-        //     run({}, (result: any) => {
-        //         if (result.menu == "ready") {
-        //             var preloader = <HTMLDivElement>document.querySelector(".preloader");
-        //             setTimeout(() => { 
-        //                 preloader.style.opacity = "0";
-        //                 preloader.addEventListener("transitionend", function done() {
-        //                     preloader.removeEventListener("transitionend", done);
-        //                     preloader.classList.remove("full-white");
-        //                     preloader.removeAttribute("style");
-        //                     var studio = <HTMLDivElement>preloader.querySelector(".studio");
-        //                     studio.style.display = "none";
-        //                 });
-        //             }, 750);
-        //             setTimeout(ready, 0);
-        //         }
-        //     });
-        // };
-        // configure();
     }
 
     initialize = (onmenu: () => void) => {
@@ -344,26 +319,6 @@ class UI {
         var content = <HTMLDivElement>document.querySelector(".content-inner");
         content.innerHTML = "";
     };
-
-    // showMenu = (opNewGame: Op, opContinue: Op, onmenu: (choice: Op) => void) => {
-    //     let menu = <HTMLElement>document.querySelector(".menu");
-    //     let menuFrame = <HTMLIFrameElement>menu.firstElementChild;
-    //     menu.style.right = "0";
-
-    //     var options: any = { continue: "disabled" };
-    //     if (opContinue != undefined) options.continue = "enabled";
-
-    //     var run = (<any>menuFrame.contentWindow).TellerRun;
-    //     run(options, (result: any) => {
-    //         if (result.menu == "continue") {
-    //             menu.style.right = "100%";
-    //             setTimeout(() => { onmenu(opContinue); }, 250);
-    //         }
-    //         else if (result.menu == "new-game") {
-    //             setTimeout(() => { onmenu(opNewGame); }, 500);
-    //         }
-    //     });
-    // };
 
     changeBackground = (assetName: string, callback: () => void) => {
         if (assetName == undefined) return callback();

@@ -274,7 +274,8 @@ body {
   padding: 6px;
 }
 .menu .new-game > div.confirm {
-  background-color: red;
+  background-color: #c83c32;
+  border-radius: 8px;
 }
 .menu .new-game > div .quit {
   width: 40px;
