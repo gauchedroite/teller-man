@@ -357,7 +357,7 @@ class UI2 implements IUI {
     private setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
         let minigame = <IMiniGame>chunk;
         let game = <HTMLDivElement>document.querySelector(".game");
-        let story = document.querySelector(".story-inner");
+        let inner = document.querySelector(".story-inner");
         let panel = <HTMLDivElement>document.querySelector(".choice-panel");
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
         let ready = false;
@@ -366,7 +366,7 @@ class UI2 implements IUI {
             if (result.ready != undefined) { 
                 if (fadedout) {
                     game.classList.add("show");
-                    story.classList.add("retracted");
+                    inner.classList.add("retracted");
                     this.fader(false);
                     preloader.classList.remove("change-bg");
                 }
@@ -374,7 +374,7 @@ class UI2 implements IUI {
             }
             else {
                 game.classList.remove("show");
-                story.classList.remove("retracted");
+                inner.classList.remove("retracted");
                 panel.classList.remove("disabled");
                 this.hideChoices(() => {
                     let text = (result.win == true ? minigame.winText : minigame.loseText);
@@ -391,7 +391,7 @@ class UI2 implements IUI {
         this.showChoices(choices, (chosen: IChoice) => {
             if (ready) { 
                 game.classList.add("show");
-                story.classList.add("retracted");
+                inner.classList.add("retracted");
             }
             else {
                 fadedout = true;

@@ -10,7 +10,8 @@
     "url": "git://github.com/gauchedroite/teller-man.git"
   },
   "config": {
-    "tsc": "-t ES5 -m system --sourceMap --noImplicitAny --suppressImplicitAnyIndexErrors --lib dom,es2015.promise,es5"
+    "tsc": "-t ES5 -m system --sourceMap --noImplicitAny --suppressImplicitAnyIndexErrors --lib dom,es2015.promise,es5",
+    "ui": "css/app-ui2.less"
   },
   "scripts": {
     "tsc": "tsc %npm_package_config_tsc% --outFile dist/app.js js/game.ts",
@@ -23,7 +24,7 @@
     "tsc-ide:w": "npm run tsc-ide -- -w",
     "tsc-edit:w": "npm run tsc-edit -- -w",
 
-    "less": "lessc --strict-math=on css/app.less dist/app.css",
+    "less": "lessc --strict-math=on %npm_package_config_ui% dist/app.css",
     "less:w": "nodemon -e less -w ./ -x \"npm run less\"",
     "less-man": "lessc --strict-math=on css/game-man.less dist/app-man.css",
     "less-man:w": "nodemon -e less -w ./ -x \"npm run less-man\"",

@@ -1550,7 +1550,7 @@ var UI2 = (function () {
         this.setupMinigame = function (chunk, callback) {
             var minigame = chunk;
             var game = document.querySelector(".game");
-            var story = document.querySelector(".story-inner");
+            var inner = document.querySelector(".story-inner");
             var panel = document.querySelector(".choice-panel");
             var preloader = document.querySelector(".preloader");
             var ready = false;
@@ -1559,7 +1559,7 @@ var UI2 = (function () {
                 if (result.ready != undefined) {
                     if (fadedout) {
                         game.classList.add("show");
-                        story.classList.add("retracted");
+                        inner.classList.add("retracted");
                         _this.fader(false);
                         preloader.classList.remove("change-bg");
                     }
@@ -1567,7 +1567,7 @@ var UI2 = (function () {
                 }
                 else {
                     game.classList.remove("show");
-                    story.classList.remove("retracted");
+                    inner.classList.remove("retracted");
                     panel.classList.remove("disabled");
                     _this.hideChoices(function () {
                         var text = (result.win == true ? minigame.winText : minigame.loseText);
@@ -1584,7 +1584,7 @@ var UI2 = (function () {
             _this.showChoices(choices, function (chosen) {
                 if (ready) {
                     game.classList.add("show");
-                    story.classList.add("retracted");
+                    inner.classList.add("retracted");
                 }
                 else {
                     fadedout = true;
