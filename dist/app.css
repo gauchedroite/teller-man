@@ -108,14 +108,33 @@ iframe {
     background: rgba(0, 0, 0, 0.1);
   }
 }
-html,
-body {
+html#teller-ui {
+  /*.menu {
+        z-index: 20;
+        position: absolute;
+        top: 0;
+        right: 100%;
+        width: 100%;
+        height: 100%;
+        transition: right 0.25s ease, opacity 0.25s ease;
+        iframe {
+            border: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+    }*/
+}
+html#teller-ui,
+html#teller-ui body {
   position: relative;
   height: 100%;
   width: 100%;
   overflow-x: hidden;
 }
-body {
+html#teller-ui body {
   font-family: "Roboto Slab", serif;
   color: rgba(0, 0, 0, 0.8);
   overflow: hidden;
@@ -125,7 +144,7 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
 }
-.story {
+html#teller-ui .story {
   z-index: 10;
   position: absolute;
   width: 100%;
@@ -133,20 +152,20 @@ body {
   overflow: hidden;
   pointer-events: none;
 }
-.story-inner {
+html#teller-ui .story-inner {
   position: absolute;
   overflow: hidden;
   background-color: black;
   pointer-events: auto;
 }
-.graphics {
+html#teller-ui .graphics {
   position: absolute;
   width: 100%;
   height: 100%;
   display: block;
   transition: opacity 0.75s ease;
 }
-.graphics iframe {
+html#teller-ui .graphics iframe {
   border: 0;
   padding: 0;
   margin: 0;
@@ -154,15 +173,15 @@ body {
   width: 100%;
   height: 100%;
 }
-.graphics.game {
+html#teller-ui .graphics.game {
   opacity: 0;
   z-index: 0;
 }
-.graphics.game.show {
+html#teller-ui .graphics.game.show {
   opacity: 1;
   z-index: 2;
 }
-.navbar {
+html#teller-ui .navbar {
   position: absolute;
   top: 0;
   left: 0;
@@ -173,14 +192,14 @@ body {
   color: orange;
   font-size: large;
 }
-.navbar .navbar-inner {
+html#teller-ui .navbar .navbar-inner {
   position: absolute;
   width: 100%;
   bottom: 0;
   display: flex;
   justify-content: space-between;
 }
-.navbar .navbar-inner div.title {
+html#teller-ui .navbar .navbar-inner div.title {
   cursor: default;
   padding: 0 0 8px 16px;
   overflow: hidden;
@@ -188,19 +207,19 @@ body {
   white-space: nowrap;
   margin-right: 10px;
 }
-.navbar .navbar-inner div.title i:after {
+html#teller-ui .navbar .navbar-inner div.title i:after {
   content: " ";
 }
-.navbar .navbar-inner div.goto-menu {
+html#teller-ui .navbar .navbar-inner div.goto-menu {
   padding: 0 16px 8px 0;
   font-size: 16px;
   color: orange;
   cursor: pointer;
 }
-.navbar .navbar-inner div.title i {
+html#teller-ui .navbar .navbar-inner div.title i {
   color: orange;
 }
-.content {
+html#teller-ui .content {
   position: absolute;
   top: 36px;
   height: calc(100% - 36px);
@@ -211,40 +230,40 @@ body {
   -ms-overflow-style: none;
   transition: opacity 0.25s ease;
 }
-.content::-webkit-scrollbar {
+html#teller-ui .content::-webkit-scrollbar {
   display: none;
 }
-.content .content-spacer {
+html#teller-ui .content .content-spacer {
   height: 36px;
   width: 100%;
 }
-.content .content-inner {
+html#teller-ui .content .content-inner {
   padding: 16px 0;
   line-height: 1.4em;
 }
-.content .content-inner p {
+html#teller-ui .content .content-inner p {
   padding-bottom: 12px;
 }
-.content.overlay {
+html#teller-ui .content.overlay {
   opacity: 0.5;
   transition: opacity 0.25s ease;
 }
-section {
+html#teller-ui section {
   font-size: large;
   padding: 8px 0;
 }
-section.text {
+html#teller-ui section.text {
   padding: 8px 24px;
 }
-section.text p {
+html#teller-ui section.text p {
   padding-bottom: 12px;
 }
-section.dialog {
+html#teller-ui section.dialog {
   position: relative;
   padding: 8px 24px;
 }
-section.dialog .head-placeholder,
-section.dialog .head {
+html#teller-ui section.dialog .head-placeholder,
+html#teller-ui section.dialog .head {
   position: absolute;
   width: 75px;
   height: 75px;
@@ -253,55 +272,55 @@ section.dialog .head {
   background: #c4c4c4;
   border-radius: 40px;
 }
-section.dialog .head {
+html#teller-ui section.dialog .head {
   background: white;
   transform: scale(0);
   transition: all 0.15s ease;
 }
-section.dialog .head.show {
+html#teller-ui section.dialog .head.show {
   transform: scale(1);
 }
-section.dialog .text {
+html#teller-ui section.dialog .text {
   margin-left: 105px;
 }
-section.dialog .text p {
+html#teller-ui section.dialog .text p {
   margin: 0 10%;
 }
-section.dialog h1 {
+html#teller-ui section.dialog h1 {
   text-align: center;
   text-transform: uppercase;
   font-weight: bold;
   padding-bottom: 8px;
 }
-section.dialog h2 {
+html#teller-ui section.dialog h2 {
   text-align: center;
 }
-section.dialog p {
+html#teller-ui section.dialog p {
   margin: 0 17%;
   padding-bottom: 12px;
 }
-section.result {
+html#teller-ui section.result {
   padding: 8px 24px;
 }
-section.result p {
+html#teller-ui section.result p {
   padding-bottom: 12px;
   font-style: italic;
 }
-section.image {
+html#teller-ui section.image {
   position: relative;
   padding: 8px 0;
   height: 150px;
   width: 100%;
   background-color: #bbb;
 }
-section.image div {
+html#teller-ui section.image div {
   width: 100%;
   height: 0;
   transition: height 0.25s ease;
   background: no-repeat center center;
   background-size: cover;
 }
-.choice-panel {
+html#teller-ui .choice-panel {
   position: absolute;
   width: 100%;
   top: 100%;
@@ -311,25 +330,25 @@ section.image div {
   z-index: 2;
   /*because of .content.noise*/
 }
-.choice-panel.disabled {
+html#teller-ui .choice-panel.disabled {
   opacity: 0.5;
 }
-.choice-panel.disabled ul li {
+html#teller-ui .choice-panel.disabled ul li {
   cursor: default;
 }
-.choice-panel ul {
+html#teller-ui .choice-panel ul {
   padding: 32px;
   font-size: large;
   list-style: none;
 }
-.choice-panel ul li {
+html#teller-ui .choice-panel ul li {
   padding-bottom: 22px;
   cursor: pointer;
 }
-.choice-panel ul li:last-child {
+html#teller-ui .choice-panel ul li:last-child {
   padding-bottom: 10px;
 }
-.choice-panel ul .kind {
+html#teller-ui .choice-panel ul .kind {
   font-size: larger;
   width: 32px;
   height: 32px;
@@ -340,21 +359,21 @@ section.image div {
   text-align: center;
   transform: translateY(-6px);
 }
-.choice-panel ul .kind i {
+html#teller-ui .choice-panel ul .kind i {
   width: 32px;
   height: 32px;
 }
-.choice-panel ul .kind > div {
+html#teller-ui .choice-panel ul .kind > div {
   width: 32px;
   padding-top: 5px;
 }
-.choice-panel ul .choice {
+html#teller-ui .choice-panel ul .choice {
   margin-left: 56px;
 }
-.choice-panel ul .subtext {
+html#teller-ui .choice-panel ul .subtext {
   font-size: smaller;
 }
-.choice-panel:before {
+html#teller-ui .choice-panel:before {
   content: "";
   width: 100%;
   height: 3px;
@@ -363,7 +382,7 @@ section.image div {
   background-color: orange;
   border-bottom: 3px solid #333;
 }
-.modal {
+html#teller-ui .modal {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -374,7 +393,7 @@ section.image div {
   justify-content: center;
   z-index: 2;
 }
-.modal .modal-inner {
+html#teller-ui .modal .modal-inner {
   width: 150px;
   border: 2px #666 solid;
   padding: 24px;
@@ -383,27 +402,27 @@ section.image div {
   opacity: 0;
   transform: scale(0);
 }
-.modal .modal-inner p {
+html#teller-ui .modal .modal-inner p {
   font-size: x-large;
   text-align: center;
   line-height: 1.25;
 }
-.modal.show {
+html#teller-ui .modal.show {
   left: 0;
 }
-.modal.show .modal-inner {
+html#teller-ui .modal.show .modal-inner {
   opacity: 1;
   transform: scale(1);
   transition: all 0.15s ease;
   cursor: pointer;
 }
-.modal.disable .modal-inner {
+html#teller-ui .modal.disable .modal-inner {
   background-color: transparent;
   width: 50px;
   height: 50px;
   cursor: default;
 }
-.heading {
+html#teller-ui .heading {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -414,11 +433,11 @@ section.image div {
   opacity: 0;
   transition: opacity 0.5s ease;
 }
-.heading .heading-inner {
+html#teller-ui .heading .heading-inner {
   height: 100%;
   background: url(game/assets/ignasi_pattern_s.png);
 }
-.heading .heading-inner h1 {
+html#teller-ui .heading .heading-inner h1 {
   position: absolute;
   width: 80%;
   height: 48%;
@@ -431,7 +450,7 @@ section.image div {
   font-variant: small-caps;
   line-height: 1.25em;
 }
-.heading .heading-inner h2 {
+html#teller-ui .heading .heading-inner h2 {
   position: absolute;
   width: 80%;
   height: 50%;
@@ -441,33 +460,16 @@ section.image div {
   font-family: "Farsan", cursive;
   font-size: large;
 }
-.heading.show {
+html#teller-ui .heading.show {
   left: 0;
 }
-.heading.showing {
+html#teller-ui .heading.showing {
   opacity: 1;
 }
-/*.menu {
-    z-index: 20;
-    position: absolute;
-    top: 0;
-    right: 100%;
-    width: 100%;
-    height: 100%;
-    transition: right 0.25s ease, opacity 0.25s ease;
-    iframe {
-        border: 0;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-        width: 100%;
-        height: 100%;
-    }
-}*/
-.fader {
+html#teller-ui .fader {
   background-color: black;
 }
-.landscape .story-inner {
+html#teller-ui .landscape .story-inner {
   width: 35%;
   min-width: 350px;
   max-width: 450px;
@@ -478,29 +480,427 @@ section.image div {
   transition: height 0.15s ease;
   box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
 }
-.landscape .story-inner.retracted {
+html#teller-ui .landscape .story-inner.retracted {
   height: 36px;
   opacity: 0.4;
 }
-.portrait .graphics.game {
+html#teller-ui .portrait .graphics.game {
   height: calc(100% - 46px);
   top: 46px;
 }
-.portrait .navbar {
+html#teller-ui .portrait .navbar {
   height: 46px;
 }
-.portrait .content {
+html#teller-ui .portrait .content {
   top: 46px;
   height: calc(100% - 46px);
 }
-.portrait .content .content-spacer {
+html#teller-ui .portrait .content .content-spacer {
   height: 46px;
 }
-.portrait .story-inner {
+html#teller-ui .portrait .story-inner {
   width: 100%;
   height: 100%;
   transition: height 0.15s ease;
 }
-.portrait .story-inner.retracted {
+html#teller-ui .portrait .story-inner.retracted {
+  height: 46px;
+}
+html#teller-ui2 {
+  /*.menu {
+        z-index: 20;
+        position: absolute;
+        top: 0;
+        right: 100%;
+        width: 100%;
+        height: 100%;
+        transition: right 0.25s ease, opacity 0.25s ease;
+        iframe {
+            border: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+    }*/
+}
+html#teller-ui2,
+html#teller-ui2 body {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow-x: hidden;
+}
+html#teller-ui2 body {
+  font-family: "Roboto Slab", serif;
+  color: rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+html#teller-ui2 .story {
+  z-index: 10;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+}
+html#teller-ui2 .story-inner {
+  position: absolute;
+  overflow: hidden;
+  background-color: black;
+  pointer-events: auto;
+}
+html#teller-ui2 .graphics {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: opacity 0.75s ease;
+}
+html#teller-ui2 .graphics iframe {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+html#teller-ui2 .graphics.game {
+  opacity: 0;
+  z-index: 0;
+}
+html#teller-ui2 .graphics.game.show {
+  opacity: 1;
+  z-index: 2;
+}
+html#teller-ui2 .navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 36px;
+  width: 100%;
+  z-index: 10;
+  background-color: black;
+  color: orange;
+  font-size: large;
+}
+html#teller-ui2 .navbar .navbar-inner {
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  display: flex;
+  justify-content: space-between;
+}
+html#teller-ui2 .navbar .navbar-inner div.title {
+  cursor: default;
+  padding: 0 0 8px 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 10px;
+}
+html#teller-ui2 .navbar .navbar-inner div.title i:after {
+  content: " ";
+}
+html#teller-ui2 .navbar .navbar-inner div.goto-menu {
+  padding: 0 16px 8px 0;
+  font-size: 16px;
+  color: orange;
+  cursor: pointer;
+}
+html#teller-ui2 .navbar .navbar-inner div.title i {
+  color: orange;
+}
+html#teller-ui2 .content {
+  position: absolute;
+  top: 36px;
+  height: calc(100% - 36px);
+  width: 100%;
+  background-color: #ccc;
+  cursor: default;
+  overflow: scroll;
+  -ms-overflow-style: none;
+  transition: opacity 0.25s ease;
+}
+html#teller-ui2 .content::-webkit-scrollbar {
+  display: none;
+}
+html#teller-ui2 .content .content-spacer {
+  height: 36px;
+  width: 100%;
+}
+html#teller-ui2 .content .content-inner {
+  padding: 16px 0;
+  line-height: 1.4em;
+}
+html#teller-ui2 .content .content-inner p {
+  padding-bottom: 12px;
+}
+html#teller-ui2 .content.overlay {
+  opacity: 0.5;
+  transition: opacity 0.25s ease;
+}
+html#teller-ui2 section {
+  font-size: large;
+  padding: 8px 0;
+}
+html#teller-ui2 section.text {
+  padding: 8px 24px;
+}
+html#teller-ui2 section.text p {
+  padding-bottom: 12px;
+}
+html#teller-ui2 section.dialog {
+  position: relative;
+  padding: 8px 24px;
+}
+html#teller-ui2 section.dialog .head-placeholder,
+html#teller-ui2 section.dialog .head {
+  position: absolute;
+  width: 75px;
+  height: 75px;
+  top: 0;
+  left: 40px;
+  background: #c4c4c4;
+  border-radius: 40px;
+}
+html#teller-ui2 section.dialog .head {
+  background: white;
+  transform: scale(0);
+  transition: all 0.15s ease;
+}
+html#teller-ui2 section.dialog .head.show {
+  transform: scale(1);
+}
+html#teller-ui2 section.dialog .text {
+  margin-left: 105px;
+}
+html#teller-ui2 section.dialog .text p {
+  margin: 0 10%;
+}
+html#teller-ui2 section.dialog h1 {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  padding-bottom: 8px;
+}
+html#teller-ui2 section.dialog h2 {
+  text-align: center;
+}
+html#teller-ui2 section.dialog p {
+  margin: 0 17%;
+  padding-bottom: 12px;
+}
+html#teller-ui2 section.result {
+  padding: 8px 24px;
+}
+html#teller-ui2 section.result p {
+  padding-bottom: 12px;
+  font-style: italic;
+}
+html#teller-ui2 section.image {
+  position: relative;
+  padding: 8px 0;
+  height: 150px;
+  width: 100%;
+  background-color: #bbb;
+}
+html#teller-ui2 section.image div {
+  width: 100%;
+  height: 0;
+  transition: height 0.25s ease;
+  background: no-repeat center center;
+  background-size: cover;
+}
+html#teller-ui2 .choice-panel {
+  position: absolute;
+  width: 100%;
+  top: 100%;
+  border-top: 3px solid #333;
+  background: url(game/assets/ignasi_pattern_s.png);
+  transition: top 0.25s ease;
+  z-index: 2;
+  /*because of .content.noise*/
+}
+html#teller-ui2 .choice-panel.disabled {
+  opacity: 0.5;
+}
+html#teller-ui2 .choice-panel.disabled ul li {
+  cursor: default;
+}
+html#teller-ui2 .choice-panel ul {
+  padding: 32px;
+  font-size: large;
+  list-style: none;
+}
+html#teller-ui2 .choice-panel ul li {
+  padding-bottom: 22px;
+  cursor: pointer;
+}
+html#teller-ui2 .choice-panel ul li:last-child {
+  padding-bottom: 10px;
+}
+html#teller-ui2 .choice-panel ul .kind {
+  font-size: larger;
+  width: 32px;
+  height: 32px;
+  float: left;
+  border-radius: 50%;
+  border: 2px solid black;
+  background-color: orange;
+  text-align: center;
+  transform: translateY(-6px);
+}
+html#teller-ui2 .choice-panel ul .kind i {
+  width: 32px;
+  height: 32px;
+}
+html#teller-ui2 .choice-panel ul .kind > div {
+  width: 32px;
+  padding-top: 5px;
+}
+html#teller-ui2 .choice-panel ul .choice {
+  margin-left: 56px;
+}
+html#teller-ui2 .choice-panel ul .subtext {
+  font-size: smaller;
+}
+html#teller-ui2 .choice-panel:before {
+  content: "";
+  width: 100%;
+  height: 3px;
+  position: absolute;
+  top: 0;
+  background-color: orange;
+  border-bottom: 3px solid #333;
+}
+html#teller-ui2 .modal {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+html#teller-ui2 .modal .modal-inner {
+  width: 150px;
+  border: 2px #666 solid;
+  padding: 24px;
+  background-color: white;
+  border-radius: 16px;
+  opacity: 0;
+  transform: scale(0);
+}
+html#teller-ui2 .modal .modal-inner p {
+  font-size: x-large;
+  text-align: center;
+  line-height: 1.25;
+}
+html#teller-ui2 .modal.show {
+  left: 0;
+}
+html#teller-ui2 .modal.show .modal-inner {
+  opacity: 1;
+  transform: scale(1);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+html#teller-ui2 .modal.disable .modal-inner {
+  background-color: transparent;
+  width: 50px;
+  height: 50px;
+  cursor: default;
+}
+html#teller-ui2 .heading {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 100%;
+  background-color: white;
+  z-index: 11;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+html#teller-ui2 .heading .heading-inner {
+  height: 100%;
+  background: url(game/assets/ignasi_pattern_s.png);
+}
+html#teller-ui2 .heading .heading-inner h1 {
+  position: absolute;
+  width: 80%;
+  height: 48%;
+  top: 0;
+  padding: 0 10%;
+  display: flex;
+  align-items: flex-end;
+  font-family: "Anton", sans-serif;
+  font-size: xx-large;
+  font-variant: small-caps;
+  line-height: 1.25em;
+}
+html#teller-ui2 .heading .heading-inner h2 {
+  position: absolute;
+  width: 80%;
+  height: 50%;
+  top: 50%;
+  padding: 0 10%;
+  text-align: center;
+  font-family: "Farsan", cursive;
+  font-size: large;
+}
+html#teller-ui2 .heading.show {
+  left: 0;
+}
+html#teller-ui2 .heading.showing {
+  opacity: 1;
+}
+html#teller-ui2 .fader {
+  background-color: black;
+}
+html#teller-ui2 .landscape .story-inner {
+  width: 35%;
+  min-width: 350px;
+  max-width: 450px;
+  right: 7%;
+  height: 95%;
+  top: 2.5%;
+  border: 1px solid #333;
+  transition: height 0.15s ease;
+  box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
+}
+html#teller-ui2 .landscape .story-inner.retracted {
+  height: 36px;
+  opacity: 0.4;
+}
+html#teller-ui2 .portrait .graphics.game {
+  height: calc(100% - 46px);
+  top: 46px;
+}
+html#teller-ui2 .portrait .navbar {
+  height: 46px;
+}
+html#teller-ui2 .portrait .content {
+  top: 46px;
+  height: calc(100% - 46px);
+}
+html#teller-ui2 .portrait .content .content-spacer {
+  height: 46px;
+}
+html#teller-ui2 .portrait .story-inner {
+  width: 100%;
+  height: 100%;
+  transition: height 0.15s ease;
+}
+html#teller-ui2 .portrait .story-inner.retracted {
   height: 46px;
 }

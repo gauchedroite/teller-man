@@ -1,9 +1,9 @@
 <!doctype html>
-<html>
+<html id="teller-ui">
 
 <head>
     <meta charset="utf-8">
-    <title>Moon Limbo - Main2</title>
+    <title>Moon Limbo - Main</title>
     <!--<link rel="icon" href="data:;base64,iVBORw0KGgo=">-->
     <link rel="icon" href="game/assets/moon-limbo-240x240.png">
     <link rel="apple-touch-icon" href="game/assets/moon-limbo-240x240.png">
@@ -82,8 +82,8 @@
     <script src="app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var ui2 = new UI2();
-            var game = new Game(ui2);
+            var ui = new UI();
+            var game = new Game(ui);
             game.initialize();
         }, false);
     </script>

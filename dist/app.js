@@ -1684,11 +1684,11 @@ var UI2 = (function () {
     }
     return UI2;
 }());
-/// <reference path="ui.ts" />
-/// <reference path="ui2.ts" />
+/// <reference path="game-ui.ts" />
+/// <reference path="game-ui2.ts" />
 var ChoiceKind;
-/// <reference path="ui.ts" />
-/// <reference path="ui2.ts" />
+/// <reference path="game-ui.ts" />
+/// <reference path="game-ui2.ts" />
 (function (ChoiceKind) {
     ChoiceKind[ChoiceKind["scene"] = 0] = "scene";
     ChoiceKind[ChoiceKind["action"] = 1] = "action";
