@@ -613,6 +613,15 @@ var GameData = (function () {
         this.clearStorage = function () {
             localStorage.clear();
         };
+        this.clearState = function () {
+            localStorage.removeItem("state");
+        };
+        this.clearHistory = function () {
+            localStorage.removeItem("history");
+        };
+        this.clearContinueState = function () {
+            localStorage.removeItem("continueState");
+        };
     }
     Object.defineProperty(GameData.prototype, "game", {
         //
@@ -756,48 +765,47 @@ if (!String.prototype.endsWith) {
 var GameHelper = (function () {
     function GameHelper() {
     }
-    GameHelper.getCommands = function (text) {
-        if (text == undefined)
-            return [];
-        var inComment = false;
-        var commands = new Array();
-        var parts = text.split("\n");
-        for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-            var part = parts_1[_i];
-            if (part.length > 0) {
-                if (part.startsWith("/*")) {
-                    inComment = true;
-                }
-                else if (inComment) {
-                    inComment = (part.startsWith("*/") == false);
-                }
-                else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
-                    commands.push(part);
-                }
-            }
-        }
-        return commands;
-    };
-    GameHelper.getWhens = function (text) {
-        if (text == undefined)
-            return [];
-        var whens = new Array();
-        var parts = text.split(",");
-        for (var _i = 0, parts_2 = parts; _i < parts_2.length; _i++) {
-            var part = parts_2[_i];
-            if (part.length > 0) {
-                whens.push(part.trim());
-            }
-        }
-        return whens;
-    };
     return GameHelper;
 }());
-/// <reference path="igame-data.ts" />
+GameHelper.getCommands = function (text) {
+    if (text == undefined)
+        return [];
+    var inComment = false;
+    var commands = new Array();
+    var parts = text.split("\n");
+    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+        var part = parts_1[_i];
+        if (part.length > 0) {
+            if (part.startsWith("/*")) {
+                inComment = true;
+            }
+            else if (inComment) {
+                inComment = (part.startsWith("*/") == false);
+            }
+            else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
+                commands.push(part);
+            }
+        }
+    }
+    return commands;
+};
+GameHelper.getWhens = function (text) {
+    if (text == undefined)
+        return [];
+    var whens = new Array();
+    var parts = text.split(",");
+    for (var _i = 0, parts_2 = parts; _i < parts_2.length; _i++) {
+        var part = parts_2[_i];
+        if (part.length > 0) {
+            whens.push(part.trim());
+        }
+    }
+    return whens;
+};
 /// <reference path="igame.ts" />
+/// <reference path="iinstance.ts" />
 /// <reference path="game-data.ts" />
 /// <reference path="game-helper.ts" />
-/// <reference path="ieditor.ts" />
 var Editor = (function () {
     function Editor() {
         var _this = this;

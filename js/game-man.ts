@@ -1,15 +1,17 @@
 /// <reference path="webgl-runner.ts" />
+/// <reference path="igame-data.ts" />
+/// <reference path="iinstance.ts" />
 
-class GameMan {
+class GameMan implements IGameManInstance {
     runner: WebglRunner;
 
     constructor() {
         (<any>window).GameManInstance = this;
     }
 
-    initialize = () => {
+    initialize = (frameSrc: string) => {
         let me = this;
-        let game: any; //<Game>
+        let game: IGameInstance;
         let confirming = false;
 
         this.runner = new WebglRunner("vertex-shader", "fragment-shader");
@@ -18,7 +20,7 @@ class GameMan {
         // Set main game url
         document.querySelector(".primo-limbo").classList.remove("hidden");
         let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
-        gameFrame.setAttribute("src", "main.html");
+        gameFrame.setAttribute("src", frameSrc);
 
         // START button
         document.querySelector(".start").addEventListener("click", () => {
@@ -100,7 +102,7 @@ class GameMan {
     };
 
     delay = (ms: number) => {
-        return new Promise<void>(resolve => setTimeout(resolve, ms));
+        return new Promise<string>(resolve => setTimeout(() => { resolve("yo"); }, ms));
     };
 
     christian_trad = () => {
@@ -139,8 +141,8 @@ class GameMan {
         console.log("ASYNC");
 
         for (let i = 0; i < 3; i++) {
-            await this.delay(500);
-            console.log(i);
+            let yo = await this.delay(500);
+            console.log(`${yo} ${i}`);
         }
 
         console.log("world!");

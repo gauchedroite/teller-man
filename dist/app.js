@@ -760,15 +760,9 @@ var GameData = (function () {
     });
     return GameData;
 }());
+/// <reference path="helpers.ts" />
 /// <reference path="igame.ts" />
-var ChoiceKind;
-/// <reference path="igame.ts" />
-(function (ChoiceKind) {
-    ChoiceKind[ChoiceKind["scene"] = 0] = "scene";
-    ChoiceKind[ChoiceKind["action"] = 1] = "action";
-    ChoiceKind[ChoiceKind["messageTo"] = 2] = "messageTo";
-    ChoiceKind[ChoiceKind["messageFrom"] = 3] = "messageFrom";
-})(ChoiceKind || (ChoiceKind = {}));
+/// <reference path="iui.ts" />
 var UI = (function () {
     function UI() {
         var _this = this;
@@ -1229,31 +1223,499 @@ var UI = (function () {
     return UI;
 }());
 /// <reference path="helpers.ts" />
-/// <reference path="game-data.ts" />
 /// <reference path="igame.ts" />
+/// <reference path="iui.ts" />
+var UI2 = (function () {
+    function UI2() {
+        var _this = this;
+        this.portrait = false;
+        this.initialize = function (onmenu) {
+            document.querySelector(".goto-menu").addEventListener("click", function (e) {
+                e.stopPropagation();
+                setTimeout(onmenu, 0);
+            });
+            var navbar = document.querySelector(".navbar");
+            var inner = document.querySelector(".story-inner");
+            navbar.addEventListener("click", function (e) {
+                if (document.body.classList.contains("landscape")) {
+                    if (inner.classList.contains("retracted"))
+                        inner.classList.remove("retracted");
+                    else
+                        inner.classList.add("retracted");
+                }
+            });
+            if ("addEventListener" in document) {
+                document.addEventListener("DOMContentLoaded", function () {
+                    FastClick.attach(document.body);
+                    _this.portrait = window.innerWidth < 750;
+                    var format = (_this.portrait ? "portrait" : "landscape");
+                    document.body.classList.add(format);
+                }, false);
+            }
+            window.onresize = function () {
+                _this.portrait = window.innerWidth < 750;
+                var format = (_this.portrait ? "portrait" : "landscape");
+                if (document.body.classList.contains(format) == false) {
+                    document.body.removeAttribute("class");
+                    document.body.classList.add(format);
+                }
+            };
+        };
+        this.alert = function (text, canclose, onalert) {
+            var content = document.querySelector(".content");
+            content.classList.add("overlay");
+            content.style.pointerEvents = "none";
+            var panel = document.querySelector(".modal-inner");
+            panel.innerHTML = "<p>" + text + "</p>";
+            var modal = document.querySelector(".modal");
+            modal.classList.add("show");
+            var onclick = function () {
+                modal.removeEventListener("click", onclick);
+                panel.innerHTML = "<div class=\"bounce1\"></div><div class=\"bounce2\"></div>";
+                var waitForClose = function () {
+                    var ready = canclose();
+                    if (ready) {
+                        modal.classList.remove("show");
+                        modal.classList.remove("disable");
+                        setTimeout(function () {
+                            content.classList.remove("overlay");
+                            content.style.pointerEvents = "";
+                            setTimeout(onalert, 0);
+                        }, 250);
+                    }
+                    else {
+                        modal.classList.add("disable");
+                        setTimeout(waitForClose, 100);
+                    }
+                };
+                waitForClose();
+            };
+            modal.addEventListener("click", onclick);
+        };
+        this.showChoices = function (sceneChoices, onchoice) {
+            var panel = document.querySelector(".choice-panel");
+            panel.innerHTML = "";
+            var ul = document.createElement("ul");
+            for (var i = 0; i < sceneChoices.length; i++) {
+                var choice = sceneChoices[i];
+                var icon = "ion-ios-location";
+                if (choice.kind == ChoiceKind.action)
+                    icon = "ion-flash";
+                if (choice.kind == ChoiceKind.messageTo)
+                    icon = "ion-android-person";
+                if (choice.kind == ChoiceKind.messageFrom)
+                    icon = "ion-chatbubble-working";
+                var li = document.createElement("li");
+                li.setAttribute("data-kind", choice.kind.toString());
+                li.setAttribute("data-id", choice.id.toString());
+                var html = "\n                <div class=\"kind\"><div><i class=\"icon " + icon + "\"></i></div></div>\n                <div class=\"choice\">" + choice.text + "</div>";
+                if (choice.subtext != undefined) {
+                    html = html + "<div class=\"choice subtext\">" + choice.subtext + "</div>";
+                }
+                li.innerHTML = html;
+                ul.appendChild(li);
+            }
+            panel.appendChild(ul);
+            var content = document.querySelector(".content");
+            content.classList.add("overlay");
+            panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
+            var text = document.querySelector(".content-inner");
+            text.style.marginBottom = panel.offsetHeight + "px";
+            _this.scrollContent(text.parentElement);
+            var me = _this;
+            var lis = document.querySelectorAll(".choice-panel li");
+            var onChoice = function (e) {
+                for (var i = 0; i < lis.length; i++) {
+                    lis[i].removeEventListener("click", onChoice);
+                }
+                var target = e.target;
+                var li = target;
+                while (true) {
+                    if (li.nodeName == "LI")
+                        break;
+                    li = li.parentElement;
+                }
+                setTimeout(function () {
+                    onchoice({
+                        kind: parseInt(li.getAttribute("data-kind")),
+                        id: parseInt(li.getAttribute("data-id")),
+                        text: ""
+                    });
+                }, 0);
+            };
+            for (var i = 0; i < lis.length; i++) {
+                lis[i].addEventListener("click", onChoice);
+            }
+        };
+        this.hideChoices = function (callback) {
+            var content = document.querySelector(".content");
+            content.classList.remove("overlay");
+            content.style.pointerEvents = "auto";
+            // make sure the first blurb will be visible
+            var inner = document.querySelector(".story-inner");
+            inner.scrollTop = content.offsetTop;
+            var panel = document.querySelector(".choice-panel");
+            panel.style.top = "100%";
+            var text = document.querySelector(".content-inner");
+            text.style.marginBottom = "0";
+            text.setAttribute("style", "");
+            setTimeout(callback, 0);
+        };
+        this.initScene = function (data, callback) {
+            var title = document.querySelector(".title span");
+            title.textContent = data.title;
+            if (data.image == undefined)
+                return callback();
+            _this.changeBackground(data.image, callback);
+        };
+        this.addBlurb = function (chunk, callback) {
+            var html = _this.markupChunk(chunk);
+            var content = document.querySelector(".content");
+            var inner = document.querySelector(".content-inner");
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            var section = div.firstChild;
+            if (chunk.kind == ChunkKind.background) {
+                if (_this.portrait)
+                    return callback();
+                var bg_2 = chunk;
+                _this.changeBackground(bg_2.asset, function () {
+                    if (bg_2.wait) {
+                        content.addEventListener("click", function onclick() {
+                            content.removeEventListener("click", onclick);
+                            return callback();
+                        });
+                    }
+                    else
+                        callback();
+                });
+            }
+            else if (chunk.kind == ChunkKind.inline) {
+                section.style.opacity = "0";
+                inner.appendChild(section);
+                _this.scrollContent(inner.parentElement);
+                section.style.opacity = "1";
+                section.style.transition = "opacity 0.1s ease";
+                section.style.animation = "color-cycle 5s infinite";
+                var assetName_3 = chunk.image.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (assetName_3.indexOf(".") == -1)
+                    assetName_3 += ".jpg";
+                assetName_3 = "game/assets/" + assetName_3;
+                var image = new Image();
+                image.onload = function () {
+                    section.style.animation = "";
+                    var img = section.firstElementChild;
+                    img.style.backgroundImage = "url(" + assetName_3 + ")";
+                    img.style.height = "100%";
+                    return callback();
+                };
+                image.src = assetName_3;
+            }
+            else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
+                section.style.opacity = "0";
+                inner.appendChild(section);
+                _this.scrollContent(inner.parentElement);
+                section.style.opacity = "1";
+                section.style.transition = "all 0.15s ease";
+                if (chunk.kind == ChunkKind.dialog) {
+                    var dialog = chunk;
+                    if (dialog.mood != undefined) {
+                        var assetName_4 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                        if (assetName_4.indexOf(".") == -1)
+                            assetName_4 += ".jpg";
+                        var head_2 = section.getElementsByClassName("head")[0];
+                        var image_2 = new Image();
+                        image_2.onload = function () {
+                            head_2.style.backgroundImage = "url(" + assetName_4 + ")";
+                            head_2.classList.add("show");
+                        };
+                        setTimeout(function () { image_2.src = assetName_4; }, 100);
+                    }
+                }
+                var spans_2 = section.querySelectorAll("span");
+                if (spans_2.length == 0) {
+                    content.addEventListener("click", function onclick() {
+                        content.removeEventListener("click", onclick);
+                        return callback();
+                    });
+                }
+                else {
+                    var ispan_2 = 0;
+                    content.addEventListener("click", function onclick() {
+                        content.removeEventListener("click", onclick);
+                        clearTimeout(showTimer);
+                        while (ispan_2 < spans_2.length)
+                            spans_2[ispan_2++].removeAttribute("style");
+                        return callback();
+                    });
+                    var showTimer = setTimeout(function show() {
+                        spans_2[ispan_2++].removeAttribute("style");
+                        if (ispan_2 < spans_2.length)
+                            showTimer = setTimeout(show, 25);
+                    }, 100);
+                }
+            }
+            else if (chunk.kind == ChunkKind.heading) {
+                var heading_2 = document.querySelector(".heading");
+                var inner_2 = document.querySelector(".heading-inner");
+                inner_2.innerHTML = html;
+                heading_2.classList.add("show", "showing");
+                heading_2.addEventListener("click", function onclick() {
+                    heading_2.removeEventListener("click", onclick);
+                    heading_2.classList.remove("showing");
+                    setTimeout(function () { heading_2.classList.remove("show"); callback(); }, 500);
+                });
+            }
+            else if (chunk.kind == ChunkKind.doo) {
+                var choices = Array();
+                choices.push({
+                    kind: ChoiceKind.action,
+                    id: 0,
+                    text: chunk.text
+                });
+                _this.showChoices(choices, function (chosen) {
+                    _this.hideChoices(callback);
+                });
+            }
+            else if (chunk.kind == ChunkKind.minigame) {
+                _this.setupMinigame(chunk, callback);
+            }
+            else if (chunk.kind == ChunkKind.waitclick) {
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    return callback();
+                });
+            }
+            else {
+                callback();
+            }
+        };
+        this.addBlurbFast = function (chunk, callback) {
+            var html = _this.markupChunk(chunk)
+                .replace(/ style\="visibility:hidden"/g, "")
+                .replace(/<span>/g, "")
+                .replace(/<\/span>/g, "");
+            var content = document.querySelector(".content-inner");
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            var section = div.firstChild;
+            content.appendChild(section);
+            callback();
+        };
+        this.clearBlurb = function () {
+            var content = document.querySelector(".content-inner");
+            content.innerHTML = "";
+        };
+        this.changeBackground = function (assetName, callback) {
+            if (assetName == undefined)
+                return callback();
+            assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+            if (document.body.classList.contains("portrait"))
+                return callback();
+            var inner = document.querySelector(".graphics-inner");
+            var zero = inner.children[0];
+            var one = inner.children[1];
+            var back = (zero.style.zIndex == "0" ? zero : one);
+            var front = (zero.style.zIndex == "0" ? one : zero);
+            var backFrame = back.firstElementChild;
+            var frontFrame = front.firstElementChild;
+            if (assetName.indexOf(".") == -1)
+                assetName += ".jpg";
+            var sceneUrl;
+            if (assetName.endsWith(".html"))
+                sceneUrl = "game/" + assetName;
+            else
+                sceneUrl = "game/teller-image.html?" + assetName;
+            if (frontFrame.src.indexOf(sceneUrl) != -1)
+                return callback();
+            _this.fader(true);
+            var preloader = document.querySelector(".preloader");
+            preloader.classList.add("change-bg");
+            window.eventHubAction = function (result) {
+                if (result.content == "ready") {
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    _this.fader(false);
+                    preloader.classList.remove("change-bg");
+                    setTimeout(function () {
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                        callback();
+                    }, 500);
+                }
+            };
+            back.style.opacity = "0";
+            backFrame.setAttribute("src", sceneUrl);
+        };
+        this.setupMinigame = function (chunk, callback) {
+            var minigame = chunk;
+            var game = document.querySelector(".game");
+            var story = document.querySelector(".story-inner");
+            var panel = document.querySelector(".choice-panel");
+            var preloader = document.querySelector(".preloader");
+            var ready = false;
+            var fadedout = false;
+            _this.runMinigame(minigame.url, function (result) {
+                if (result.ready != undefined) {
+                    if (fadedout) {
+                        game.classList.add("show");
+                        story.classList.add("retracted");
+                        _this.fader(false);
+                        preloader.classList.remove("change-bg");
+                    }
+                    ready = true;
+                }
+                else {
+                    game.classList.remove("show");
+                    story.classList.remove("retracted");
+                    panel.classList.remove("disabled");
+                    _this.hideChoices(function () {
+                        var text = (result.win == true ? minigame.winText : minigame.loseText);
+                        setTimeout(function () { callback(result); }, 0);
+                    });
+                }
+            });
+            var choices = Array();
+            choices.push({
+                kind: ChoiceKind.action,
+                id: 0,
+                text: minigame.text
+            });
+            _this.showChoices(choices, function (chosen) {
+                if (ready) {
+                    game.classList.add("show");
+                    story.classList.add("retracted");
+                }
+                else {
+                    fadedout = true;
+                    _this.fader(true);
+                    preloader.classList.add("change-bg");
+                }
+                panel.classList.add("disabled");
+            });
+        };
+        this.runMinigame = function (url, callback) {
+            var src = "game/" + url.replace(/ /g, "%20").replace(/'/g, "%27");
+            var game = document.querySelector(".game");
+            var gameFrame = game.firstElementChild;
+            window.eventHubAction = function (result) {
+                setTimeout(function () { callback(result); }, 0);
+            };
+            gameFrame.setAttribute("src", src);
+        };
+        this.fader = function (enable) {
+            var inner = document.querySelector(".graphics-inner");
+            var div = inner.children[3];
+            if (enable) {
+                div.style.opacity = "0.35";
+                div.style.zIndex = "3";
+            }
+            else {
+                div.style.opacity = "0";
+                setTimeout(function () { div.style.zIndex = "0"; }, 500);
+            }
+        };
+        this.markupChunk = function (chunk) {
+            var html = Array();
+            if (chunk.kind == ChunkKind.text) {
+                var text = chunk;
+                html.push("<section class='text'>");
+                for (var _i = 0, _a = text.lines; _i < _a.length; _i++) {
+                    var line = _a[_i];
+                    html.push("<p>" + line + "</p>");
+                }
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.dialog) {
+                var dialog = chunk;
+                var hasImage = (dialog.mood != undefined);
+                html.push("<section class='dialog'>");
+                if (hasImage) {
+                    html.push("<div class='head-placeholder'></div>");
+                    html.push("<div class='head'></div>");
+                    html.push("<div class='text'>");
+                }
+                html.push("<h1>" + dialog.actor + "</h1>");
+                if (dialog.parenthetical != undefined)
+                    html.push("<h2>" + dialog.parenthetical + "</h2>");
+                for (var _b = 0, _c = dialog.lines; _b < _c.length; _b++) {
+                    var line = _c[_b];
+                    var spans = Array.prototype.map.call(line, function (char) {
+                        return "<span style='visibility:hidden'>" + char + "</span>";
+                    });
+                    html.push("<p>" + spans.join("") + "</p>");
+                }
+                if (hasImage)
+                    html.push("</div>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.gameresult) {
+                var result = chunk;
+                html.push("<section class='result'>");
+                html.push("<p>" + result.text + "</p>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.inline) {
+                html.push("<section class='image'>");
+                html.push("<div></div>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.heading) {
+                var heading = chunk;
+                html.push("<h1>" + heading.title + "</h1>");
+                if (heading.subtitle != undefined)
+                    html.push("<h2>" + heading.subtitle + "</h2>");
+            }
+            return html.join("");
+        };
+        this.scrollContent = function (element) {
+            var start = element.scrollTop;
+            var end = (element.scrollHeight - element.clientHeight);
+            if (end <= start)
+                return;
+            var top = start;
+            setTimeout(function scroll() {
+                top += 10;
+                element.scrollTop = top + 1;
+                if (top < end)
+                    setTimeout(scroll, 10);
+            }, 10);
+        };
+    }
+    return UI2;
+}());
 /// <reference path="ui.ts" />
+/// <reference path="ui2.ts" />
+var ChoiceKind;
+/// <reference path="ui.ts" />
+/// <reference path="ui2.ts" />
+(function (ChoiceKind) {
+    ChoiceKind[ChoiceKind["scene"] = 0] = "scene";
+    ChoiceKind[ChoiceKind["action"] = 1] = "action";
+    ChoiceKind[ChoiceKind["messageTo"] = 2] = "messageTo";
+    ChoiceKind[ChoiceKind["messageFrom"] = 3] = "messageFrom";
+})(ChoiceKind || (ChoiceKind = {}));
+/// <reference path="helpers.ts" />
+/// <reference path="game-data.ts" />
+/// <reference path="iinstance.ts" />
+/// <reference path="igame.ts" />
+/// <reference path="iui.ts" />
 var Game = (function () {
-    function Game() {
+    function Game(ui) {
         var _this = this;
         this.initialize = function () {
             _this.ui.initialize(function () { _this.gameMan.showMenu(); });
         };
         this.startGame = function () {
-            var run = function (isnew) {
-                if (isnew)
-                    _this.startNewGame();
-                else
-                    _this.continueExistingGame();
-            };
             if (_this.gdata.moments.length == 0) {
                 _this.getDataFile("game/app.json", function (text) {
                     if (text != undefined && text.length > 0)
                         _this.gdata.saveData(text);
-                    run(true);
+                    _this.startNewGame();
                 });
             }
             else {
-                run(false);
+                _this.continueExistingGame();
             }
         };
         this.startNewGame = function () {
@@ -1908,7 +2370,7 @@ var Game = (function () {
         };
         window.GameInstance = this;
         this.gdata = new GameData();
-        this.ui = new UI();
+        this.ui = ui;
     }
     Object.defineProperty(Game.prototype, "gameMan", {
         get: function () {

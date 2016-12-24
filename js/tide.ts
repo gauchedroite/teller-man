@@ -1,6 +1,6 @@
 /// <reference path="igame.ts" />
 /// <reference path="igame-data.ts" />
-/// <reference path="ieditor.ts" />
+/// <reference path="iinstance.ts" />
 /// <reference path="game-storage.ts" />
 /// <reference path="game-helper.ts" />
 
@@ -169,7 +169,7 @@ class Tide {
         else if (op == OpAction.SHOWING_MOMENT) {
             if ((<any>document.getElementById("ide-sync")).checked) {
                 let iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
-                let editor = <IEditor>(<any>iframe.contentWindow).EditorInstance;
+                let editor = <IEditorInstance>(<any>iframe.contentWindow).EditorInstance;
                 let moment = <IMoment>param;
                 editor.gotoMoment(moment);
 

@@ -10,7 +10,7 @@ class GameData {
         var acts = this.actors;
         var moms = this.moments;
         var gdata = <IGameData> { 
-            game: game || <IGame>{ id:0, name: null, initialstate: null, desc: null }, 
+            game: game || <IGameMeta>{ id:0, name: null, initialstate: null, desc: null }, 
             situations: sits,
             scenes: scns,
             actors: acts,
@@ -606,10 +606,10 @@ class GameData {
     // game
     //
     get game() {
-        return <IGame> JSON.parse(localStorage.getItem("game"));
+        return <IGameMeta> JSON.parse(localStorage.getItem("game"));
     }
 
-    set game(game: IGame) {
+    set game(game: IGameMeta) {
         localStorage.setItem("game", JSON.stringify(game));
     }
 

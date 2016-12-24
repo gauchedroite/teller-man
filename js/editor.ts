@@ -1,7 +1,7 @@
 /// <reference path="igame.ts" />
+/// <reference path="iinstance.ts" />
 /// <reference path="game-data.ts" />
 /// <reference path="game-helper.ts" />
-/// <reference path="ieditor.ts" />
 
 declare var Framework7: any;
 declare var Dom7: any;
@@ -12,7 +12,7 @@ interface String {
     endsWith(s: string): boolean
 }
 
-class Editor implements IEditor {
+class Editor implements IEditorInstance {
     gdata: GameData;
     $: any;
     app: any;

@@ -35,7 +35,6 @@ var AKind;
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
 /// <reference path="igame-data.ts" />
-/// <reference path="igame-data.ts" />
 /// <reference path="igame.ts" />
 var GameStorage = (function () {
     function GameStorage() {
@@ -185,46 +184,46 @@ if (!String.prototype.endsWith) {
 var GameHelper = (function () {
     function GameHelper() {
     }
-    GameHelper.getCommands = function (text) {
-        if (text == undefined)
-            return [];
-        var inComment = false;
-        var commands = new Array();
-        var parts = text.split("\n");
-        for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
-            var part = parts_1[_i];
-            if (part.length > 0) {
-                if (part.startsWith("/*")) {
-                    inComment = true;
-                }
-                else if (inComment) {
-                    inComment = (part.startsWith("*/") == false);
-                }
-                else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
-                    commands.push(part);
-                }
-            }
-        }
-        return commands;
-    };
-    GameHelper.getWhens = function (text) {
-        if (text == undefined)
-            return [];
-        var whens = new Array();
-        var parts = text.split(",");
-        for (var _i = 0, parts_2 = parts; _i < parts_2.length; _i++) {
-            var part = parts_2[_i];
-            if (part.length > 0) {
-                whens.push(part.trim());
-            }
-        }
-        return whens;
-    };
     return GameHelper;
 }());
+GameHelper.getCommands = function (text) {
+    if (text == undefined)
+        return [];
+    var inComment = false;
+    var commands = new Array();
+    var parts = text.split("\n");
+    for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
+        var part = parts_1[_i];
+        if (part.length > 0) {
+            if (part.startsWith("/*")) {
+                inComment = true;
+            }
+            else if (inComment) {
+                inComment = (part.startsWith("*/") == false);
+            }
+            else if (part.startsWith(".r ") || part.startsWith(".f ") || part.startsWith(".x ")) {
+                commands.push(part);
+            }
+        }
+    }
+    return commands;
+};
+GameHelper.getWhens = function (text) {
+    if (text == undefined)
+        return [];
+    var whens = new Array();
+    var parts = text.split(",");
+    for (var _i = 0, parts_2 = parts; _i < parts_2.length; _i++) {
+        var part = parts_2[_i];
+        if (part.length > 0) {
+            whens.push(part.trim());
+        }
+    }
+    return whens;
+};
 /// <reference path="igame.ts" />
 /// <reference path="igame-data.ts" />
-/// <reference path="ieditor.ts" />
+/// <reference path="iinstance.ts" />
 /// <reference path="game-storage.ts" />
 /// <reference path="game-helper.ts" />
 var Tide = (function () {

@@ -2,7 +2,7 @@
 /// <reference path="igame.ts" />
 /// <reference path="iui.ts" />
 
-class UI implements IUI {
+class UI2 implements IUI {
     portrait = false;
     sections: Array<string>;
 

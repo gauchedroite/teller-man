@@ -10,7 +10,7 @@ enum AKind {
     NPC
 }
 
-interface IGame {
+interface IGameMeta {
     id: number
     name: string
     initialstate: string
@@ -66,7 +66,7 @@ interface IMessageFrom extends IMoment {
 }
 
 interface IGameData {
-    game: IGame
+    game: IGameMeta
     situations: Array<ISituation>
     scenes: Array<IScene>
     actors: Array<IActor>

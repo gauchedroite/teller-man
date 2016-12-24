@@ -1,11 +1,12 @@
 /// <reference path="helpers.ts" />
 /// <reference path="game-data.ts" />
+/// <reference path="iinstance.ts" />
 /// <reference path="igame.ts" />
-/// <reference path="ui.ts" />
+/// <reference path="iui.ts" />
 
-class Game {
+class Game implements IGameInstance {
     gdata: GameData;
-    ui: UI;
+    ui: IUI;
     data: IGameData;
     currentMoment: IMoment;
     currentScene: IScene;
@@ -13,37 +14,30 @@ class Game {
     chunks: Array<IMomentData>;
     cix: number;
 
-    constructor() {
+    constructor(ui: IUI) {
         (<any>window).GameInstance = this;
 
         this.gdata = new GameData();
-        this.ui = new UI();
+        this.ui = ui
     }
 
     initialize = () => {
         this.ui.initialize(() => { this.gameMan.showMenu(); });
     };
 
-    get gameMan() : any/*<GameMan>*/ {
+    get gameMan() : IGameManInstance {
         return (<any>window.parent).GameManInstance;
     }
 
     startGame = () => {
-        const run = (isnew: boolean) => {
-            if (isnew)
-                this.startNewGame();
-            else
-                this.continueExistingGame();
-        };
-
         if (this.gdata.moments.length == 0) {
             this.getDataFile("game/app.json", (text: string) => {
                 if (text != undefined && text.length > 0) this.gdata.saveData(text);
-                run(true);
+                this.startNewGame();
             });
         }
         else {
-            run(false);
+            this.continueExistingGame();
         }
     };
 

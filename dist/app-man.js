@@ -125,20 +125,34 @@ var WebglRunner = (function () {
     }
     return WebglRunner;
 }());
+var Kind;
+(function (Kind) {
+    Kind[Kind["Moment"] = 0] = "Moment";
+    Kind[Kind["Action"] = 1] = "Action";
+    Kind[Kind["MessageTo"] = 2] = "MessageTo";
+    Kind[Kind["MessageFrom"] = 3] = "MessageFrom";
+})(Kind || (Kind = {}));
+var AKind;
+(function (AKind) {
+    AKind[AKind["Player"] = 0] = "Player";
+    AKind[AKind["NPC"] = 1] = "NPC";
+})(AKind || (AKind = {}));
 /// <reference path="webgl-runner.ts" />
+/// <reference path="igame-data.ts" />
+/// <reference path="iinstance.ts" />
 var GameMan = (function () {
     function GameMan() {
         var _this = this;
-        this.initialize = function () {
+        this.initialize = function (frameSrc) {
             var me = _this;
-            var game; //<Game>
+            var game;
             var confirming = false;
             _this.runner = new WebglRunner("vertex-shader", "fragment-shader");
             _this.runner.run();
             // Set main game url
             document.querySelector(".primo-limbo").classList.remove("hidden");
             var gameFrame = document.getElementById("game-frame");
-            gameFrame.setAttribute("src", "main.html");
+            gameFrame.setAttribute("src", frameSrc);
             // START button
             document.querySelector(".start").addEventListener("click", function () {
                 me.runner.pause();
@@ -202,7 +216,7 @@ var GameMan = (function () {
             _this.christian_async();
         };
         this.delay = function (ms) {
-            return new Promise(function (resolve) { return setTimeout(resolve, ms); });
+            return new Promise(function (resolve) { return setTimeout(function () { resolve("yo"); }, ms); });
         };
         this.christian_trad = function () {
             console.log("TRAD");
@@ -238,7 +252,7 @@ var GameMan = (function () {
     }
     GameMan.prototype.christian_async = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var i;
+            var i, yo;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -250,8 +264,8 @@ var GameMan = (function () {
                             return [3 /*break*/, 4];
                         return [4 /*yield*/, this.delay(500)];
                     case 2:
-                        _a.sent();
-                        console.log(i);
+                        yo = _a.sent();
+                        console.log(yo + " " + i);
                         _a.label = 3;
                     case 3:
                         i++;

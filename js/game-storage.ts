@@ -11,10 +11,10 @@ class GameStorage {
     // game
     //
     get game() {
-        return <IGame> JSON.parse(localStorage.getItem("game"));
+        return <IGameMeta> JSON.parse(localStorage.getItem("game"));
     }
 
-    set game(game: IGame) {
+    set game(game: IGameMeta) {
         localStorage.setItem("game", JSON.stringify(game));
     }
 
