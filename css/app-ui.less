@@ -114,10 +114,6 @@ body {
     overflow: scroll;
     &::-webkit-scrollbar { display: none; }
     -ms-overflow-style: none;
-    .content-spacer {
-        height: @navbar-height;
-        width: 100%;
-    }
     .content-inner {
         padding: 16px 0;
         line-height: 1.4em;
@@ -405,9 +401,6 @@ section {
     .content {
         top: @navbar-height-portrait;
         height: calc(100% - @navbar-height-portrait);
-        .content-spacer {
-            height: @navbar-height-portrait;
-        }
     }
     .story-inner {
         width: 100%;

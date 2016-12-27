@@ -1234,16 +1234,6 @@ var UI2 = (function () {
                 e.stopPropagation();
                 setTimeout(onmenu, 0);
             });
-            var navbar = document.querySelector(".navbar");
-            var inner = document.querySelector(".story-inner");
-            navbar.addEventListener("click", function (e) {
-                if (document.body.classList.contains("landscape")) {
-                    if (inner.classList.contains("retracted"))
-                        inner.classList.remove("retracted");
-                    else
-                        inner.classList.add("retracted");
-                }
-            });
             if ("addEventListener" in document) {
                 document.addEventListener("DOMContentLoaded", function () {
                     FastClick.attach(document.body);
@@ -1265,12 +1255,21 @@ var UI2 = (function () {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
             content.style.pointerEvents = "none";
+            var next = document.querySelector(".next");
             var panel = document.querySelector(".modal-inner");
             panel.innerHTML = "<p>" + text + "</p>";
             var modal = document.querySelector(".modal");
             modal.classList.add("show");
-            var onclick = function () {
-                modal.removeEventListener("click", onclick);
+            var waitForClick = function (done) {
+                var onclick = function () {
+                    modal.removeEventListener("click", onclick);
+                    next.removeEventListener("click", onclick);
+                    return done();
+                };
+                modal.addEventListener("click", onclick);
+                next.addEventListener("click", onclick);
+            };
+            waitForClick(function () {
                 panel.innerHTML = "<div class=\"bounce1\"></div><div class=\"bounce2\"></div>";
                 var waitForClose = function () {
                     var ready = canclose();
@@ -1289,8 +1288,7 @@ var UI2 = (function () {
                     }
                 };
                 waitForClose();
-            };
-            modal.addEventListener("click", onclick);
+            });
         };
         this.showChoices = function (sceneChoices, onchoice) {
             var panel = document.querySelector(".choice-panel");
@@ -1305,6 +1303,8 @@ var UI2 = (function () {
                     icon = "ion-android-person";
                 if (choice.kind == ChoiceKind.messageFrom)
                     icon = "ion-chatbubble-working";
+                icon = "ion-arrow-right-b";
+                //icon = "ion-arrow-right-c";
                 var li = document.createElement("li");
                 li.setAttribute("data-kind", choice.kind.toString());
                 li.setAttribute("data-id", choice.id.toString());
@@ -1319,9 +1319,13 @@ var UI2 = (function () {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
+            var storyInner = document.querySelector(".story-inner");
+            storyInner.style.height = "calc(25% + " + panel.offsetHeight + "px)";
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
             _this.scrollContent(text.parentElement);
+            var next = document.querySelector(".next");
+            next.classList.add("hidden");
             var me = _this;
             var lis = document.querySelectorAll(".choice-panel li");
             var onChoice = function (e) {
@@ -1352,14 +1356,17 @@ var UI2 = (function () {
             content.classList.remove("overlay");
             content.style.pointerEvents = "auto";
             // make sure the first blurb will be visible
-            var inner = document.querySelector(".story-inner");
-            inner.scrollTop = content.offsetTop;
+            var storyInner = document.querySelector(".story-inner");
+            storyInner.scrollTop = content.offsetTop;
+            storyInner.style.height = "25%";
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
             text.setAttribute("style", "");
-            setTimeout(callback, 0);
+            var next = document.querySelector(".next");
+            next.classList.remove("hidden");
+            setTimeout(callback, 250 /*matches .choice-panel transition*/);
         };
         this.initScene = function (data, callback) {
             var title = document.querySelector(".title span");
@@ -1372,19 +1379,26 @@ var UI2 = (function () {
             var html = _this.markupChunk(chunk);
             var content = document.querySelector(".content");
             var inner = document.querySelector(".content-inner");
+            var next = document.querySelector(".next");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
+            var waitForClick = function (done) {
+                var onclick = function () {
+                    content.removeEventListener("click", onclick);
+                    next.removeEventListener("click", onclick);
+                    return done();
+                };
+                content.addEventListener("click", onclick);
+                next.addEventListener("click", onclick);
+            };
             if (chunk.kind == ChunkKind.background) {
                 if (_this.portrait)
                     return callback();
                 var bg_2 = chunk;
                 _this.changeBackground(bg_2.asset, function () {
                     if (bg_2.wait) {
-                        content.addEventListener("click", function onclick() {
-                            content.removeEventListener("click", onclick);
-                            return callback();
-                        });
+                        waitForClick(callback);
                     }
                     else
                         callback();
@@ -1434,15 +1448,11 @@ var UI2 = (function () {
                 }
                 var spans_2 = section.querySelectorAll("span");
                 if (spans_2.length == 0) {
-                    content.addEventListener("click", function onclick() {
-                        content.removeEventListener("click", onclick);
-                        return callback();
-                    });
+                    waitForClick(callback);
                 }
                 else {
                     var ispan_2 = 0;
-                    content.addEventListener("click", function onclick() {
-                        content.removeEventListener("click", onclick);
+                    waitForClick(function () {
                         clearTimeout(showTimer);
                         while (ispan_2 < spans_2.length)
                             spans_2[ispan_2++].removeAttribute("style");
@@ -1481,10 +1491,7 @@ var UI2 = (function () {
                 _this.setupMinigame(chunk, callback);
             }
             else if (chunk.kind == ChunkKind.waitclick) {
-                content.addEventListener("click", function onclick() {
-                    content.removeEventListener("click", onclick);
-                    return callback();
-                });
+                waitForClick(callback);
             }
             else {
                 callback();
@@ -1512,9 +1519,9 @@ var UI2 = (function () {
             assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
             if (document.body.classList.contains("portrait"))
                 return callback();
-            var inner = document.querySelector(".graphics-inner");
-            var zero = inner.children[0];
-            var one = inner.children[1];
+            var solid = document.querySelector(".solid-inner");
+            var zero = solid.children[0];
+            var one = solid.children[1];
             var back = (zero.style.zIndex == "0" ? zero : one);
             var front = (zero.style.zIndex == "0" ? one : zero);
             var backFrame = back.firstElementChild;
@@ -1528,6 +1535,9 @@ var UI2 = (function () {
                 sceneUrl = "game/teller-image.html?" + assetName;
             if (frontFrame.src.indexOf(sceneUrl) != -1)
                 return callback();
+            if (sceneUrl == _this.previousSceneUrl)
+                return callback();
+            _this.previousSceneUrl = sceneUrl;
             _this.fader(true);
             var preloader = document.querySelector(".preloader");
             preloader.classList.add("change-bg");
@@ -1604,15 +1614,15 @@ var UI2 = (function () {
             gameFrame.setAttribute("src", src);
         };
         this.fader = function (enable) {
-            var inner = document.querySelector(".graphics-inner");
-            var div = inner.children[3];
+            var solid = document.querySelector(".solid-inner");
+            var fader = solid.children[3];
             if (enable) {
-                div.style.opacity = "0.35";
-                div.style.zIndex = "3";
+                fader.style.opacity = "0.35";
+                fader.style.zIndex = "3";
             }
             else {
-                div.style.opacity = "0";
-                setTimeout(function () { div.style.zIndex = "0"; }, 500);
+                fader.style.opacity = "0";
+                setTimeout(function () { fader.style.zIndex = "0"; }, 500);
             }
         };
         this.markupChunk = function (chunk) {
