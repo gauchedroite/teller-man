@@ -64,7 +64,7 @@ var GameData = (function () {
             var acts = _this.actors;
             var moms = _this.moments;
             var gdata = {
-                game: game || { id: 0, name: null, initialstate: null, desc: null },
+                game: game || { id: 0, name: null, initialstate: null, text: null },
                 situations: sits,
                 scenes: scns,
                 actors: acts,
@@ -99,9 +99,9 @@ var GameData = (function () {
             game.initialstate = text;
             _this.game = game;
         };
-        this.saveGameDesc = function (text) {
+        this.saveGameText = function (text) {
             var game = _this.game;
-            game.desc = text;
+            game.text = text;
             _this.game = game;
         };
         //
@@ -116,7 +116,7 @@ var GameData = (function () {
                     id = sit.id;
             }
             id++;
-            var sit = { id: id, gameid: gameid, name: null, when: null, tags: [], sids: [], aids: [], aid: null };
+            var sit = { id: id, gameid: gameid, name: null, when: null, text: null, sids: [], aids: [], aid: null };
             sits.push(sit);
             _this.situations = sits;
             //
@@ -163,8 +163,11 @@ var GameData = (function () {
             sit.aids = [];
             _this.situations = sits;
         };
-        this.saveSituationTags = function (name, id) {
-            //TODO
+        this.saveSituationText = function (text, id) {
+            var sits = _this.situations;
+            var sit = _this.getSituation(sits, id);
+            sit.text = text;
+            _this.situations = sits;
         };
         this.getSituation = function (sits, id) {
             return (sits[_this.getSituationIndex(sits, id)]);
@@ -190,7 +193,7 @@ var GameData = (function () {
                     id = scn.id;
             }
             id++;
-            var scn = { id: id, sitid: sitid, name: null, desc: null, mids: [] };
+            var scn = { id: id, sitid: sitid, name: null, text: null, mids: [] };
             scns.push(scn);
             _this.scenes = scns;
             //
@@ -231,10 +234,10 @@ var GameData = (function () {
             scn.name = name;
             _this.scenes = scns;
         };
-        this.saveSceneDesc = function (desc, id) {
+        this.saveSceneText = function (text, id) {
             var scns = _this.scenes;
             var scn = _this.getScene(scns, id);
-            scn.desc = desc;
+            scn.text = text;
             _this.scenes = scns;
         };
         this.getScene = function (scns, id) {
@@ -274,7 +277,7 @@ var GameData = (function () {
             }
             id++;
             var kind = (akind == undefined ? AKind.NPC : akind);
-            var act = { id: id, sitid: sitid, kind: kind, name: null, desc: null, mids: [] };
+            var act = { id: id, sitid: sitid, kind: kind, name: null, text: null, mids: [] };
             acts.push(act);
             _this.actors = acts;
             //
@@ -315,10 +318,10 @@ var GameData = (function () {
             act.name = name;
             _this.actors = acts;
         };
-        this.saveActorDesc = function (desc, id) {
+        this.saveActorText = function (text, id) {
             var acts = _this.actors;
             var act = _this.getActor(acts, id);
-            act.desc = desc;
+            act.text = text;
             _this.actors = acts;
         };
         this.getActor = function (acts, id) {
@@ -2343,7 +2346,7 @@ var Game = (function () {
         this.parseScene = function (scene) {
             var data = {};
             data.title = scene.name;
-            data.image = scene.desc;
+            data.image = scene.text;
             return data;
         };
         this.updateTimedState = function () {

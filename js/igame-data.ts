@@ -14,7 +14,7 @@ interface IGameMeta {
     id: number
     name: string
     initialstate: string
-    desc: string
+    text: string
 }
 
 interface ISituation {
@@ -22,7 +22,7 @@ interface ISituation {
     gameid: number
     name: string
     when: string
-    tags: Array<string>
+    text: string
     sids: Array<number>
     aids: Array<number>
     aid: number
@@ -32,7 +32,7 @@ interface IScene {
     id: number
     sitid: number
     name: string
-    desc: string
+    text: string
     mids: Array<number>
 }
 
@@ -41,7 +41,7 @@ interface IActor {
     id: number
     sitid: number
     name: string
-    desc: string
+    text: string
     mids: Array<number>
 }
 

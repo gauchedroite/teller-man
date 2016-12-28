@@ -10,7 +10,7 @@ class GameData {
         var acts = this.actors;
         var moms = this.moments;
         var gdata = <IGameData> { 
-            game: game || <IGameMeta>{ id:0, name: null, initialstate: null, desc: null }, 
+            game: game || <IGameMeta>{ id:0, name: null, initialstate: null, text: null }, 
             situations: sits,
             scenes: scns,
             actors: acts,
@@ -49,9 +49,9 @@ class GameData {
         this.game = game;
     }
 
-    saveGameDesc = (text: string) => {
+    saveGameText = (text: string) => {
         var game = this.game;
-        game.desc = text;
+        game.text = text;
         this.game = game;
     }
 
@@ -65,7 +65,7 @@ class GameData {
             if (sit.id > id) id = sit.id;
         }
         id++;
-        var sit: ISituation = { id: id, gameid: gameid, name: null, when: null, tags: [], sids: [], aids: [], aid: null };
+        var sit: ISituation = { id: id, gameid: gameid, name: null, when: null, text: null, sids: [], aids: [], aid: null };
         sits.push(sit);
         this.situations = sits;
         //
@@ -115,8 +115,11 @@ class GameData {
         this.situations = sits;
     }
 
-    saveSituationTags = (name: string, id: number) => {
-        //TODO
+    saveSituationText = (text: string, id: number) => {
+        var sits = this.situations;
+        var sit = this.getSituation(sits, id);
+        sit.text = text;
+        this.situations = sits;
     }
 
     getSituation = (sits: Array<ISituation>, id: number) => {
@@ -144,7 +147,7 @@ class GameData {
             if (scn.id > id) id = scn.id;
         }
         id++;
-        var scn: IScene = { id: id, sitid: sitid, name: null, desc: null, mids: [] };
+        var scn: IScene = { id: id, sitid: sitid, name: null, text: null, mids: [] };
         scns.push(scn);
         this.scenes = scns;
         //
@@ -186,10 +189,10 @@ class GameData {
         this.scenes = scns;
     }
 
-    saveSceneDesc = (desc: string, id: number) => {
+    saveSceneText = (text: string, id: number) => {
         var scns = this.scenes;
         var scn = this.getScene(scns, id);
-        scn.desc = desc;
+        scn.text = text;
         this.scenes = scns;
     }
 
@@ -229,7 +232,7 @@ class GameData {
         }
         id++;
         var kind: AKind =  (akind == undefined ? AKind.NPC : akind);
-        var act: IActor = { id: id, sitid: sitid, kind: kind, name: null, desc: null, mids: [] };
+        var act: IActor = { id: id, sitid: sitid, kind: kind, name: null, text: null, mids: [] };
         acts.push(act);
         this.actors = acts;
         //
@@ -271,10 +274,10 @@ class GameData {
         this.actors = acts;
     }
 
-    saveActorDesc = (desc: string, id: number) => {
+    saveActorText = (text: string, id: number) => {
         var acts = this.actors;
         var act = this.getActor(acts, id);
-        act.desc = desc;
+        act.text = text;
         this.actors = acts;
     }
 

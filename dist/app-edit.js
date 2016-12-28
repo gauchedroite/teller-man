@@ -46,7 +46,7 @@ var GameData = (function () {
             var acts = _this.actors;
             var moms = _this.moments;
             var gdata = {
-                game: game || { id: 0, name: null, initialstate: null, desc: null },
+                game: game || { id: 0, name: null, initialstate: null, text: null },
                 situations: sits,
                 scenes: scns,
                 actors: acts,
@@ -81,9 +81,9 @@ var GameData = (function () {
             game.initialstate = text;
             _this.game = game;
         };
-        this.saveGameDesc = function (text) {
+        this.saveGameText = function (text) {
             var game = _this.game;
-            game.desc = text;
+            game.text = text;
             _this.game = game;
         };
         //
@@ -98,7 +98,7 @@ var GameData = (function () {
                     id = sit.id;
             }
             id++;
-            var sit = { id: id, gameid: gameid, name: null, when: null, tags: [], sids: [], aids: [], aid: null };
+            var sit = { id: id, gameid: gameid, name: null, when: null, text: null, sids: [], aids: [], aid: null };
             sits.push(sit);
             _this.situations = sits;
             //
@@ -145,8 +145,11 @@ var GameData = (function () {
             sit.aids = [];
             _this.situations = sits;
         };
-        this.saveSituationTags = function (name, id) {
-            //TODO
+        this.saveSituationText = function (text, id) {
+            var sits = _this.situations;
+            var sit = _this.getSituation(sits, id);
+            sit.text = text;
+            _this.situations = sits;
         };
         this.getSituation = function (sits, id) {
             return (sits[_this.getSituationIndex(sits, id)]);
@@ -172,7 +175,7 @@ var GameData = (function () {
                     id = scn.id;
             }
             id++;
-            var scn = { id: id, sitid: sitid, name: null, desc: null, mids: [] };
+            var scn = { id: id, sitid: sitid, name: null, text: null, mids: [] };
             scns.push(scn);
             _this.scenes = scns;
             //
@@ -213,10 +216,10 @@ var GameData = (function () {
             scn.name = name;
             _this.scenes = scns;
         };
-        this.saveSceneDesc = function (desc, id) {
+        this.saveSceneText = function (text, id) {
             var scns = _this.scenes;
             var scn = _this.getScene(scns, id);
-            scn.desc = desc;
+            scn.text = text;
             _this.scenes = scns;
         };
         this.getScene = function (scns, id) {
@@ -256,7 +259,7 @@ var GameData = (function () {
             }
             id++;
             var kind = (akind == undefined ? AKind.NPC : akind);
-            var act = { id: id, sitid: sitid, kind: kind, name: null, desc: null, mids: [] };
+            var act = { id: id, sitid: sitid, kind: kind, name: null, text: null, mids: [] };
             acts.push(act);
             _this.actors = acts;
             //
@@ -297,10 +300,10 @@ var GameData = (function () {
             act.name = name;
             _this.actors = acts;
         };
-        this.saveActorDesc = function (desc, id) {
+        this.saveActorText = function (text, id) {
             var acts = _this.actors;
             var act = _this.getActor(acts, id);
-            act.desc = desc;
+            act.text = text;
             _this.actors = acts;
         };
         this.getActor = function (acts, id) {
@@ -1139,8 +1142,8 @@ var Editor = (function () {
             $(document).on("change", "#ted-game-initialstate", function (e) {
                 _this.gdata.saveGameInitialState(e.target.value);
             });
-            $(document).on("change", "#ted-game-desc", function (e) {
-                _this.gdata.saveGameDesc(e.target.value);
+            $(document).on("change", "#ted-game-text", function (e) {
+                _this.gdata.saveGameText(e.target.value);
             });
             $(document).on("change", "#ted-situation-name", function (e) {
                 _this.gdata.saveSituationName(e.target.value, _this.getMeId(e.target));
@@ -1149,28 +1152,28 @@ var Editor = (function () {
             $(document).on("change", "#ted-situation-when", function (e) {
                 _this.gdata.saveSituationWhen(e.target.value, _this.getMeId(e.target));
             });
-            $(document).on("change", "#ted-situation-tags", function (e) {
-                _this.gdata.saveSituationTags(e.target.value, _this.getMeId(e.target));
+            $(document).on("change", "#ted-situation-text", function (e) {
+                _this.gdata.saveSituationText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-scene-name", function (e) {
                 _this.gdata.saveSceneName(e.target.value, _this.getMeId(e.target));
                 $("#ted-scenes li.ted-selected div.item-title").text(e.target.value);
             });
-            $(document).on("change", "#ted-scene-desc", function (e) {
-                _this.gdata.saveSceneDesc(e.target.value, _this.getMeId(e.target));
+            $(document).on("change", "#ted-scene-text", function (e) {
+                _this.gdata.saveSceneText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-player-name", function (e) {
                 _this.gdata.saveActorName(e.target.value, _this.getMeId(e.target));
             });
-            $(document).on("change", "#ted-player-desc", function (e) {
-                _this.gdata.saveActorDesc(e.target.value, _this.getMeId(e.target));
+            $(document).on("change", "#ted-player-text", function (e) {
+                _this.gdata.saveActorText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-actor-name", function (e) {
                 _this.gdata.saveActorName(e.target.value, _this.getMeId(e.target));
                 $("#ted-actors li.ted-selected div.item-title").text(e.target.value);
             });
-            $(document).on("change", "#ted-actor-desc", function (e) {
-                _this.gdata.saveActorDesc(e.target.value, _this.getMeId(e.target));
+            $(document).on("change", "#ted-actor-text", function (e) {
+                _this.gdata.saveActorText(e.target.value, _this.getMeId(e.target));
             });
             $(document).on("change", "#ted-moment-when", function (e) {
                 _this.gdata.saveMomentWhen(e.target.value, _this.getMeId(e.target));

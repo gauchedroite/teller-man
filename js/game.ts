@@ -669,7 +669,7 @@ class Game implements IGameInstance {
     parseScene = (scene: IScene) => {
         var data = <ISceneData>{};
         data.title = scene.name;
-        data.image = scene.desc;
+        data.image = scene.text;
         return data;
     };
 

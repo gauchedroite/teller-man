@@ -529,8 +529,8 @@ class Editor implements IEditorInstance {
             this.gdata.saveGameInitialState(e.target.value);
         });
 
-        $(document).on("change", "#ted-game-desc", (e: any) => {
-            this.gdata.saveGameDesc(e.target.value);
+        $(document).on("change", "#ted-game-text", (e: any) => {
+            this.gdata.saveGameText(e.target.value);
         });
 
         $(document).on("change", "#ted-situation-name", (e: any) => {
@@ -542,8 +542,8 @@ class Editor implements IEditorInstance {
             this.gdata.saveSituationWhen(e.target.value, this.getMeId(e.target));
         });
 
-        $(document).on("change", "#ted-situation-tags", (e: any) => {
-            this.gdata.saveSituationTags(e.target.value, this.getMeId(e.target));
+        $(document).on("change", "#ted-situation-text", (e: any) => {
+            this.gdata.saveSituationText(e.target.value, this.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-scene-name", (e: any) => {
@@ -551,16 +551,16 @@ class Editor implements IEditorInstance {
             $("#ted-scenes li.ted-selected div.item-title").text(e.target.value);
         });
 
-        $(document).on("change", "#ted-scene-desc", (e: any) => {
-            this.gdata.saveSceneDesc(e.target.value, this.getMeId(e.target));
+        $(document).on("change", "#ted-scene-text", (e: any) => {
+            this.gdata.saveSceneText(e.target.value, this.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-player-name", (e: any) => {
             this.gdata.saveActorName(e.target.value, this.getMeId(e.target));
         });
 
-        $(document).on("change", "#ted-player-desc", (e: any) => {
-            this.gdata.saveActorDesc(e.target.value, this.getMeId(e.target));
+        $(document).on("change", "#ted-player-text", (e: any) => {
+            this.gdata.saveActorText(e.target.value, this.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-actor-name", (e: any) => {
@@ -568,8 +568,8 @@ class Editor implements IEditorInstance {
             $("#ted-actors li.ted-selected div.item-title").text(e.target.value);
         });
 
-        $(document).on("change", "#ted-actor-desc", (e: any) => {
-            this.gdata.saveActorDesc(e.target.value, this.getMeId(e.target));
+        $(document).on("change", "#ted-actor-text", (e: any) => {
+            this.gdata.saveActorText(e.target.value, this.getMeId(e.target));
         });
 
         $(document).on("change", "#ted-moment-when", (e: any) => {
