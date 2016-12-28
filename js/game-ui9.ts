@@ -2,10 +2,9 @@
 /// <reference path="igame.ts" />
 /// <reference path="iui.ts" />
 
-class UI2 implements IUI {
+class UI9 implements IUI {
     portrait = false;
     sections: Array<string>;
-    previousSceneUrl: string;
 
     constructor () {
     }
@@ -14,6 +13,17 @@ class UI2 implements IUI {
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
             setTimeout(onmenu, 0);
+        });
+
+        var navbar = <HTMLDivElement>document.querySelector(".navbar"); 
+        var inner = <HTMLDivElement>document.querySelector(".story-inner"); 
+        navbar.addEventListener("click", (e) => {
+            if (document.body.classList.contains("landscape")) {
+                if (inner.classList.contains("retracted"))
+                    inner.classList.remove("retracted");
+                else
+                    inner.classList.add("retracted");
+            }
         });
 
         if ("addEventListener" in document) {
@@ -40,25 +50,14 @@ class UI2 implements IUI {
         content.classList.add("overlay");
         content.style.pointerEvents = "none";
 
-        let next = document.querySelector(".next");
-
         let panel = <HTMLElement>document.querySelector(".modal-inner");
         panel.innerHTML = "<p>" + text + "</p>";
 
         let modal = <HTMLElement>document.querySelector(".modal");
         modal.classList.add("show");
 
-        const waitForClick = (done: () => void) => {
-            const onclick = () => {
-                modal.removeEventListener("click", onclick);
-                next.removeEventListener("click", onclick);
-                return done();
-            };
-            modal.addEventListener("click", onclick);
-            next.addEventListener("click", onclick);
-        };
-
-        waitForClick(() => {
+        let onclick = () => {
+            modal.removeEventListener("click", onclick);
             panel.innerHTML = `<div class="bounce1"></div><div class="bounce2"></div>`;
             const waitForClose = () => {
                 var ready = canclose();
@@ -77,7 +76,8 @@ class UI2 implements IUI {
                 }
             };
             waitForClose();
-        });
+        };
+        modal.addEventListener("click", onclick);
     };
 
     showChoices = (sceneChoices: Array<IChoice>, onchoice: (chosen: IChoice) => void) => {
@@ -91,8 +91,6 @@ class UI2 implements IUI {
             if (choice.kind == ChoiceKind.action) icon = "ion-flash";
             if (choice.kind == ChoiceKind.messageTo) icon = "ion-android-person";
             if (choice.kind == ChoiceKind.messageFrom) icon = "ion-chatbubble-working";
-            icon = "ion-arrow-right-b";
-            //icon = "ion-arrow-right-c";
 
             let li = <HTMLLIElement>document.createElement("li");
             li.setAttribute("data-kind", choice.kind.toString());
@@ -113,15 +111,9 @@ class UI2 implements IUI {
 
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
-        let storyInner = <HTMLElement>document.querySelector(".story-inner");
-        storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
-
         let text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = panel.offsetHeight + "px";
         this.scrollContent(text.parentElement);
-
-        let next = <HTMLElement>document.querySelector(".next");
-        next.classList.add("hidden");
 
         let me = this;
         let lis = document.querySelectorAll(".choice-panel li");
@@ -154,9 +146,8 @@ class UI2 implements IUI {
         content.style.pointerEvents = "auto";
 
         // make sure the first blurb will be visible
-        let storyInner = <HTMLElement>document.querySelector(".story-inner");
-        storyInner.scrollTop = content.offsetTop;
-        storyInner.style.height = "25%";
+        let inner = <HTMLElement>document.querySelector(".story-inner");
+        inner.scrollTop = content.offsetTop;
 
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";
@@ -164,11 +155,7 @@ class UI2 implements IUI {
         var text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = "0";
         text.setAttribute("style", "");
-
-        let next = <HTMLElement>document.querySelector(".next");
-        next.classList.remove("hidden");
-        
-        setTimeout(callback, 250/*matches .choice-panel transition*/);
+        setTimeout(callback, 0);
     };
 
     initScene = (data: ISceneData, callback: () => void) => {
@@ -182,27 +169,19 @@ class UI2 implements IUI {
         let html = this.markupChunk(chunk);
         let content = document.querySelector(".content");
         let inner = document.querySelector(".content-inner");
-        let next = document.querySelector(".next");
         let div = document.createElement("div");
         div.innerHTML = html;
         let section = <HTMLDivElement>div.firstChild;
-
-        const waitForClick = (done: () => void) => {
-            const onclick = () => {
-                content.removeEventListener("click", onclick);
-                next.removeEventListener("click", onclick);
-                return done();
-            };
-            content.addEventListener("click", onclick);
-            next.addEventListener("click", onclick);
-        };
 
         if (chunk.kind == ChunkKind.background) {
             if (this.portrait) return callback();
             let bg = <IBackground>chunk;
             this.changeBackground(bg.asset, () => {
                 if (bg.wait) {
-                    waitForClick(callback);
+                    content.addEventListener("click", function onclick() {
+                        content.removeEventListener("click", onclick);
+                        return callback();
+                    });
                 }
                 else
                     callback();
@@ -253,11 +232,15 @@ class UI2 implements IUI {
 
             let spans = section.querySelectorAll("span");
             if (spans.length == 0) {
-                waitForClick(callback);
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
+                    return callback();
+                });
             }
             else {
                 let ispan = 0;
-                waitForClick(() => {
+                content.addEventListener("click", function onclick() {
+                    content.removeEventListener("click", onclick);
                     clearTimeout(showTimer);
                     while (ispan < spans.length)
                         spans[ispan++].removeAttribute("style");
@@ -297,7 +280,10 @@ class UI2 implements IUI {
             this.setupMinigame(<IMiniGame>chunk, callback);
         }
         else if (chunk.kind == ChunkKind.waitclick) {
-            waitForClick(callback);
+            content.addEventListener("click", function onclick() {
+                content.removeEventListener("click", onclick);
+                return callback();
+            });
         }
         else {
             callback();
@@ -329,9 +315,9 @@ class UI2 implements IUI {
         if (document.body.classList.contains("portrait"))
             return callback();
 
-        let solid = <HTMLDivElement>document.querySelector(".solid-inner");
-        let zero = <HTMLDivElement>solid.children[0];
-        let one = <HTMLDivElement>solid.children[1];
+        let inner = <HTMLDivElement>document.querySelector(".graphics-inner");
+        let zero = <HTMLDivElement>inner.children[0];
+        let one = <HTMLDivElement>inner.children[1];
         let back = (zero.style.zIndex == "0" ? zero : one); 
         let front = (zero.style.zIndex == "0" ? one : zero); 
 
@@ -345,11 +331,6 @@ class UI2 implements IUI {
         else
             sceneUrl = `game/teller-image.html?${assetName}`;
         if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
-
-        if (sceneUrl == this.previousSceneUrl)
-            return callback();
-
-        this.previousSceneUrl = sceneUrl;
 
         this.fader(true);
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
@@ -376,7 +357,7 @@ class UI2 implements IUI {
     private setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
         let minigame = <IMiniGame>chunk;
         let game = <HTMLDivElement>document.querySelector(".game");
-        let inner = document.querySelector(".story-inner");
+        let story = document.querySelector(".story-inner");
         let panel = <HTMLDivElement>document.querySelector(".choice-panel");
         let preloader = <HTMLDivElement>document.querySelector(".preloader");
         let ready = false;
@@ -385,7 +366,7 @@ class UI2 implements IUI {
             if (result.ready != undefined) { 
                 if (fadedout) {
                     game.classList.add("show");
-                    inner.classList.add("retracted");
+                    story.classList.add("retracted");
                     this.fader(false);
                     preloader.classList.remove("change-bg");
                 }
@@ -393,7 +374,7 @@ class UI2 implements IUI {
             }
             else {
                 game.classList.remove("show");
-                inner.classList.remove("retracted");
+                story.classList.remove("retracted");
                 panel.classList.remove("disabled");
                 this.hideChoices(() => {
                     let text = (result.win == true ? minigame.winText : minigame.loseText);
@@ -410,7 +391,7 @@ class UI2 implements IUI {
         this.showChoices(choices, (chosen: IChoice) => {
             if (ready) { 
                 game.classList.add("show");
-                inner.classList.add("retracted");
+                story.classList.add("retracted");
             }
             else {
                 fadedout = true;
@@ -434,15 +415,15 @@ class UI2 implements IUI {
     }
 
     private fader = (enable: boolean) => {
-        let solid = <HTMLDivElement>document.querySelector(".solid-inner");
-        let fader = <HTMLDivElement>solid.children[3];
+        let inner = <HTMLDivElement>document.querySelector(".graphics-inner");
+        let div = <HTMLDivElement>inner.children[3];
         if (enable) {
-            fader.style.opacity = "0.35";
-            fader.style.zIndex = "3";
+            div.style.opacity = "0.35";
+            div.style.zIndex = "3";
         }
         else {
-            fader.style.opacity = "0";
-            setTimeout(() => { fader.style.zIndex = "0"; }, 500);
+            div.style.opacity = "0";
+            setTimeout(() => { div.style.zIndex = "0"; }, 500);
         }
     };
 

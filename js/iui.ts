@@ -1,5 +1,5 @@
 /// <reference path="game-ui.ts" />
-/// <reference path="game-ui2.ts" />
+/// <reference path="game-ui9.ts" />
 
 enum ChoiceKind {
     scene,

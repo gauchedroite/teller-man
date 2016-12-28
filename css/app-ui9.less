@@ -8,7 +8,7 @@
 
 @seperator-color: #333;
 @accent-color: orange;
-@navbar-height: 42px;
+@navbar-height: 36px;
 @navbar-height-portrait: 46px;
 
 html, body {
@@ -24,11 +24,20 @@ body {
     .noselect;
 }
 
-.solid {
+.story {
+    z-index: 10;
     position: absolute;
     width: 100%;
     height: 100%;
-    background-color: #ffffff;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.story-inner {
+    position: absolute;
+    overflow: hidden;
+    background-color: black;  //theme2
+    pointer-events: auto;
 }
 
 .graphics {
@@ -55,65 +64,52 @@ body {
     }
 }
 
-.story {
-    z-index: 10;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    pointer-events: none;
-}
-
 .navbar {
-    position: relative;
+    position: absolute;
     top: 0;
     left: 0;
-    width: calc(100% - 16px);
-    padding: 8px;
+    height: @navbar-height;
+    width: 100%;
     z-index: 10;
-    font-size: x-large;
-    pointer-events: auto;
+    background-color: black;
+    color: @accent-color;
+    font-size: large;
 
     .navbar-inner {
+        position: absolute;
         width: 100%;
         bottom: 0;
         display: flex;
         justify-content: space-between;
         div.title {
             cursor: default;
-            padding: 8px;
+            padding: 0 0 8px 16px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            background: rgba(255, 255, 255, 0.2);
+            margin-right: 10px;
+            i:after {
+                content: " ";
+            }
         }
         div.goto-menu {
-            padding: 8px;
+            padding: 0 16px 8px 0;
+            font-size: 16px;
+            color: @accent-color;
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.2);
+        }
+        div.title i {
+            color: @accent-color;
         }
     }
 }
 
-.story-inner {
-    position: absolute;
-    overflow: hidden;
-    pointer-events: auto;
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.next{
-    position: absolute;
-    overflow: hidden;
-    pointer-events: auto;
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
 .content {
     position: absolute;
-    top: 0;
-    height: 100%;
+    top: @navbar-height;
+    height: calc(100% - @navbar-height);
     width: 100%;
+    background-color: #ccc;
     cursor: default;
     overflow: scroll;
     &::-webkit-scrollbar { display: none; }
@@ -209,8 +205,9 @@ section {
     width: 100%;
     top: 100%;
     border-top: 3px solid @seperator-color;
-    background: #ffffff; //url(game/assets/ignasi_pattern_s.png);
+    background: url(game/assets/ignasi_pattern_s.png);
     transition: top 0.25s ease; 
+    z-index: 2; /*because of .content.noise*/
     &.disabled {
         opacity: 0.5;
         ul li {
@@ -235,7 +232,7 @@ section {
             float: left;
             border-radius: 50%;
             border: 2px solid black;
-            background-color: #ffffff; //@accent-color;
+            background-color: @accent-color;
             text-align: center;
             transform: translateY(-6px);
             i {
@@ -260,7 +257,7 @@ section {
         height: 3px;
         position: absolute;
         top: 0;
-        background-color: #ffffff; //@accent-color;
+        background-color: @accent-color;
         border-bottom: 3px solid @seperator-color;
     }
 }
@@ -353,41 +350,39 @@ section {
     }
 }
 
+/*.menu {
+    z-index: 20;
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 100%;
+    height: 100%;
+    transition: right 0.25s ease, opacity 0.25s ease;
+    iframe {
+        border: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+    }
+}*/
+
 .fader {
     background-color: black;
 }
 
 .landscape {
-    .next {
-        bottom: 5%;
-        left: 8%;
-        width: 10%;
-        height: 25%;
-        box-sizing: border-box;
-        background-color: rgba(255, 255, 255, 0.2);
-        border: 8px solid rgba(0, 0, 0, 0.075);
-        transition: left 0.15s ease;
-        .next-inner {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 64px;
-            color: rgba(0, 0, 0, 0.075);
-        }
-        &.hidden {
-            left: -10%;
-        }
-    }
     .story-inner {
-        bottom: 5%;
-        left: 20%;
-        width: 30%;
+        width: 35%;
         min-width: 350px;
         max-width: 450px;
-        height: calc(25% + 0px);
+        right: 7%;
+        height: 95%;
+        top: 2.5%;
+        border: 1px solid @seperator-color;
         transition: height 0.15s ease;
-        border-bottom: 2px solid #ddd;
+        box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.25);
         &.retracted {
             height: @navbar-height;
             opacity: 0.4;
