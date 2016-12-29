@@ -690,7 +690,7 @@ class Editor implements IEditorInstance {
         }
     }
 
-    getMeId = (target: any) => {
+    private getMeId = (target: any) => {
         return parseInt(target.closest("div.page").getAttribute("data-ted-meid"));
     }
 }

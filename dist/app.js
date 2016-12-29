@@ -30,7 +30,7 @@ var ChunkKind;
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
-    Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
+    Op[Op["START_BLURBING"] = 0] = "START_BLURBING";
     Op[Op["BLURB"] = 1] = "BLURB";
     Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
 })(Op || (Op = {}));
@@ -1721,7 +1721,7 @@ var Game = (function () {
         };
         this.startGame = function () {
             if (_this.gdata.moments.length == 0) {
-                _this.getDataFile("game/app.json", function (text) {
+                Game.getDataFile("game/app.json", function (text) {
                     if (text != undefined && text.length > 0)
                         _this.gdata.saveData(text);
                     _this.startNewGame();
@@ -1730,6 +1730,22 @@ var Game = (function () {
             else {
                 _this.continueExistingGame();
             }
+        };
+        this.resumeGame = function () {
+        };
+        this.clearAllGameData = function () {
+            var options = _this.gdata.options;
+            if (options.skipFileLoad) {
+                _this.gdata.clearContinueState();
+                _this.gdata.clearHistory();
+                _this.gdata.clearState();
+                //
+                _this.startNewGame();
+            }
+            else {
+                _this.gdata.clearStorage();
+            }
+            _this.gdata.options = options;
         };
         this.startNewGame = function () {
             _this.gdata.history = []; //init the list of showed moments
@@ -1748,9 +1764,9 @@ var Game = (function () {
             _this.gameMan.raiseActionEvent(OpAction.GAME_START);
             _this.data = _this.gdata.loadGame();
             _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-            _this.currentMoment = _this.selectOne(_this.getAllPossibleEverything());
+            _this.currentMoment = Game.selectOne(_this.getAllPossibleEverything());
             if (_this.currentMoment != null) {
-                setTimeout(function () { _this.update(Op.CURRENT_MOMENT); }, 0);
+                setTimeout(function () { _this.update(Op.START_BLURBING); }, 0);
             }
             else {
                 _this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", function () {
@@ -1760,30 +1776,14 @@ var Game = (function () {
         };
         this.continueExistingGame = function () {
             _this.restoreContinueState();
-            _this.ui.initScene(_this.parseScene(_this.currentScene), function () {
-                _this.update(_this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+            _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
+                _this.update(_this.currentMoment != null ? Op.START_BLURBING : Op.BUILD_CHOICES);
             });
-        };
-        this.resumeGame = function () {
-        };
-        this.clearAllGameData = function () {
-            var options = _this.gdata.options;
-            if (options.skipFileLoad) {
-                _this.gdata.clearContinueState();
-                _this.gdata.clearHistory();
-                _this.gdata.clearState();
-                //
-                _this.startNewGame();
-            }
-            else {
-                _this.gdata.clearStorage();
-            }
-            _this.gdata.options = options;
         };
         this.update = function (op) {
             _this.data = _this.gdata.loadGame();
             var ui = _this.ui;
-            if (op == Op.CURRENT_MOMENT) {
+            if (op == Op.START_BLURBING) {
                 _this.chunks = _this.parseMoment(_this.currentMoment);
                 _this.cix = 0;
                 var kind = _this.currentMoment.kind;
@@ -1792,7 +1792,7 @@ var Game = (function () {
                 }
                 _this.saveContinueState();
                 ui.clearBlurb();
-                ui.initScene(_this.parseScene(_this.currentScene), function () {
+                ui.initScene(Game.parseScene(_this.currentScene), function () {
                     _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
                     setTimeout(function () { _this.update(Op.BLURB); }, 0);
                 });
@@ -1851,7 +1851,7 @@ var Game = (function () {
                     ui.showChoices(choices, function (chosen) {
                         ui.hideChoices(function () {
                             _this.currentMoment = _this.getChosenMoment(chosen);
-                            _this.update(Op.CURRENT_MOMENT);
+                            _this.update(Op.START_BLURBING);
                         });
                     });
                 }
@@ -1889,7 +1889,7 @@ var Game = (function () {
         this.refreshGameAndAlert = function (text, callback) {
             var skipFileLoad = (_this.gdata.options != undefined && _this.gdata.options.skipFileLoad);
             if (skipFileLoad == false) {
-                _this.getDataFile("game/app.json", function (text) {
+                Game.getDataFile("game/app.json", function (text) {
                     if (text != undefined && text.length > 0)
                         _this.gdata.saveData(text);
                     skipFileLoad = true;
@@ -2051,7 +2051,7 @@ var Game = (function () {
                         }
                     }
                 }
-                return _this.selectOne(moments);
+                return Game.selectOne(moments);
             }
             else {
                 var id = choice.id;
@@ -2062,13 +2062,6 @@ var Game = (function () {
                 }
             }
             return null;
-        };
-        this.selectOne = function (moments) {
-            if (moments.length == 0)
-                return null;
-            var winner = Math.floor(Math.random() * moments.length);
-            var moment = moments[winner];
-            return moment;
         };
         this.isValidMoment = function (moment) {
             var when = moment.when || "";
@@ -2086,39 +2079,13 @@ var Game = (function () {
             if (history.indexOf(moment.id) != -1)
                 return false;
             //
-            return _this.isValidCondition(state, when);
+            return Game.isValidCondition(state, when);
         };
         this.isValidSituation = function (situation) {
             var when = situation.when || "";
             if (when == "")
                 return false;
-            return _this.isValidCondition(_this.gdata.state, when);
-        };
-        this.isValidCondition = function (state, when) {
-            var ok = true;
-            var conds = when.split(",");
-            for (var _i = 0, conds_1 = conds; _i < conds_1.length; _i++) {
-                var cond = conds_1[_i];
-                var parts = cond.replace("=", ":").split(":");
-                var name_1 = parts[0].trim();
-                var value = (parts.length == 2 ? parts[1].trim() : "true");
-                if (value == "true" || value == "false")
-                    value = (value == "true");
-                var statevalue = state[name_1];
-                if (value === "undef") {
-                    if (typeof statevalue !== "undefined")
-                        ok = false;
-                }
-                else {
-                    if (typeof statevalue === "undefined")
-                        ok = false;
-                    else if (statevalue !== value)
-                        ok = false;
-                }
-                if (ok == false)
-                    break;
-            }
-            return ok;
+            return Game.isValidCondition(_this.gdata.state, when);
         };
         this.getSceneOf = function (moment) {
             var scenes = _this.data.scenes;
@@ -2284,15 +2251,15 @@ var Game = (function () {
                         for (var _a = 0, rems_1 = rems; _a < rems_1.length; _a++) {
                             var rem = rems_1[_a];
                             var parts_5 = rem.replace("=", ":").split(":");
-                            var name_2 = parts_5[0].trim();
+                            var name_1 = parts_5[0].trim();
                             var value = (parts_5.length == 2 ? parts_5[1].trim() : "true");
                             if (value == "true" || value == "false")
                                 value = (value == "true");
                             var state = _this.gdata.state;
                             if (value === "undef")
-                                delete state[name_2];
+                                delete state[name_1];
                             else
-                                state[name_2] = value;
+                                state[name_1] = value;
                             _this.gdata.state = state;
                         }
                     }
@@ -2343,12 +2310,6 @@ var Game = (function () {
                 _this.gdata.history = history_1;
             }
         };
-        this.parseScene = function (scene) {
-            var data = {};
-            data.title = scene.name;
-            data.image = scene.text;
-            return data;
-        };
         this.updateTimedState = function () {
             var state = _this.gdata.state;
             var change = false;
@@ -2372,15 +2333,6 @@ var Game = (function () {
                 _this.gdata.state = state;
             }
         };
-        this.getDataFile = function (url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", url, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState == 4 && xhr.status == 200)
-                    callback(xhr.responseText);
-            };
-            xhr.send();
-        };
         window.GameInstance = this;
         this.gdata = new GameData();
         this.ui = ui;
@@ -2394,4 +2346,52 @@ var Game = (function () {
     });
     return Game;
 }());
+Game.selectOne = function (moments) {
+    if (moments.length == 0)
+        return null;
+    var winner = Math.floor(Math.random() * moments.length);
+    var moment = moments[winner];
+    return moment;
+};
+Game.isValidCondition = function (state, when) {
+    var ok = true;
+    var conds = when.split(",");
+    for (var _i = 0, conds_1 = conds; _i < conds_1.length; _i++) {
+        var cond = conds_1[_i];
+        var parts = cond.replace("=", ":").split(":");
+        var name_2 = parts[0].trim();
+        var value = (parts.length == 2 ? parts[1].trim() : "true");
+        if (value == "true" || value == "false")
+            value = (value == "true");
+        var statevalue = state[name_2];
+        if (value === "undef") {
+            if (typeof statevalue !== "undefined")
+                ok = false;
+        }
+        else {
+            if (typeof statevalue === "undefined")
+                ok = false;
+            else if (statevalue !== value)
+                ok = false;
+        }
+        if (ok == false)
+            break;
+    }
+    return ok;
+};
+Game.parseScene = function (scene) {
+    var data = {};
+    data.title = scene.name;
+    data.image = scene.text;
+    return data;
+};
+Game.getDataFile = function (url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4 && xhr.status == 200)
+            callback(xhr.responseText);
+    };
+    xhr.send();
+};
 //# sourceMappingURL=app.js.map

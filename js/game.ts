@@ -25,13 +25,9 @@ class Game implements IGameInstance {
         this.ui.initialize(() => { this.gameMan.showMenu(); });
     };
 
-    get gameMan() : IGameManInstance {
-        return (<any>window.parent).GameManInstance;
-    }
-
     startGame = () => {
         if (this.gdata.moments.length == 0) {
-            this.getDataFile("game/app.json", (text: string) => {
+            Game.getDataFile("game/app.json", (text: string) => {
                 if (text != undefined && text.length > 0) this.gdata.saveData(text);
                 this.startNewGame();
             });
@@ -40,6 +36,28 @@ class Game implements IGameInstance {
             this.continueExistingGame();
         }
     };
+
+    resumeGame = () => {
+    };
+
+    clearAllGameData = () => {
+        var options = this.gdata.options;
+        if (options.skipFileLoad) {
+            this.gdata.clearContinueState();
+            this.gdata.clearHistory();
+            this.gdata.clearState();
+            //
+            this.startNewGame();
+        }
+        else {
+            this.gdata.clearStorage();
+        }
+        this.gdata.options = options;
+    };
+
+    private get gameMan() : IGameManInstance {
+        return (<any>window.parent).GameManInstance;
+    }
 
     private startNewGame = () => {
         this.gdata.history = [];    //init the list of showed moments
@@ -61,9 +79,9 @@ class Game implements IGameInstance {
 
         this.data = this.gdata.loadGame();
         this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-        this.currentMoment = this.selectOne(this.getAllPossibleEverything());
+        this.currentMoment = Game.selectOne(this.getAllPossibleEverything());
         if (this.currentMoment != null) {
-            setTimeout(() => { this.update(Op.CURRENT_MOMENT); }, 0);
+            setTimeout(() => { this.update(Op.START_BLURBING); }, 0);
         }
         else {
             this.refreshGameAndAlert("AUCUN POINT DE DEPART POUR LE JEU", () => {
@@ -74,34 +92,16 @@ class Game implements IGameInstance {
 
     private continueExistingGame = () => {
         this.restoreContinueState();
-        this.ui.initScene(this.parseScene(this.currentScene), () => {
-            this.update(this.currentMoment != null ? Op.CURRENT_MOMENT : Op.BUILD_CHOICES);
+        this.ui.initScene(Game.parseScene(this.currentScene), () => {
+            this.update(this.currentMoment != null ? Op.START_BLURBING : Op.BUILD_CHOICES);
         });
     };
 
-    resumeGame = () => {
-    };
-
-    clearAllGameData = () => {
-        var options = this.gdata.options;
-        if (options.skipFileLoad) {
-            this.gdata.clearContinueState();
-            this.gdata.clearHistory();
-            this.gdata.clearState();
-            //
-            this.startNewGame();
-        }
-        else {
-            this.gdata.clearStorage();
-        }
-        this.gdata.options = options;
-    };
-
-    update = (op: Op): void => {
+    private update = (op: Op): void => {
         this.data = this.gdata.loadGame();
         var ui = this.ui;
 
-        if (op == Op.CURRENT_MOMENT) {
+        if (op == Op.START_BLURBING) {
             this.chunks = this.parseMoment(this.currentMoment);
             this.cix = 0;
 
@@ -112,7 +112,7 @@ class Game implements IGameInstance {
             this.saveContinueState();
             
             ui.clearBlurb();
-            ui.initScene(this.parseScene(this.currentScene), () => {
+            ui.initScene(Game.parseScene(this.currentScene), () => {
                 this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
                 setTimeout(() => { this.update(Op.BLURB); }, 0);
             });
@@ -176,7 +176,7 @@ class Game implements IGameInstance {
                 ui.showChoices(choices, (chosen: IChoice) => {
                     ui.hideChoices(() => {
                         this.currentMoment = this.getChosenMoment(chosen);
-                        this.update(Op.CURRENT_MOMENT);
+                        this.update(Op.START_BLURBING);
                     });
                 });
             }
@@ -193,7 +193,7 @@ class Game implements IGameInstance {
         }
     };
 
-    saveContinueState = () => {
+    private saveContinueState = () => {
         this.gdata.continueState = {
             momentId: (this.currentMoment != undefined ? this.currentMoment.id : undefined),
             sceneId: (this.currentScene != undefined ? this.currentScene.id : undefined),
@@ -203,7 +203,7 @@ class Game implements IGameInstance {
         };
     };
 
-    restoreContinueState = () => {
+    private restoreContinueState = () => {
         let cstate = this.gdata.continueState;
         if (cstate != undefined) {
             this.currentMoment = (cstate.momentId != undefined ? this.gdata.getMoment(this.gdata.moments, cstate.momentId) : undefined);
@@ -214,10 +214,10 @@ class Game implements IGameInstance {
         }
     };
 
-    refreshGameAndAlert = (text: string, callback: () => void) => {
+    private refreshGameAndAlert = (text: string, callback: () => void) => {
         let skipFileLoad = (this.gdata.options != undefined && this.gdata.options.skipFileLoad);
         if (skipFileLoad == false) {
-            this.getDataFile("game/app.json", (text: string) => {
+            Game.getDataFile("game/app.json", (text: string) => {
                 if (text != undefined && text.length > 0) this.gdata.saveData(text);
                 skipFileLoad = true;
             });
@@ -227,7 +227,7 @@ class Game implements IGameInstance {
         }); 
     };
 
-    getAllPossibleMoments = (): Array<IMoment> => {
+    private getAllPossibleMoments = (): Array<IMoment> => {
         var data = this.data;
 
         let sits = data.situations;
@@ -264,7 +264,7 @@ class Game implements IGameInstance {
         return moments;
     };
 
-    getAllPossibleMessages = (): Array<IMoment> => {
+    private getAllPossibleMessages = (): Array<IMoment> => {
         var data = this.data;
 
         let sits = data.situations;
@@ -301,13 +301,13 @@ class Game implements IGameInstance {
         return messages;
     };
 
-    getAllPossibleEverything = (): Array<IMoment> => {
+    private getAllPossibleEverything = (): Array<IMoment> => {
         let all = this.getAllPossibleMoments();
         Array.prototype.push.apply(all, this.getAllPossibleMessages());
         return all;
     };
 
-    buildChoices = (moments: Array<IMoment>, messages: Array<IMoment>): Array<IChoice> => {
+    private buildChoices = (moments: Array<IMoment>, messages: Array<IMoment>): Array<IChoice> => {
         let scenes = Array<IScene>();
         let actions = Array<IAction>();
         
@@ -366,7 +366,7 @@ class Game implements IGameInstance {
         return choices;
     };
 
-    getChosenMoment = (choice: IChoice): IMoment => {
+    private getChosenMoment = (choice: IChoice): IMoment => {
         if (choice.kind == ChoiceKind.scene) {
             let data = this.data;
             let scene: IScene;
@@ -383,7 +383,7 @@ class Game implements IGameInstance {
                     }
                 }
             }
-            return this.selectOne(moments);
+            return Game.selectOne(moments);
         }
         else {
             let id = choice.id;
@@ -395,14 +395,14 @@ class Game implements IGameInstance {
         return null;
     };
 
-    selectOne = (moments: Array<IMoment>) => {
+    private static selectOne = (moments: Array<IMoment>) => {
         if (moments.length == 0) return null;
         let winner = Math.floor(Math.random() * moments.length);
         let moment = moments[winner];
         return moment;
     }
 
-    isValidMoment = (moment: IMoment): boolean => {
+    private isValidMoment = (moment: IMoment): boolean => {
         var when = moment.when || "";
         if (when == "") return false;
         let state = this.gdata.state;
@@ -416,16 +416,16 @@ class Game implements IGameInstance {
         if (history.indexOf(moment.id) != -1)
             return false;
         //
-        return this.isValidCondition(state, when);
+        return Game.isValidCondition(state, when);
     };
 
-    isValidSituation = (situation: ISituation): boolean => {
+    private isValidSituation = (situation: ISituation): boolean => {
         var when = situation.when || "";
         if (when == "") return false;
-        return this.isValidCondition(this.gdata.state, when);
+        return Game.isValidCondition(this.gdata.state, when);
     }
 
-    isValidCondition = (state: any, when: string) => {
+    private static isValidCondition = (state: any, when: string) => {
         let ok = true;
         let conds = when.split(",");
         for (var cond of conds) {
@@ -446,7 +446,7 @@ class Game implements IGameInstance {
         return ok;
     }
 
-    getSceneOf = (moment: IMoment): IScene => {
+    private getSceneOf = (moment: IMoment): IScene => {
         var scenes = this.data.scenes;
         for (var scene of scenes) {
             if (scene.id == moment.parentid) {
@@ -455,7 +455,7 @@ class Game implements IGameInstance {
         }
     };
 
-    getActorOf = (message: IMoment): IActor => {
+    private getActorOf = (message: IMoment): IActor => {
         var actors = this.data.actors;
         for (var actor of actors) {
             if (actor.id == message.parentid) {
@@ -464,7 +464,7 @@ class Game implements IGameInstance {
         }
     };
 
-    getActorById = (id: number): IActor => {
+    private getActorById = (id: number): IActor => {
         var actors = this.data.actors;
         for (var actor of actors) {
             if (actor.id == id) {
@@ -473,7 +473,7 @@ class Game implements IGameInstance {
         }
     };
 
-    parseMoment = (moment: IMoment): Array<IMomentData> => {
+    private parseMoment = (moment: IMoment): Array<IMomentData> => {
         var parsed = Array<IMomentData>();
         var dialog = <IDialog>{};
         var fsm = "";
@@ -593,7 +593,7 @@ class Game implements IGameInstance {
         return parsed;
     };
 
-    executeMoment = (moment: IMoment): void => {
+    private executeMoment = (moment: IMoment): void => {
         var inComment = false
         var canRepeat = false;
 
@@ -666,14 +666,14 @@ class Game implements IGameInstance {
         }
     };
 
-    parseScene = (scene: IScene) => {
+    static parseScene = (scene: IScene) => {
         var data = <ISceneData>{};
         data.title = scene.name;
         data.image = scene.text;
         return data;
     };
 
-    updateTimedState = () => {
+    private updateTimedState = () => {
         let state = this.gdata.state;
         var change = false;
         for (var prop in state) {
@@ -697,7 +697,7 @@ class Game implements IGameInstance {
         }
     };
 
-    getDataFile = (url: string, callback: (text: string) => void) => {
+    private static getDataFile = (url: string, callback: (text: string) => void) => {
         var xhr = new XMLHttpRequest();
         xhr.open("GET", url, true);
         xhr.onreadystatechange = function () {
