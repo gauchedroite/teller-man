@@ -129,7 +129,7 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #ffffff;
+  background-color: lime;
 }
 .graphics {
   position: absolute;
@@ -186,18 +186,7 @@ body {
   white-space: nowrap;
   background: rgba(255, 255, 255, 0.2);
 }
-.navbar .navbar-inner div.goto-menu {
-  padding: 8px;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.2);
-}
 .story-inner {
-  position: absolute;
-  overflow: hidden;
-  pointer-events: auto;
-  background-color: rgba(255, 255, 255, 0.2);
-}
-.next {
   position: absolute;
   overflow: hidden;
   pointer-events: auto;
@@ -303,7 +292,7 @@ section.image div {
   position: absolute;
   width: 100%;
   top: 100%;
-  border-top: 3px solid #333333;
+  border-top: 3px solid #333;
   background: #ffffff;
   transition: top 0.25s ease;
 }
@@ -357,7 +346,7 @@ section.image div {
   position: absolute;
   top: 0;
   background-color: #ffffff;
-  border-bottom: 3px solid #333333;
+  border-bottom: 3px solid #333;
 }
 .modal {
   position: absolute;
@@ -446,45 +435,9 @@ section.image div {
 .fader {
   background-color: black;
 }
-.story-window {
-  position: absolute;
-  width: 30%;
-  height: 100%;
-  right: 0;
-  z-index: 1;
-}
-.story-window iframe {
-  border: 0;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-}
-.landscape .next {
-  bottom: 1%;
-  left: 1%;
-  width: 10%;
-  height: 25%;
-  box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 8px solid rgba(0, 0, 0, 0.075);
-  transition: left 0.15s ease;
-}
-.landscape .next .next-inner {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  font-size: 64px;
-  color: rgba(0, 0, 0, 0.075);
-}
-.landscape .next.hidden {
-  left: -10%;
-}
-.landscape .story-inner {
-  bottom: 1%;
-  left: 12%;
+.story-inner {
+  bottom: 5%;
+  left: 20%;
   width: 30%;
   min-width: 350px;
   max-width: 450px;
@@ -492,26 +445,7 @@ section.image div {
   transition: height 0.15s ease;
   border-bottom: 2px solid #ddd;
 }
-.landscape .story-inner.retracted {
+.story-inner.retracted {
   height: 42px;
   opacity: 0.4;
-}
-.portrait .graphics.game {
-  height: calc(100% - 46px);
-  top: 46px;
-}
-.portrait .navbar {
-  height: 46px;
-}
-.portrait .content {
-  top: 46px;
-  height: calc(100% - 46px);
-}
-.portrait .story-inner {
-  width: 100%;
-  height: 100%;
-  transition: height 0.15s ease;
-}
-.portrait .story-inner.retracted {
-  height: 46px;
 }

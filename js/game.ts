@@ -7,52 +7,65 @@
 class Game implements IGameInstance {
     gdata: GameData;
     ui: IUI;
+    isRoot: boolean;
     data: IGameData;
     currentMoment: IMoment;
     currentScene: IScene;
     forbiddenSceneId: number;
     chunks: Array<IMomentData>;
     cix: number;
+    sitWindows = new Array<string>();
+    gameWindows = new Array<IGameInstance>();
 
-    constructor(ui: IUI) {
+    constructor(ui: IUI, isRoot: boolean = false) {
         (<any>window).GameInstance = this;
 
         this.gdata = new GameData();
         this.ui = ui
+        this.isRoot = isRoot;
     }
 
     initialize = () => {
-        this.ui.initialize(() => { this.gameMan.showMenu(); });
+        this.ui.initialize(() => { 
+            if (this.isRoot) {
+                this.gameMan.showMenu(); 
+            }
+        });
     };
 
     startGame = () => {
-        if (this.gdata.moments.length == 0) {
-            Game.getDataFile("game/app.json", (text: string) => {
-                if (text != undefined && text.length > 0) this.gdata.saveData(text);
-                this.startNewGame();
-            });
-        }
-        else {
-            this.continueExistingGame();
+        if (this.isRoot) {
+            if (this.gdata.moments.length == 0) {
+                Game.getDataFile("game/app.json", (text: string) => {
+                    if (text != undefined && text.length > 0) this.gdata.saveData(text);
+                    this.startNewGame();
+                });
+            }
+            else {
+                this.continueExistingGame();
+            }
         }
     };
 
     resumeGame = () => {
+        if (this.isRoot) { }
     };
 
     clearAllGameData = () => {
-        var options = this.gdata.options;
-        if (options.skipFileLoad) {
-            this.gdata.clearContinueState();
-            this.gdata.clearHistory();
-            this.gdata.clearState();
-            //
-            this.startNewGame();
+        if (this.isRoot) {
+            var options = this.gdata.options;
+            if (options.skipFileLoad) {
+                this.gdata.clearContinueState();
+                this.gdata.clearHistory();
+                this.gdata.clearState();
+                //
+                this.startNewGame();
+            }
+            else {
+                this.gdata.clearStorage();
+            }
+            this.gdata.options = options;
         }
-        else {
-            this.gdata.clearStorage();
-        }
-        this.gdata.options = options;
     };
 
     private get gameMan() : IGameManInstance {
@@ -92,6 +105,7 @@ class Game implements IGameInstance {
 
     private continueExistingGame = () => {
         this.restoreContinueState();
+        this.data = this.gdata.loadGame();
         this.ui.initScene(Game.parseScene(this.currentScene), () => {
             this.update(this.currentMoment != null ? Op.START_BLURBING : Op.BUILD_CHOICES);
         });
@@ -99,7 +113,16 @@ class Game implements IGameInstance {
 
     private update = (op: Op): void => {
         this.data = this.gdata.loadGame();
-        var ui = this.ui;
+        if (this.isRoot) {
+            var newSitWindows = this.getSitWindows();
+            newSitWindows.forEach((value => {
+                this.ui.addChildWindow(value, (game: IGameInstance) => {
+                    this.gameWindows.push(game);
+                    console.log("child window ready");
+                    game.initialize();
+                });
+            }));
+        }
 
         if (op == Op.START_BLURBING) {
             this.chunks = this.parseMoment(this.currentMoment);
@@ -111,11 +134,15 @@ class Game implements IGameInstance {
             }
             this.saveContinueState();
             
-            ui.clearBlurb();
-            ui.initScene(Game.parseScene(this.currentScene), () => {
+            this.ui.clearBlurb();
+            this.ui.initScene(Game.parseScene(this.currentScene), () => {
                 this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
                 setTimeout(() => { this.update(Op.BLURB); }, 0);
             });
+
+            if (this.isRoot) {
+                this.startWindowBlurbing();
+            }
         }
         else if (op == Op.BLURB) {
             if (this.cix < this.chunks.length) {
@@ -125,12 +152,12 @@ class Game implements IGameInstance {
                 let notLast = this.cix < this.chunks.length;
                 let goFast = this.gdata.options.fastStory && notLast;
                 if (goFast) {
-                    ui.addBlurbFast(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
+                    this.ui.addBlurbFast(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
                 }
                 else {
                     if (chunk.kind == ChunkKind.minigame) {
                         let minigame = <IMiniGame>chunk;
-                        ui.addBlurb(chunk, (result: any) => {
+                        this.ui.addBlurb(chunk, (result: any) => {
                             let command = (result.win == true ? minigame.winCommand : minigame.loseCommand);
                             let moment = <IMoment> { id: -1, text: command, parentid: this.currentScene.id };
                             this.executeMoment(moment);
@@ -144,7 +171,7 @@ class Game implements IGameInstance {
                     }
                     else {
                         const showBlurb = () => {
-                            ui.addBlurb(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
+                            this.ui.addBlurb(chunk, () => { setTimeout(() => { this.update(Op.BLURB); }, 50); });
                         };
                         if (first)
                             setTimeout(() => { showBlurb(); }, 500);
@@ -173,8 +200,8 @@ class Game implements IGameInstance {
             let choices = this.buildChoices(moments, messages);
             this.updateTimedState();
             if (choices.length > 0) {
-                ui.showChoices(choices, (chosen: IChoice) => {
-                    ui.hideChoices(() => {
+                this.ui.showChoices(choices, (chosen: IChoice) => {
+                    this.ui.hideChoices(() => {
                         this.currentMoment = this.getChosenMoment(chosen);
                         this.update(Op.START_BLURBING);
                     });
@@ -695,6 +722,24 @@ class Game implements IGameInstance {
         if (change) {
             this.gdata.state = state;
         }
+    };
+
+    private getSitWindows = () => {
+        let newSitWindows = new Array<string>();
+        let sits = this.data.situations;
+        for (var sit of sits) {
+            if (sit.text != undefined && this.sitWindows.indexOf(sit.text) == -1) {
+                this.sitWindows.push(sit.text);
+                newSitWindows.push(sit.text);
+            }
+        }
+        return newSitWindows;
+    };
+
+    private startWindowBlurbing = () => {
+        this.sitWindows.forEach((value, index) => {
+
+        });
     };
 
     private static getDataFile = (url: string, callback: (text: string) => void) => {

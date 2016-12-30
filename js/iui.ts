@@ -1,4 +1,5 @@
 /// <reference path="game-ui.ts" />
+/// <reference path="game-ui2.ts" />
 /// <reference path="game-ui9.ts" />
 
 enum ChoiceKind {
@@ -24,4 +25,5 @@ interface IUI {
     addBlurb: (chunk: IMomentData, callback: (result?: any) => void) => void,
     addBlurbFast: (chunk: IMomentData, callback: () => void) => void,
     clearBlurb: () => void
+    addChildWindow: (value: string, callback: (game: IGameInstance) => void) => void
 }

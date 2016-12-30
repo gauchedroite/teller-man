@@ -1,8 +1,9 @@
 /// <reference path="helpers.ts" />
 /// <reference path="igame.ts" />
 /// <reference path="iui.ts" />
+/// <reference path="iinstance.ts" />
 
-class UI implements IUI {
+class UI2 implements IUI {
     portrait = false;
     sections: Array<string>;
     previousSceneUrl: string;
@@ -11,36 +12,12 @@ class UI implements IUI {
     }
 
     initialize = (onmenu: () => void) => {
-        document.querySelector(".goto-menu").addEventListener("click", (e) => {
-            e.stopPropagation();
-            setTimeout(onmenu, 0);
-        });
-
-        if ("addEventListener" in document) {
-            document.addEventListener("DOMContentLoaded", () => {
-                FastClick.attach(document.body);
-                this.portrait = window.innerWidth < 750;
-                let format = (this.portrait ? "portrait" : "landscape");
-                document.body.classList.add(format);
-            }, false);
-        }
-
-        window.onresize = () => {
-            this.portrait = window.innerWidth < 750;
-            let format = (this.portrait ? "portrait" : "landscape");
-            if (document.body.classList.contains(format) == false) {
-                document.body.removeAttribute("class");
-                document.body.classList.add(format);
-            }
-        };
     };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
         content.style.pointerEvents = "none";
-
-        let next = document.querySelector(".next");
 
         let panel = <HTMLElement>document.querySelector(".modal-inner");
         panel.innerHTML = "<p>" + text + "</p>";
@@ -51,11 +28,9 @@ class UI implements IUI {
         const waitForClick = (done: () => void) => {
             const onclick = () => {
                 modal.removeEventListener("click", onclick);
-                next.removeEventListener("click", onclick);
                 return done();
             };
             modal.addEventListener("click", onclick);
-            next.addEventListener("click", onclick);
         };
 
         waitForClick(() => {
@@ -323,17 +298,7 @@ class UI implements IUI {
     };
 
     addChildWindow = (value: string, callback: (game: IGameInstance) => void) => {
-        let storyWindow = document.querySelector(".story-window");
-        let iframe = document.createElement("iframe");
-        iframe.setAttribute("src", value);
-        storyWindow.appendChild(iframe);
-        setTimeout(function retry() {
-            let doc = <any>iframe.contentWindow;
-            if (doc.GameInstance == undefined)
-                setTimeout(retry, 50);
-            else
-                callback(doc.GameInstance);
-        }, 0);
+        callback(null);
     };
 
     private changeBackground = (assetName: string, callback: () => void) => {

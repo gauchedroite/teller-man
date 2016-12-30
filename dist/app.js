@@ -1054,6 +1054,19 @@ var UI = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
+        this.addChildWindow = function (value, callback) {
+            var storyWindow = document.querySelector(".story-window");
+            var iframe = document.createElement("iframe");
+            iframe.setAttribute("src", value);
+            storyWindow.appendChild(iframe);
+            setTimeout(function retry() {
+                var doc = iframe.contentWindow;
+                if (doc.GameInstance == undefined)
+                    setTimeout(retry, 50);
+                else
+                    callback(doc.GameInstance);
+            }, 0);
+        };
         this.changeBackground = function (assetName, callback) {
             if (assetName == undefined)
                 return callback();
@@ -1238,6 +1251,459 @@ var UI = (function () {
 /// <reference path="helpers.ts" />
 /// <reference path="igame.ts" />
 /// <reference path="iui.ts" />
+/// <reference path="iinstance.ts" />
+var UI2 = (function () {
+    function UI2() {
+        var _this = this;
+        this.portrait = false;
+        this.initialize = function (onmenu) {
+        };
+        this.alert = function (text, canclose, onalert) {
+            var content = document.querySelector(".content");
+            content.classList.add("overlay");
+            content.style.pointerEvents = "none";
+            var panel = document.querySelector(".modal-inner");
+            panel.innerHTML = "<p>" + text + "</p>";
+            var modal = document.querySelector(".modal");
+            modal.classList.add("show");
+            var waitForClick = function (done) {
+                var onclick = function () {
+                    modal.removeEventListener("click", onclick);
+                    return done();
+                };
+                modal.addEventListener("click", onclick);
+            };
+            waitForClick(function () {
+                panel.innerHTML = "<div class=\"bounce1\"></div><div class=\"bounce2\"></div>";
+                var waitForClose = function () {
+                    var ready = canclose();
+                    if (ready) {
+                        modal.classList.remove("show");
+                        modal.classList.remove("disable");
+                        setTimeout(function () {
+                            content.classList.remove("overlay");
+                            content.style.pointerEvents = "";
+                            setTimeout(onalert, 0);
+                        }, 250);
+                    }
+                    else {
+                        modal.classList.add("disable");
+                        setTimeout(waitForClose, 100);
+                    }
+                };
+                waitForClose();
+            });
+        };
+        this.showChoices = function (sceneChoices, onchoice) {
+            var panel = document.querySelector(".choice-panel");
+            panel.innerHTML = "";
+            var ul = document.createElement("ul");
+            for (var i = 0; i < sceneChoices.length; i++) {
+                var choice = sceneChoices[i];
+                var icon = "ion-ios-location";
+                if (choice.kind == ChoiceKind.action)
+                    icon = "ion-flash";
+                if (choice.kind == ChoiceKind.messageTo)
+                    icon = "ion-android-person";
+                if (choice.kind == ChoiceKind.messageFrom)
+                    icon = "ion-chatbubble-working";
+                icon = "ion-arrow-right-b";
+                //icon = "ion-arrow-right-c";
+                var li = document.createElement("li");
+                li.setAttribute("data-kind", choice.kind.toString());
+                li.setAttribute("data-id", choice.id.toString());
+                var html = "\n                <div class=\"kind\"><div><i class=\"icon " + icon + "\"></i></div></div>\n                <div class=\"choice\">" + choice.text + "</div>";
+                if (choice.subtext != undefined) {
+                    html = html + "<div class=\"choice subtext\">" + choice.subtext + "</div>";
+                }
+                li.innerHTML = html;
+                ul.appendChild(li);
+            }
+            panel.appendChild(ul);
+            var content = document.querySelector(".content");
+            content.classList.add("overlay");
+            panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
+            var storyInner = document.querySelector(".story-inner");
+            storyInner.style.height = "calc(25% + " + panel.offsetHeight + "px)";
+            var text = document.querySelector(".content-inner");
+            text.style.marginBottom = panel.offsetHeight + "px";
+            _this.scrollContent(text.parentElement);
+            var next = document.querySelector(".next");
+            next.classList.add("hidden");
+            var me = _this;
+            var lis = document.querySelectorAll(".choice-panel li");
+            var onChoice = function (e) {
+                for (var i = 0; i < lis.length; i++) {
+                    lis[i].removeEventListener("click", onChoice);
+                }
+                var target = e.target;
+                var li = target;
+                while (true) {
+                    if (li.nodeName == "LI")
+                        break;
+                    li = li.parentElement;
+                }
+                setTimeout(function () {
+                    onchoice({
+                        kind: parseInt(li.getAttribute("data-kind")),
+                        id: parseInt(li.getAttribute("data-id")),
+                        text: ""
+                    });
+                }, 0);
+            };
+            for (var i = 0; i < lis.length; i++) {
+                lis[i].addEventListener("click", onChoice);
+            }
+        };
+        this.hideChoices = function (callback) {
+            var content = document.querySelector(".content");
+            content.classList.remove("overlay");
+            content.style.pointerEvents = "auto";
+            // make sure the first blurb will be visible
+            var storyInner = document.querySelector(".story-inner");
+            storyInner.scrollTop = content.offsetTop;
+            storyInner.style.height = "25%";
+            var panel = document.querySelector(".choice-panel");
+            panel.style.top = "100%";
+            var text = document.querySelector(".content-inner");
+            text.style.marginBottom = "0";
+            text.setAttribute("style", "");
+            var next = document.querySelector(".next");
+            next.classList.remove("hidden");
+            setTimeout(callback, 250 /*matches .choice-panel transition*/);
+        };
+        this.initScene = function (data, callback) {
+            var title = document.querySelector(".title span");
+            title.textContent = data.title;
+            if (data.image == undefined)
+                return callback();
+            _this.changeBackground(data.image, callback);
+        };
+        this.addBlurb = function (chunk, callback) {
+            var html = _this.markupChunk(chunk);
+            var content = document.querySelector(".content");
+            var inner = document.querySelector(".content-inner");
+            var next = document.querySelector(".next");
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            var section = div.firstChild;
+            var waitForClick = function (done) {
+                var onclick = function () {
+                    content.removeEventListener("click", onclick);
+                    next.removeEventListener("click", onclick);
+                    return done();
+                };
+                content.addEventListener("click", onclick);
+                next.addEventListener("click", onclick);
+            };
+            if (chunk.kind == ChunkKind.background) {
+                if (_this.portrait)
+                    return callback();
+                var bg_2 = chunk;
+                _this.changeBackground(bg_2.asset, function () {
+                    if (bg_2.wait) {
+                        waitForClick(callback);
+                    }
+                    else
+                        callback();
+                });
+            }
+            else if (chunk.kind == ChunkKind.inline) {
+                section.style.opacity = "0";
+                inner.appendChild(section);
+                _this.scrollContent(inner.parentElement);
+                section.style.opacity = "1";
+                section.style.transition = "opacity 0.1s ease";
+                section.style.animation = "color-cycle 5s infinite";
+                var assetName_3 = chunk.image.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (assetName_3.indexOf(".") == -1)
+                    assetName_3 += ".jpg";
+                assetName_3 = "game/assets/" + assetName_3;
+                var image = new Image();
+                image.onload = function () {
+                    section.style.animation = "";
+                    var img = section.firstElementChild;
+                    img.style.backgroundImage = "url(" + assetName_3 + ")";
+                    img.style.height = "100%";
+                    return callback();
+                };
+                image.src = assetName_3;
+            }
+            else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
+                section.style.opacity = "0";
+                inner.appendChild(section);
+                _this.scrollContent(inner.parentElement);
+                section.style.opacity = "1";
+                section.style.transition = "all 0.15s ease";
+                if (chunk.kind == ChunkKind.dialog) {
+                    var dialog = chunk;
+                    if (dialog.mood != undefined) {
+                        var assetName_4 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                        if (assetName_4.indexOf(".") == -1)
+                            assetName_4 += ".jpg";
+                        var head_2 = section.getElementsByClassName("head")[0];
+                        var image_2 = new Image();
+                        image_2.onload = function () {
+                            head_2.style.backgroundImage = "url(" + assetName_4 + ")";
+                            head_2.classList.add("show");
+                        };
+                        setTimeout(function () { image_2.src = assetName_4; }, 100);
+                    }
+                }
+                var spans_2 = section.querySelectorAll("span");
+                if (spans_2.length == 0) {
+                    waitForClick(callback);
+                }
+                else {
+                    var ispan_2 = 0;
+                    waitForClick(function () {
+                        clearTimeout(showTimer);
+                        while (ispan_2 < spans_2.length)
+                            spans_2[ispan_2++].removeAttribute("style");
+                        return callback();
+                    });
+                    var showTimer = setTimeout(function show() {
+                        spans_2[ispan_2++].removeAttribute("style");
+                        if (ispan_2 < spans_2.length)
+                            showTimer = setTimeout(show, 25);
+                    }, 100);
+                }
+            }
+            else if (chunk.kind == ChunkKind.heading) {
+                var heading_2 = document.querySelector(".heading");
+                var inner_2 = document.querySelector(".heading-inner");
+                inner_2.innerHTML = html;
+                heading_2.classList.add("show", "showing");
+                heading_2.addEventListener("click", function onclick() {
+                    heading_2.removeEventListener("click", onclick);
+                    heading_2.classList.remove("showing");
+                    setTimeout(function () { heading_2.classList.remove("show"); callback(); }, 500);
+                });
+            }
+            else if (chunk.kind == ChunkKind.doo) {
+                var choices = Array();
+                choices.push({
+                    kind: ChoiceKind.action,
+                    id: 0,
+                    text: chunk.text
+                });
+                _this.showChoices(choices, function (chosen) {
+                    _this.hideChoices(callback);
+                });
+            }
+            else if (chunk.kind == ChunkKind.minigame) {
+                _this.setupMinigame(chunk, callback);
+            }
+            else if (chunk.kind == ChunkKind.waitclick) {
+                waitForClick(callback);
+            }
+            else {
+                callback();
+            }
+        };
+        this.addBlurbFast = function (chunk, callback) {
+            var html = _this.markupChunk(chunk)
+                .replace(/ style\="visibility:hidden"/g, "")
+                .replace(/<span>/g, "")
+                .replace(/<\/span>/g, "");
+            var content = document.querySelector(".content-inner");
+            var div = document.createElement("div");
+            div.innerHTML = html;
+            var section = div.firstChild;
+            content.appendChild(section);
+            callback();
+        };
+        this.clearBlurb = function () {
+            var content = document.querySelector(".content-inner");
+            content.innerHTML = "";
+        };
+        this.addChildWindow = function (value, callback) {
+            callback(null);
+        };
+        this.changeBackground = function (assetName, callback) {
+            if (assetName == undefined)
+                return callback();
+            assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+            if (document.body.classList.contains("portrait"))
+                return callback();
+            var solid = document.querySelector(".solid-inner");
+            var zero = solid.children[0];
+            var one = solid.children[1];
+            var back = (zero.style.zIndex == "0" ? zero : one);
+            var front = (zero.style.zIndex == "0" ? one : zero);
+            var backFrame = back.firstElementChild;
+            var frontFrame = front.firstElementChild;
+            if (assetName.indexOf(".") == -1)
+                assetName += ".jpg";
+            var sceneUrl;
+            if (assetName.endsWith(".html"))
+                sceneUrl = "game/" + assetName;
+            else
+                sceneUrl = "game/teller-image.html?" + assetName;
+            if (frontFrame.src.indexOf(sceneUrl) != -1)
+                return callback();
+            if (sceneUrl == _this.previousSceneUrl)
+                return callback();
+            _this.previousSceneUrl = sceneUrl;
+            _this.fader(true);
+            var preloader = document.querySelector(".preloader");
+            preloader.classList.add("change-bg");
+            window.eventHubAction = function (result) {
+                if (result.content == "ready") {
+                    back.style.opacity = "1";
+                    front.style.opacity = "0";
+                    _this.fader(false);
+                    preloader.classList.remove("change-bg");
+                    setTimeout(function () {
+                        back.style.zIndex = "1";
+                        front.style.zIndex = "0";
+                        callback();
+                    }, 500);
+                }
+            };
+            back.style.opacity = "0";
+            backFrame.setAttribute("src", sceneUrl);
+        };
+        this.setupMinigame = function (chunk, callback) {
+            var minigame = chunk;
+            var game = document.querySelector(".game");
+            var inner = document.querySelector(".story-inner");
+            var panel = document.querySelector(".choice-panel");
+            var preloader = document.querySelector(".preloader");
+            var ready = false;
+            var fadedout = false;
+            _this.runMinigame(minigame.url, function (result) {
+                if (result.ready != undefined) {
+                    if (fadedout) {
+                        game.classList.add("show");
+                        inner.classList.add("retracted");
+                        _this.fader(false);
+                        preloader.classList.remove("change-bg");
+                    }
+                    ready = true;
+                }
+                else {
+                    game.classList.remove("show");
+                    inner.classList.remove("retracted");
+                    panel.classList.remove("disabled");
+                    _this.hideChoices(function () {
+                        var text = (result.win == true ? minigame.winText : minigame.loseText);
+                        setTimeout(function () { callback(result); }, 0);
+                    });
+                }
+            });
+            var choices = Array();
+            choices.push({
+                kind: ChoiceKind.action,
+                id: 0,
+                text: minigame.text
+            });
+            _this.showChoices(choices, function (chosen) {
+                if (ready) {
+                    game.classList.add("show");
+                    inner.classList.add("retracted");
+                }
+                else {
+                    fadedout = true;
+                    _this.fader(true);
+                    preloader.classList.add("change-bg");
+                }
+                panel.classList.add("disabled");
+            });
+        };
+        this.runMinigame = function (url, callback) {
+            var src = "game/" + url.replace(/ /g, "%20").replace(/'/g, "%27");
+            var game = document.querySelector(".game");
+            var gameFrame = game.firstElementChild;
+            window.eventHubAction = function (result) {
+                setTimeout(function () { callback(result); }, 0);
+            };
+            gameFrame.setAttribute("src", src);
+        };
+        this.fader = function (enable) {
+            var solid = document.querySelector(".solid-inner");
+            var fader = solid.children[3];
+            if (enable) {
+                fader.style.opacity = "0.35";
+                fader.style.zIndex = "3";
+            }
+            else {
+                fader.style.opacity = "0";
+                setTimeout(function () { fader.style.zIndex = "0"; }, 500);
+            }
+        };
+        this.markupChunk = function (chunk) {
+            var html = Array();
+            if (chunk.kind == ChunkKind.text) {
+                var text = chunk;
+                html.push("<section class='text'>");
+                for (var _i = 0, _a = text.lines; _i < _a.length; _i++) {
+                    var line = _a[_i];
+                    html.push("<p>" + line + "</p>");
+                }
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.dialog) {
+                var dialog = chunk;
+                var hasImage = (dialog.mood != undefined);
+                html.push("<section class='dialog'>");
+                if (hasImage) {
+                    html.push("<div class='head-placeholder'></div>");
+                    html.push("<div class='head'></div>");
+                    html.push("<div class='text'>");
+                }
+                html.push("<h1>" + dialog.actor + "</h1>");
+                if (dialog.parenthetical != undefined)
+                    html.push("<h2>" + dialog.parenthetical + "</h2>");
+                for (var _b = 0, _c = dialog.lines; _b < _c.length; _b++) {
+                    var line = _c[_b];
+                    var spans = Array.prototype.map.call(line, function (char) {
+                        return "<span style='visibility:hidden'>" + char + "</span>";
+                    });
+                    html.push("<p>" + spans.join("") + "</p>");
+                }
+                if (hasImage)
+                    html.push("</div>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.gameresult) {
+                var result = chunk;
+                html.push("<section class='result'>");
+                html.push("<p>" + result.text + "</p>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.inline) {
+                html.push("<section class='image'>");
+                html.push("<div></div>");
+                html.push("</section>");
+            }
+            else if (chunk.kind == ChunkKind.heading) {
+                var heading = chunk;
+                html.push("<h1>" + heading.title + "</h1>");
+                if (heading.subtitle != undefined)
+                    html.push("<h2>" + heading.subtitle + "</h2>");
+            }
+            return html.join("");
+        };
+        this.scrollContent = function (element) {
+            var start = element.scrollTop;
+            var end = (element.scrollHeight - element.clientHeight);
+            if (end <= start)
+                return;
+            var top = start;
+            setTimeout(function scroll() {
+                top += 10;
+                element.scrollTop = top + 1;
+                if (top < end)
+                    setTimeout(scroll, 10);
+            }, 10);
+        };
+    }
+    return UI2;
+}());
+/// <reference path="helpers.ts" />
+/// <reference path="igame.ts" />
+/// <reference path="iui.ts" />
 var UI9 = (function () {
     function UI9() {
         var _this = this;
@@ -1391,9 +1857,9 @@ var UI9 = (function () {
             if (chunk.kind == ChunkKind.background) {
                 if (_this.portrait)
                     return callback();
-                var bg_2 = chunk;
-                _this.changeBackground(bg_2.asset, function () {
-                    if (bg_2.wait) {
+                var bg_3 = chunk;
+                _this.changeBackground(bg_3.asset, function () {
+                    if (bg_3.wait) {
                         content.addEventListener("click", function onclick() {
                             content.removeEventListener("click", onclick);
                             return callback();
@@ -1410,19 +1876,19 @@ var UI9 = (function () {
                 section.style.opacity = "1";
                 section.style.transition = "opacity 0.1s ease";
                 section.style.animation = "color-cycle 5s infinite";
-                var assetName_3 = chunk.image.replace(/ /g, "%20").replace(/'/g, "%27");
-                if (assetName_3.indexOf(".") == -1)
-                    assetName_3 += ".jpg";
-                assetName_3 = "game/assets/" + assetName_3;
+                var assetName_5 = chunk.image.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (assetName_5.indexOf(".") == -1)
+                    assetName_5 += ".jpg";
+                assetName_5 = "game/assets/" + assetName_5;
                 var image = new Image();
                 image.onload = function () {
                     section.style.animation = "";
                     var img = section.firstElementChild;
-                    img.style.backgroundImage = "url(" + assetName_3 + ")";
+                    img.style.backgroundImage = "url(" + assetName_5 + ")";
                     img.style.height = "100%";
                     return callback();
                 };
-                image.src = assetName_3;
+                image.src = assetName_5;
             }
             else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
                 section.style.opacity = "0";
@@ -1433,50 +1899,50 @@ var UI9 = (function () {
                 if (chunk.kind == ChunkKind.dialog) {
                     var dialog = chunk;
                     if (dialog.mood != undefined) {
-                        var assetName_4 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
-                        if (assetName_4.indexOf(".") == -1)
-                            assetName_4 += ".jpg";
-                        var head_2 = section.getElementsByClassName("head")[0];
-                        var image_2 = new Image();
-                        image_2.onload = function () {
-                            head_2.style.backgroundImage = "url(" + assetName_4 + ")";
-                            head_2.classList.add("show");
+                        var assetName_6 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                        if (assetName_6.indexOf(".") == -1)
+                            assetName_6 += ".jpg";
+                        var head_3 = section.getElementsByClassName("head")[0];
+                        var image_3 = new Image();
+                        image_3.onload = function () {
+                            head_3.style.backgroundImage = "url(" + assetName_6 + ")";
+                            head_3.classList.add("show");
                         };
-                        setTimeout(function () { image_2.src = assetName_4; }, 100);
+                        setTimeout(function () { image_3.src = assetName_6; }, 100);
                     }
                 }
-                var spans_2 = section.querySelectorAll("span");
-                if (spans_2.length == 0) {
+                var spans_3 = section.querySelectorAll("span");
+                if (spans_3.length == 0) {
                     content.addEventListener("click", function onclick() {
                         content.removeEventListener("click", onclick);
                         return callback();
                     });
                 }
                 else {
-                    var ispan_2 = 0;
+                    var ispan_3 = 0;
                     content.addEventListener("click", function onclick() {
                         content.removeEventListener("click", onclick);
                         clearTimeout(showTimer);
-                        while (ispan_2 < spans_2.length)
-                            spans_2[ispan_2++].removeAttribute("style");
+                        while (ispan_3 < spans_3.length)
+                            spans_3[ispan_3++].removeAttribute("style");
                         return callback();
                     });
                     var showTimer = setTimeout(function show() {
-                        spans_2[ispan_2++].removeAttribute("style");
-                        if (ispan_2 < spans_2.length)
+                        spans_3[ispan_3++].removeAttribute("style");
+                        if (ispan_3 < spans_3.length)
                             showTimer = setTimeout(show, 25);
                     }, 100);
                 }
             }
             else if (chunk.kind == ChunkKind.heading) {
-                var heading_2 = document.querySelector(".heading");
-                var inner_2 = document.querySelector(".heading-inner");
-                inner_2.innerHTML = html;
-                heading_2.classList.add("show", "showing");
-                heading_2.addEventListener("click", function onclick() {
-                    heading_2.removeEventListener("click", onclick);
-                    heading_2.classList.remove("showing");
-                    setTimeout(function () { heading_2.classList.remove("show"); callback(); }, 500);
+                var heading_3 = document.querySelector(".heading");
+                var inner_3 = document.querySelector(".heading-inner");
+                inner_3.innerHTML = html;
+                heading_3.classList.add("show", "showing");
+                heading_3.addEventListener("click", function onclick() {
+                    heading_3.removeEventListener("click", onclick);
+                    heading_3.classList.remove("showing");
+                    setTimeout(function () { heading_3.classList.remove("show"); callback(); }, 500);
                 });
             }
             else if (chunk.kind == ChunkKind.doo) {
@@ -1698,9 +2164,11 @@ var UI9 = (function () {
     return UI9;
 }());
 /// <reference path="game-ui.ts" />
+/// <reference path="game-ui2.ts" />
 /// <reference path="game-ui9.ts" />
 var ChoiceKind;
 /// <reference path="game-ui.ts" />
+/// <reference path="game-ui2.ts" />
 /// <reference path="game-ui9.ts" />
 (function (ChoiceKind) {
     ChoiceKind[ChoiceKind["scene"] = 0] = "scene";
@@ -1714,38 +2182,50 @@ var ChoiceKind;
 /// <reference path="igame.ts" />
 /// <reference path="iui.ts" />
 var Game = (function () {
-    function Game(ui) {
+    function Game(ui, isRoot) {
+        if (isRoot === void 0) { isRoot = false; }
         var _this = this;
+        this.sitWindows = new Array();
+        this.gameWindows = new Array();
         this.initialize = function () {
-            _this.ui.initialize(function () { _this.gameMan.showMenu(); });
+            _this.ui.initialize(function () {
+                if (_this.isRoot) {
+                    _this.gameMan.showMenu();
+                }
+            });
         };
         this.startGame = function () {
-            if (_this.gdata.moments.length == 0) {
-                Game.getDataFile("game/app.json", function (text) {
-                    if (text != undefined && text.length > 0)
-                        _this.gdata.saveData(text);
-                    _this.startNewGame();
-                });
-            }
-            else {
-                _this.continueExistingGame();
+            if (_this.isRoot) {
+                if (_this.gdata.moments.length == 0) {
+                    Game.getDataFile("game/app.json", function (text) {
+                        if (text != undefined && text.length > 0)
+                            _this.gdata.saveData(text);
+                        _this.startNewGame();
+                    });
+                }
+                else {
+                    _this.continueExistingGame();
+                }
             }
         };
         this.resumeGame = function () {
+            if (_this.isRoot) { }
         };
         this.clearAllGameData = function () {
-            var options = _this.gdata.options;
-            if (options.skipFileLoad) {
-                _this.gdata.clearContinueState();
-                _this.gdata.clearHistory();
-                _this.gdata.clearState();
-                //
-                _this.startNewGame();
+            if (_this.isRoot) {
+                var options = _this.gdata.options;
+                if (options.skipFileLoad) {
+                    _this.gdata.clearContinueState();
+                    _this.gdata.clearHistory();
+                    _this.gdata.clearState();
+                    //
+                    _this.startNewGame();
+                }
+                else {
+                    _this.gdata.clearStorage();
+                }
+                _this.gdata.options = options;
             }
-            else {
-                _this.gdata.clearStorage();
-            }
-            _this.gdata.options = options;
         };
         this.startNewGame = function () {
             _this.gdata.history = []; //init the list of showed moments
@@ -1776,13 +2256,23 @@ var Game = (function () {
         };
         this.continueExistingGame = function () {
             _this.restoreContinueState();
+            _this.data = _this.gdata.loadGame();
             _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
                 _this.update(_this.currentMoment != null ? Op.START_BLURBING : Op.BUILD_CHOICES);
             });
         };
         this.update = function (op) {
             _this.data = _this.gdata.loadGame();
-            var ui = _this.ui;
+            if (_this.isRoot) {
+                var newSitWindows = _this.getSitWindows();
+                newSitWindows.forEach((function (value) {
+                    _this.ui.addChildWindow(value, function (game) {
+                        _this.gameWindows.push(game);
+                        console.log("child window ready");
+                        game.initialize();
+                    });
+                }));
+            }
             if (op == Op.START_BLURBING) {
                 _this.chunks = _this.parseMoment(_this.currentMoment);
                 _this.cix = 0;
@@ -1791,11 +2281,14 @@ var Game = (function () {
                     _this.currentScene = _this.getSceneOf(_this.currentMoment);
                 }
                 _this.saveContinueState();
-                ui.clearBlurb();
-                ui.initScene(Game.parseScene(_this.currentScene), function () {
+                _this.ui.clearBlurb();
+                _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
                     _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
                     setTimeout(function () { _this.update(Op.BLURB); }, 0);
                 });
+                if (_this.isRoot) {
+                    _this.startWindowBlurbing();
+                }
             }
             else if (op == Op.BLURB) {
                 if (_this.cix < _this.chunks.length) {
@@ -1804,12 +2297,12 @@ var Game = (function () {
                     var notLast = _this.cix < _this.chunks.length;
                     var goFast = _this.gdata.options.fastStory && notLast;
                     if (goFast) {
-                        ui.addBlurbFast(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+                        _this.ui.addBlurbFast(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
                     }
                     else {
                         if (chunk.kind == ChunkKind.minigame) {
                             var minigame_1 = chunk;
-                            ui.addBlurb(chunk, function (result) {
+                            _this.ui.addBlurb(chunk, function (result) {
                                 var command = (result.win == true ? minigame_1.winCommand : minigame_1.loseCommand);
                                 var moment = { id: -1, text: command, parentid: _this.currentScene.id };
                                 _this.executeMoment(moment);
@@ -1821,7 +2314,7 @@ var Game = (function () {
                         }
                         else {
                             var showBlurb_1 = function () {
-                                ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+                                _this.ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
                             };
                             if (first)
                                 setTimeout(function () { showBlurb_1(); }, 500);
@@ -1848,8 +2341,8 @@ var Game = (function () {
                 var choices = _this.buildChoices(moments, messages);
                 _this.updateTimedState();
                 if (choices.length > 0) {
-                    ui.showChoices(choices, function (chosen) {
-                        ui.hideChoices(function () {
+                    _this.ui.showChoices(choices, function (chosen) {
+                        _this.ui.hideChoices(function () {
                             _this.currentMoment = _this.getChosenMoment(chosen);
                             _this.update(Op.START_BLURBING);
                         });
@@ -2333,9 +2826,26 @@ var Game = (function () {
                 _this.gdata.state = state;
             }
         };
+        this.getSitWindows = function () {
+            var newSitWindows = new Array();
+            var sits = _this.data.situations;
+            for (var _i = 0, sits_6 = sits; _i < sits_6.length; _i++) {
+                var sit = sits_6[_i];
+                if (sit.text != undefined && _this.sitWindows.indexOf(sit.text) == -1) {
+                    _this.sitWindows.push(sit.text);
+                    newSitWindows.push(sit.text);
+                }
+            }
+            return newSitWindows;
+        };
+        this.startWindowBlurbing = function () {
+            _this.sitWindows.forEach(function (value, index) {
+            });
+        };
         window.GameInstance = this;
         this.gdata = new GameData();
         this.ui = ui;
+        this.isRoot = isRoot;
     }
     Object.defineProperty(Game.prototype, "gameMan", {
         get: function () {
