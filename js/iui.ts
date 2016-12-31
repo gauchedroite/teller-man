@@ -26,4 +26,5 @@ interface IUI {
     addBlurbFast: (chunk: IMomentData, callback: () => void) => void,
     clearBlurb: () => void
     addChildWindow: (value: string, callback: (game: IGameInstance) => void) => void
+    showUi: () => void
 }

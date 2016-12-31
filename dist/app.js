@@ -640,7 +640,11 @@ var GameData = (function () {
         this.clearHistory = function () {
             localStorage.removeItem("history");
         };
-        this.clearContinueState = function () {
+        //
+        // clear continue location and state
+        //
+        this.clearContinueData = function () {
+            localStorage.removeItem("continueLocations");
             localStorage.removeItem("continueState");
         };
     }
@@ -748,6 +752,40 @@ var GameData = (function () {
         enumerable: true,
         configurable: true
     });
+    //
+    // continue location
+    //
+    GameData.prototype.getContinueLocation = function (source) {
+        var locs = JSON.parse(localStorage.getItem("continueLocations"));
+        if (locs == null)
+            return null;
+        var key = (source == undefined ? "root" : source);
+        var loc = null;
+        locs.forEach(function (item) {
+            if (item.source == key) {
+                loc = item.loc;
+            }
+        });
+        return loc;
+    };
+    GameData.prototype.setContinueLocation = function (source, loc) {
+        var locs = JSON.parse(localStorage.getItem("continueLocations"));
+        var key = (source == undefined ? "root" : source);
+        if (locs == undefined)
+            locs = new Array();
+        var found = false;
+        locs.forEach(function (item) {
+            if (found == false && item.source == key) {
+                item.loc = loc;
+                localStorage.setItem("continueLocations", JSON.stringify(locs));
+                found = true;
+            }
+        });
+        if (found == false) {
+            locs.push({ source: key, loc: loc });
+            localStorage.setItem("continueLocations", JSON.stringify(locs));
+        }
+    };
     Object.defineProperty(GameData.prototype, "continueState", {
         //
         // continue state
@@ -755,8 +793,8 @@ var GameData = (function () {
         get: function () {
             return JSON.parse(localStorage.getItem("continueState"));
         },
-        set: function (moms) {
-            localStorage.setItem("continueState", JSON.stringify(moms));
+        set: function (state) {
+            localStorage.setItem("continueState", JSON.stringify(state));
         },
         enumerable: true,
         configurable: true
@@ -791,6 +829,11 @@ var UI = (function () {
                     document.body.classList.add(format);
                 }
             };
+        };
+        this.showUi = function (source) {
+            var storyWindow = document.querySelector(".story-window");
+            storyWindow.classList.remove("hidden");
+            //let iframe = storyWindow.querySelector(`iframe [src='${source}']`);
         };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
@@ -1054,10 +1097,10 @@ var UI = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
-        this.addChildWindow = function (value, callback) {
+        this.addChildWindow = function (source, callback) {
             var storyWindow = document.querySelector(".story-window");
             var iframe = document.createElement("iframe");
-            iframe.setAttribute("src", value);
+            iframe.setAttribute("src", source);
             storyWindow.appendChild(iframe);
             setTimeout(function retry() {
                 var doc = iframe.contentWindow;
@@ -1258,6 +1301,8 @@ var UI2 = (function () {
         this.portrait = false;
         this.initialize = function (onmenu) {
         };
+        this.showUi = function () {
+        };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
             content.classList.add("overlay");
@@ -1324,12 +1369,10 @@ var UI2 = (function () {
             content.classList.add("overlay");
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var storyInner = document.querySelector(".story-inner");
-            storyInner.style.height = "calc(25% + " + panel.offsetHeight + "px)";
+            storyInner.style.height = "calc(30% + " + panel.offsetHeight + "px)"; //30% is default 
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
             _this.scrollContent(text.parentElement);
-            var next = document.querySelector(".next");
-            next.classList.add("hidden");
             var me = _this;
             var lis = document.querySelectorAll(".choice-panel li");
             var onChoice = function (e) {
@@ -1362,14 +1405,12 @@ var UI2 = (function () {
             // make sure the first blurb will be visible
             var storyInner = document.querySelector(".story-inner");
             storyInner.scrollTop = content.offsetTop;
-            storyInner.style.height = "25%";
+            storyInner.style.height = "30%";
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
             text.setAttribute("style", "");
-            var next = document.querySelector(".next");
-            next.classList.remove("hidden");
             setTimeout(callback, 250 /*matches .choice-panel transition*/);
         };
         this.initScene = function (data, callback) {
@@ -1383,18 +1424,15 @@ var UI2 = (function () {
             var html = _this.markupChunk(chunk);
             var content = document.querySelector(".content");
             var inner = document.querySelector(".content-inner");
-            var next = document.querySelector(".next");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
             var waitForClick = function (done) {
                 var onclick = function () {
                     content.removeEventListener("click", onclick);
-                    next.removeEventListener("click", onclick);
                     return done();
                 };
                 content.addEventListener("click", onclick);
-                next.addEventListener("click", onclick);
             };
             if (chunk.kind == ChunkKind.background) {
                 if (_this.portrait)
@@ -1517,7 +1555,7 @@ var UI2 = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
-        this.addChildWindow = function (value, callback) {
+        this.addChildWindow = function (source, callback) {
             callback(null);
         };
         this.changeBackground = function (assetName, callback) {
@@ -1739,6 +1777,8 @@ var UI9 = (function () {
                     document.body.classList.add(format);
                 }
             };
+        };
+        this.showUi = function () {
         };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
@@ -1985,6 +2025,9 @@ var UI9 = (function () {
             var content = document.querySelector(".content-inner");
             content.innerHTML = "";
         };
+        this.addChildWindow = function (source, callback) {
+            callback(null);
+        };
         this.changeBackground = function (assetName, callback) {
             if (assetName == undefined)
                 return callback();
@@ -2185,12 +2228,14 @@ var Game = (function () {
     function Game(ui, isRoot) {
         if (isRoot === void 0) { isRoot = false; }
         var _this = this;
-        this.sitWindows = new Array();
-        this.gameWindows = new Array();
-        this.initialize = function () {
+        this.initialize = function (source) {
+            _this.source = source;
             _this.ui.initialize(function () {
                 if (_this.isRoot) {
                     _this.gameMan.showMenu();
+                }
+                else if (source != undefined) {
+                    _this.continueExistingGame();
                 }
             });
         };
@@ -2215,7 +2260,7 @@ var Game = (function () {
             if (_this.isRoot) {
                 var options = _this.gdata.options;
                 if (options.skipFileLoad) {
-                    _this.gdata.clearContinueState();
+                    _this.gdata.clearContinueData();
                     _this.gdata.clearHistory();
                     _this.gdata.clearState();
                     //
@@ -2227,9 +2272,21 @@ var Game = (function () {
                 _this.gdata.options = options;
             }
         };
+        this.tick = function () {
+            if (_this.started == false) {
+                _this.data = _this.gdata.loadGame();
+                _this.currentMoment = Game.selectOne(_this.getAllPossibleEverything());
+                if (_this.currentMoment != null) {
+                    _this.started = true;
+                    setTimeout(function () { _this.update(Op.START_BLURBING); }, 0);
+                    return true;
+                }
+            }
+            return false;
+        };
         this.startNewGame = function () {
             _this.gdata.history = []; //init the list of showed moments
-            _this.gdata.continueState = null;
+            _this.gdata.clearContinueData();
             var options = _this.gdata.options;
             if (options == undefined)
                 options = {
@@ -2255,128 +2312,133 @@ var Game = (function () {
             }
         };
         this.continueExistingGame = function () {
-            _this.restoreContinueState();
+            _this.restoreContinueData();
             _this.data = _this.gdata.loadGame();
             _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
                 _this.update(_this.currentMoment != null ? Op.START_BLURBING : Op.BUILD_CHOICES);
             });
         };
         this.update = function (op) {
-            _this.data = _this.gdata.loadGame();
-            if (_this.isRoot) {
-                var newSitWindows = _this.getSitWindows();
-                newSitWindows.forEach((function (value) {
-                    _this.ui.addChildWindow(value, function (game) {
-                        _this.gameWindows.push(game);
-                        console.log("child window ready");
-                        game.initialize();
-                    });
-                }));
-            }
-            if (op == Op.START_BLURBING) {
-                _this.chunks = _this.parseMoment(_this.currentMoment);
-                _this.cix = 0;
-                var kind = _this.currentMoment.kind;
-                if (kind == Kind.Moment || kind == Kind.Action) {
-                    _this.currentScene = _this.getSceneOf(_this.currentMoment);
-                }
-                _this.saveContinueState();
-                _this.ui.clearBlurb();
-                _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
-                    _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
-                    setTimeout(function () { _this.update(Op.BLURB); }, 0);
-                });
-                if (_this.isRoot) {
-                    _this.startWindowBlurbing();
-                }
-            }
-            else if (op == Op.BLURB) {
-                if (_this.cix < _this.chunks.length) {
-                    var chunk = _this.chunks[_this.cix++];
-                    var first = _this.cix == 1;
-                    var notLast = _this.cix < _this.chunks.length;
-                    var goFast = _this.gdata.options.fastStory && notLast;
-                    if (goFast) {
-                        _this.ui.addBlurbFast(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+            var doUpdate = function () {
+                if (op == Op.START_BLURBING) {
+                    _this.chunks = _this.parseMoment(_this.currentMoment);
+                    _this.cix = 0;
+                    var kind = _this.currentMoment.kind;
+                    if (kind == Kind.Moment || kind == Kind.Action) {
+                        _this.currentScene = _this.getSceneOf(_this.currentMoment);
                     }
-                    else {
-                        if (chunk.kind == ChunkKind.minigame) {
-                            var minigame_1 = chunk;
-                            _this.ui.addBlurb(chunk, function (result) {
-                                var command = (result.win == true ? minigame_1.winCommand : minigame_1.loseCommand);
-                                var moment = { id: -1, text: command, parentid: _this.currentScene.id };
-                                _this.executeMoment(moment);
-                                var text = (result.win == true ? minigame_1.winText : minigame_1.loseText);
-                                var resultChunk = { kind: ChunkKind.gameresult, text: text };
-                                _this.chunks.splice(_this.cix, 0, resultChunk);
-                                setTimeout(function () { _this.update(Op.BLURB); }, 500);
-                            });
+                    _this.saveContinueData();
+                    _this.ui.clearBlurb();
+                    _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
+                        if (_this.isRoot)
+                            _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
+                        setTimeout(function () { _this.update(Op.BLURB); }, 0);
+                    });
+                    if (_this.isRoot) {
+                        for (var _i = 0, _a = _this.gameWindows; _i < _a.length; _i++) {
+                            var game = _a[_i];
+                            var showUi = game.tick();
+                            if (showUi)
+                                _this.ui.showUi();
+                        }
+                    }
+                }
+                else if (op == Op.BLURB) {
+                    if (_this.cix < _this.chunks.length) {
+                        var chunk = _this.chunks[_this.cix++];
+                        var first = _this.cix == 1;
+                        var notLast = _this.cix < _this.chunks.length;
+                        var goFast = _this.gdata.options.fastStory && notLast;
+                        if (goFast) {
+                            _this.ui.addBlurbFast(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
                         }
                         else {
-                            var showBlurb_1 = function () {
-                                _this.ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
-                            };
-                            if (first)
-                                setTimeout(function () { showBlurb_1(); }, 500);
-                            else
-                                showBlurb_1();
+                            if (chunk.kind == ChunkKind.minigame) {
+                                var minigame_1 = chunk;
+                                _this.ui.addBlurb(chunk, function (result) {
+                                    var command = (result.win == true ? minigame_1.winCommand : minigame_1.loseCommand);
+                                    var moment = { id: -1, text: command, parentid: _this.currentScene.id };
+                                    _this.executeMoment(moment);
+                                    var text = (result.win == true ? minigame_1.winText : minigame_1.loseText);
+                                    var resultChunk = { kind: ChunkKind.gameresult, text: text };
+                                    _this.chunks.splice(_this.cix, 0, resultChunk);
+                                    setTimeout(function () { _this.update(Op.BLURB); }, 500);
+                                });
+                            }
+                            else {
+                                var showBlurb_1 = function () {
+                                    _this.ui.addBlurb(chunk, function () { setTimeout(function () { _this.update(Op.BLURB); }, 50); });
+                                };
+                                if (first)
+                                    setTimeout(function () { showBlurb_1(); }, 500);
+                                else
+                                    showBlurb_1();
+                            }
                         }
                     }
-                }
-                else {
-                    var state = _this.gdata.state;
-                    if (state.intro != undefined) {
-                        delete state.intro;
-                        _this.gdata.state = state;
+                    else {
+                        var state = _this.gdata.state;
+                        if (state.intro != undefined) {
+                            delete state.intro;
+                            _this.gdata.state = state;
+                        }
+                        _this.currentMoment = _this.gdata.getMoment(_this.gdata.moments, _this.currentMoment.id); //we might have edited the moment
+                        _this.executeMoment(_this.currentMoment);
+                        _this.update(Op.BUILD_CHOICES);
                     }
-                    _this.currentMoment = _this.gdata.getMoment(_this.gdata.moments, _this.currentMoment.id); //we might have edited the moment
-                    _this.executeMoment(_this.currentMoment);
-                    _this.update(Op.BUILD_CHOICES);
                 }
-            }
-            else if (op == Op.BUILD_CHOICES) {
-                _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
-                var moments = _this.getAllPossibleMoments();
-                var messages = _this.getAllPossibleMessages();
-                var choices = _this.buildChoices(moments, messages);
-                _this.updateTimedState();
-                if (choices.length > 0) {
-                    _this.ui.showChoices(choices, function (chosen) {
-                        _this.ui.hideChoices(function () {
-                            _this.currentMoment = _this.getChosenMoment(chosen);
-                            _this.update(Op.START_BLURBING);
+                else if (op == Op.BUILD_CHOICES) {
+                    if (_this.isRoot)
+                        _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                    var moments = _this.getAllPossibleMoments();
+                    var messages = _this.getAllPossibleMessages();
+                    var choices = _this.buildChoices(moments, messages);
+                    _this.updateTimedState();
+                    if (choices.length > 0) {
+                        _this.ui.showChoices(choices, function (chosen) {
+                            _this.ui.hideChoices(function () {
+                                _this.currentMoment = _this.getChosenMoment(chosen);
+                                _this.update(Op.START_BLURBING);
+                            });
                         });
-                    });
+                    }
+                    else {
+                        _this.refreshGameAndAlert("Il ne se passe plus rien pour le moment.", function () {
+                            _this.update(Op.BUILD_CHOICES);
+                        });
+                    }
                 }
                 else {
-                    _this.refreshGameAndAlert("Il ne se passe plus rien pour le moment.", function () {
+                    _this.refreshGameAndAlert("!!! DEAD END !!!", function () {
                         _this.update(Op.BUILD_CHOICES);
                     });
                 }
-            }
-            else {
-                _this.refreshGameAndAlert("!!! DEAD END !!!", function () {
-                    _this.update(Op.BUILD_CHOICES);
-                });
-            }
+            };
+            _this.data = _this.gdata.loadGame();
+            _this.instantiateNewWindows(doUpdate);
         };
-        this.saveContinueState = function () {
-            _this.gdata.continueState = {
+        this.saveContinueData = function () {
+            _this.gdata.setContinueLocation(_this.source, {
                 momentId: (_this.currentMoment != undefined ? _this.currentMoment.id : undefined),
                 sceneId: (_this.currentScene != undefined ? _this.currentScene.id : undefined),
-                forbiddenSceneId: _this.forbiddenSceneId,
+                forbiddenSceneId: _this.forbiddenSceneId
+            });
+            _this.gdata.continueState = {
                 state: _this.gdata.state,
                 history: _this.gdata.history
             };
         };
-        this.restoreContinueState = function () {
-            var cstate = _this.gdata.continueState;
+        this.restoreContinueData = function () {
+            var cstate = _this.gdata.getContinueLocation(_this.source);
             if (cstate != undefined) {
                 _this.currentMoment = (cstate.momentId != undefined ? _this.gdata.getMoment(_this.gdata.moments, cstate.momentId) : undefined);
                 _this.currentScene = (cstate.sceneId != undefined ? _this.gdata.getScene(_this.gdata.scenes, cstate.sceneId) : undefined);
                 _this.forbiddenSceneId = cstate.forbiddenSceneId;
-                _this.gdata.state = cstate.state;
-                _this.gdata.history = cstate.history;
+            }
+            var state = _this.gdata.continueState;
+            if (state != undefined) {
+                _this.gdata.state = state.state;
+                _this.gdata.history = state.history;
             }
         };
         this.refreshGameAndAlert = function (text, callback) {
@@ -2578,6 +2640,14 @@ var Game = (function () {
             var when = situation.when || "";
             if (when == "")
                 return false;
+            if (_this.isRoot) {
+                if (situation.text != undefined)
+                    return false;
+            }
+            else {
+                if (situation.text != _this.source)
+                    return false;
+            }
             return Game.isValidCondition(_this.gdata.state, when);
         };
         this.getSceneOf = function (moment) {
@@ -2838,14 +2908,13 @@ var Game = (function () {
             }
             return newSitWindows;
         };
-        this.startWindowBlurbing = function () {
-            _this.sitWindows.forEach(function (value, index) {
-            });
-        };
         window.GameInstance = this;
         this.gdata = new GameData();
         this.ui = ui;
         this.isRoot = isRoot;
+        this.sitWindows = new Array();
+        this.gameWindows = new Array();
+        this.started = false;
     }
     Object.defineProperty(Game.prototype, "gameMan", {
         get: function () {
@@ -2854,6 +2923,34 @@ var Game = (function () {
         enumerable: true,
         configurable: true
     });
+    Game.prototype.instantiateNewWindows = function (callback) {
+        var _this = this;
+        if (this.isRoot) {
+            var newSitWindows = this.getSitWindows();
+            if (newSitWindows.length > 0) {
+                var _loop_1 = function (i) {
+                    var source = newSitWindows[i];
+                    this_1.ui.addChildWindow(source, function (game) {
+                        _this.gameWindows.push(game);
+                        game.initialize(source);
+                        //TODO: Wait for ALL child windows before calling doUpdate!!
+                        callback();
+                    });
+                };
+                var this_1 = this;
+                for (var i = 0; i < newSitWindows.length; i++) {
+                    _loop_1(i);
+                }
+            }
+            else {
+                callback();
+            }
+        }
+        else {
+            callback();
+        }
+    };
+    ;
     return Game;
 }());
 Game.selectOne = function (moments) {

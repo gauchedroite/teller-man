@@ -176,7 +176,6 @@ body {
   width: 100%;
   bottom: 0;
   display: flex;
-  justify-content: space-between;
 }
 .navbar .navbar-inner div.title {
   cursor: default;
@@ -190,6 +189,7 @@ body {
   padding: 8px;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.2);
+  margin-right: 8px;
 }
 .story-inner {
   position: absolute;
@@ -452,6 +452,9 @@ section.image div {
   height: 100%;
   right: 0;
   z-index: 1;
+  box-sizing: border-box;
+  border-left: 8px solid rgba(0, 0, 0, 0.25);
+  transition: right 0.25s ease;
 }
 .story-window iframe {
   border: 0;
@@ -461,10 +464,13 @@ section.image div {
   width: 100%;
   height: 100%;
 }
+.story-window.hidden {
+  right: -30%;
+}
 .landscape .next {
   bottom: 1%;
   left: 1%;
-  width: 10%;
+  width: 5%;
   height: 25%;
   box-sizing: border-box;
   background-color: rgba(255, 255, 255, 0.2);
@@ -484,7 +490,7 @@ section.image div {
 }
 .landscape .story-inner {
   bottom: 1%;
-  left: 12%;
+  left: 7%;
   width: 30%;
   min-width: 350px;
   max-width: 450px;

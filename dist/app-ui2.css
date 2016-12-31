@@ -119,6 +119,7 @@ body {
   font-family: "Roboto Slab", serif;
   color: rgba(0, 0, 0, 0.8);
   overflow: hidden;
+  background-color: #aaa;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -128,8 +129,8 @@ body {
 .solid {
   position: absolute;
   width: 100%;
-  height: 100%;
-  background-color: lime;
+  top: 5%;
+  height: 65%;
 }
 .graphics {
   position: absolute;
@@ -166,21 +167,24 @@ body {
   position: relative;
   top: 0;
   left: 0;
-  width: calc(100% - 16px);
-  padding: 8px;
+  width: 100%;
+  height: 5%;
   z-index: 10;
   font-size: x-large;
   pointer-events: auto;
 }
 .navbar .navbar-inner {
   width: 100%;
+  height: 100%;
   bottom: 0;
   display: flex;
   justify-content: space-between;
 }
 .navbar .navbar-inner div.title {
+  width: 100%;
   cursor: default;
   padding: 8px;
+  margin: auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -190,7 +194,7 @@ body {
   position: absolute;
   overflow: hidden;
   pointer-events: auto;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: #aaa;
 }
 .content {
   position: absolute;
@@ -436,14 +440,10 @@ section.image div {
   background-color: black;
 }
 .story-inner {
-  bottom: 5%;
-  left: 20%;
-  width: 30%;
-  min-width: 350px;
-  max-width: 450px;
-  height: calc(25% + 0px);
+  bottom: 0;
+  width: 100%;
+  height: 30%;
   transition: height 0.15s ease;
-  border-bottom: 2px solid #ddd;
 }
 .story-inner.retracted {
   height: 42px;

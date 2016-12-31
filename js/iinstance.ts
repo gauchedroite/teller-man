@@ -1,9 +1,10 @@
 
 interface IGameInstance {
-    initialize: () => void
+    initialize: (source?: string) => void
     startGame: () => void
     resumeGame: () => void
     clearAllGameData: () => void
+    tick: () => boolean
 }
 
 interface IGameManInstance {

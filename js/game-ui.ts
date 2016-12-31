@@ -35,6 +35,12 @@ class UI implements IUI {
         };
     };
 
+    showUi = (source: string) => {
+        let storyWindow = document.querySelector(".story-window");
+        storyWindow.classList.remove("hidden");
+        //let iframe = storyWindow.querySelector(`iframe [src='${source}']`);
+    };
+
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
@@ -322,10 +328,10 @@ class UI implements IUI {
         content.innerHTML = "";
     };
 
-    addChildWindow = (value: string, callback: (game: IGameInstance) => void) => {
+    addChildWindow = (source: string, callback: (game: IGameInstance) => void) => {
         let storyWindow = document.querySelector(".story-window");
         let iframe = document.createElement("iframe");
-        iframe.setAttribute("src", value);
+        iframe.setAttribute("src", source);
         storyWindow.appendChild(iframe);
         setTimeout(function retry() {
             let doc = <any>iframe.contentWindow;

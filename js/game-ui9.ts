@@ -45,6 +45,9 @@ class UI9 implements IUI {
         };
     };
 
+    showUi = () => {
+    };
+
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
@@ -308,6 +311,10 @@ class UI9 implements IUI {
         content.innerHTML = "";
     };
 
+    addChildWindow = (source: string, callback: (game: IGameInstance) => void) => {
+        callback(null);
+    };
+    
     private changeBackground = (assetName: string, callback: () => void) => {
         if (assetName == undefined) return callback();
         assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");

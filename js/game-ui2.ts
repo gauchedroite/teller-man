@@ -14,6 +14,9 @@ class UI2 implements IUI {
     initialize = (onmenu: () => void) => {
     };
 
+    showUi = () => {
+    };
+
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
         let content = <HTMLElement>document.querySelector(".content");
         content.classList.add("overlay");
@@ -89,14 +92,11 @@ class UI2 implements IUI {
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
-        storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
+        storyInner.style.height = `calc(30% + ${panel.offsetHeight}px)`;    //30% is default 
 
         let text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = panel.offsetHeight + "px";
         this.scrollContent(text.parentElement);
-
-        let next = <HTMLElement>document.querySelector(".next");
-        next.classList.add("hidden");
 
         let me = this;
         let lis = document.querySelectorAll(".choice-panel li");
@@ -131,7 +131,7 @@ class UI2 implements IUI {
         // make sure the first blurb will be visible
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
         storyInner.scrollTop = content.offsetTop;
-        storyInner.style.height = "25%";
+        storyInner.style.height = "30%";
 
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";
@@ -139,9 +139,6 @@ class UI2 implements IUI {
         var text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = "0";
         text.setAttribute("style", "");
-
-        let next = <HTMLElement>document.querySelector(".next");
-        next.classList.remove("hidden");
         
         setTimeout(callback, 250/*matches .choice-panel transition*/);
     };
@@ -157,7 +154,6 @@ class UI2 implements IUI {
         let html = this.markupChunk(chunk);
         let content = document.querySelector(".content");
         let inner = document.querySelector(".content-inner");
-        let next = document.querySelector(".next");
         let div = document.createElement("div");
         div.innerHTML = html;
         let section = <HTMLDivElement>div.firstChild;
@@ -165,11 +161,9 @@ class UI2 implements IUI {
         const waitForClick = (done: () => void) => {
             const onclick = () => {
                 content.removeEventListener("click", onclick);
-                next.removeEventListener("click", onclick);
                 return done();
             };
             content.addEventListener("click", onclick);
-            next.addEventListener("click", onclick);
         };
 
         if (chunk.kind == ChunkKind.background) {
@@ -297,7 +291,7 @@ class UI2 implements IUI {
         content.innerHTML = "";
     };
 
-    addChildWindow = (value: string, callback: (game: IGameInstance) => void) => {
+    addChildWindow = (source: string, callback: (game: IGameInstance) => void) => {
         callback(null);
     };
 

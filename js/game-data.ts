@@ -702,17 +702,56 @@ class GameData {
     }
 
     //
+    // continue location
+    //
+    getContinueLocation(source: string) : any {
+        let locs: Array<any> = JSON.parse(localStorage.getItem("continueLocations"));
+        if (locs == null) return null;
+        let key = (source == undefined ? "root" : source);
+        let loc = null;
+        locs.forEach((item: any) => {
+            if (item.source == key) {
+                loc = item.loc;
+            }
+        });
+        return loc;
+    }
+
+    setContinueLocation(source: string, loc: any) {
+        let locs: Array<any> = JSON.parse(localStorage.getItem("continueLocations"));
+        let key = (source == undefined ? "root" : source);
+        if (locs == undefined) 
+            locs = new Array<any>();
+        let found = false;
+        locs.forEach((item: any) => {
+            if (found == false && item.source == key) {
+                item.loc = loc;
+                localStorage.setItem("continueLocations", JSON.stringify(locs));
+                found = true;
+            }
+        });
+        if (found == false) {
+            locs.push({ source: key, loc: loc });
+            localStorage.setItem("continueLocations", JSON.stringify(locs));
+        }
+    }
+
+    //
     // continue state
     //
     get continueState() : any {
         return JSON.parse(localStorage.getItem("continueState"));
     }
 
-    set continueState(moms: any) {
-        localStorage.setItem("continueState", JSON.stringify(moms));
+    set continueState(state: any) {
+        localStorage.setItem("continueState", JSON.stringify(state));
     }
 
-    clearContinueState = () => {
+    //
+    // clear continue location and state
+    //
+    clearContinueData = () => {
+        localStorage.removeItem("continueLocations");
         localStorage.removeItem("continueState");
     }
 }
