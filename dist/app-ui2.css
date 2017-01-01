@@ -119,7 +119,7 @@ body {
   font-family: "Roboto Slab", serif;
   color: rgba(0, 0, 0, 0.8);
   overflow: hidden;
-  background-color: #aaa;
+  background-color: black;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -170,6 +170,7 @@ body {
   height: 40px;
   z-index: 10;
   font-size: x-large;
+  background-color: #aaa;
 }
 .navbar .navbar-inner {
   width: 100%;
@@ -468,4 +469,12 @@ section.image div {
 .story-inner.retracted {
   height: 42px;
   opacity: 0.4;
+}
+body.disabled .solid {
+  opacity: 0.5;
+  pointer-events: none;
+}
+body.disabled .story-inner {
+  opacity: 0.5;
+  pointer-events: none;
 }

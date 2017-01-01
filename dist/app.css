@@ -119,6 +119,7 @@ body {
   font-family: "Roboto Slab", serif;
   color: rgba(0, 0, 0, 0.8);
   overflow: hidden;
+  background-color: black;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -523,4 +524,16 @@ section.image div {
 }
 .portrait .story-inner.retracted {
   height: 46px;
+}
+body.disabled .solid {
+  opacity: 0.5;
+  pointer-events: none;
+}
+body.disabled .next {
+  opacity: 0.5;
+  pointer-events: none;
+}
+body.disabled .story-inner {
+  opacity: 0.5;
+  pointer-events: none;
 }

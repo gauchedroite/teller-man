@@ -214,8 +214,10 @@ class Game implements IGameInstance {
                 let choices = this.buildChoices(moments, messages);
                 this.updateTimedState();
                 if (choices.length > 0) {
+                    this.setOtherUIs(false);
                     this.ui.showChoices(choices, (chosen: IChoice) => {
                         this.ui.hideChoices(() => {
+                            this.setOtherUIs(true);
                             this.currentMoment = this.getChosenMoment(chosen);
                             this.update(Op.START_BLURBING);
                         });
@@ -268,6 +270,19 @@ class Game implements IGameInstance {
         else if (payload == "open-drawer" || payload == "close-drawer") {
             this.doUIAction(payload);
             this.parent.doUIAction(payload);
+        }
+    };
+
+    private setOtherUIs = (enable: boolean) => {
+        let action = (enable ? "enable-ui" : "disable-ui");
+        if (this.isRoot) {
+            for (let game of this.gameWindows) {
+                game.doUIAction(action);
+            }
+        }
+        else {
+            this.parent.doUIAction(action);
+            //TODO: set other uis too!
         }
     };
 

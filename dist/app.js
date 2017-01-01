@@ -843,6 +843,12 @@ var UI = (function () {
                 var storyWindow = document.querySelector(".story-window");
                 storyWindow.classList.remove("closed");
             }
+            else if (payload == "disable-ui") {
+                document.body.classList.add("disabled");
+            }
+            else if (payload == "enable-ui") {
+                document.body.classList.remove("disabled");
+            }
         };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
@@ -1320,6 +1326,12 @@ var UI2 = (function () {
             }
             else if (payload == "open-drawer") {
                 document.body.classList.remove("closed");
+            }
+            else if (payload == "disable-ui") {
+                document.body.classList.add("disabled");
+            }
+            else if (payload == "enable-ui") {
+                document.body.classList.remove("disabled");
             }
         };
         this.alert = function (text, canclose, onalert) {
@@ -2411,8 +2423,10 @@ var Game = (function () {
                     var choices = _this.buildChoices(moments, messages);
                     _this.updateTimedState();
                     if (choices.length > 0) {
+                        _this.setOtherUIs(false);
                         _this.ui.showChoices(choices, function (chosen) {
                             _this.ui.hideChoices(function () {
+                                _this.setOtherUIs(true);
                                 _this.currentMoment = _this.getChosenMoment(chosen);
                                 _this.update(Op.START_BLURBING);
                             });
@@ -2440,6 +2454,18 @@ var Game = (function () {
             else if (payload == "open-drawer" || payload == "close-drawer") {
                 _this.doUIAction(payload);
                 _this.parent.doUIAction(payload);
+            }
+        };
+        this.setOtherUIs = function (enable) {
+            var action = (enable ? "enable-ui" : "disable-ui");
+            if (_this.isRoot) {
+                for (var _i = 0, _a = _this.gameWindows; _i < _a.length; _i++) {
+                    var game = _a[_i];
+                    game.doUIAction(action);
+                }
+            }
+            else {
+                _this.parent.doUIAction(action);
             }
         };
         this.saveContinueData = function () {

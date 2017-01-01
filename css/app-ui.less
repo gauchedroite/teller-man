@@ -21,6 +21,7 @@ body {
     font-family: "Roboto Slab", serif;
     color: rgba(0, 0, 0, 0.8);
     overflow: hidden;
+    background-color: black;
     .noselect;
 }
 
@@ -440,5 +441,21 @@ section {
         &.retracted {
             height: @navbar-height-portrait;
         }
+    }
+}
+
+
+body.disabled {
+    .solid {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .next {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+    .story-inner {
+        opacity: 0.5;
+        pointer-events: none;
     }
 }

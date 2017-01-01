@@ -25,6 +25,12 @@ class UI2 implements IUI {
         else if (payload == "open-drawer") {
             document.body.classList.remove("closed");
         }
+        else if (payload == "disable-ui") {
+            document.body.classList.add("disabled");
+        }
+        else if (payload == "enable-ui") {
+            document.body.classList.remove("disabled");
+        }
     };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
