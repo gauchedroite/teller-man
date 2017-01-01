@@ -197,7 +197,6 @@ body {
   margin: -90px;
   border-radius: 90px;
   transition: opacity .1s;
-  cursor: pointer;
 }
 .menu .game-wrap .game-content .play:after {
   content: "";
@@ -226,6 +225,7 @@ body {
   border: 24px solid #728a7c;
 }
 .menu.zoome .game-content .play {
+  cursor: pointer;
   opacity: 1;
 }
 .menu .title-inner {

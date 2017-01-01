@@ -9,10 +9,10 @@ class UI9 implements IUI {
     constructor () {
     }
 
-    initialize = (onmenu: () => void) => {
+    initialize = (fire: (payload: any) => void) => {
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
-            setTimeout(onmenu, 0);
+            setTimeout(fire, 0);
         });
 
         var navbar = <HTMLDivElement>document.querySelector(".navbar"); 
@@ -45,7 +45,7 @@ class UI9 implements IUI {
         };
     };
 
-    showUi = () => {
+    doAction = (payload: any) => {
     };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {

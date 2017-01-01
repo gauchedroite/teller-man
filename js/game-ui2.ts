@@ -11,10 +11,20 @@ class UI2 implements IUI {
     constructor () {
     }
 
-    initialize = (onmenu: () => void) => {
+    initialize = (fire: (payload: any) => void) => {
+        document.querySelector(".navbar").addEventListener("click", (e) => {
+            let action = (document.body.classList.contains("closed") ? "open-drawer" : "close-drawer");
+            setTimeout(() => { fire(action); }, 0);
+        });
     };
 
-    showUi = () => {
+    doAction = (payload: any) => {
+        if (payload == "close-drawer") {
+            document.body.classList.add("closed");
+        }
+        else if (payload == "open-drawer") {
+            document.body.classList.remove("closed");
+        }
     };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {

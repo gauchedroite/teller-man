@@ -10,10 +10,10 @@ class UI implements IUI {
     constructor () {
     }
 
-    initialize = (onmenu: () => void) => {
+    initialize = (fire: (payload: any) => void) => {
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
-            setTimeout(onmenu, 0);
+            setTimeout(() => { fire("goto-menu"); }, 0);
         });
 
         if ("addEventListener" in document) {
@@ -35,10 +35,19 @@ class UI implements IUI {
         };
     };
 
-    showUi = (source: string) => {
-        let storyWindow = document.querySelector(".story-window");
-        storyWindow.classList.remove("hidden");
-        //let iframe = storyWindow.querySelector(`iframe [src='${source}']`);
+    doAction = (payload: any) => {
+        if (payload == "show-ui") {
+            let storyWindow = document.querySelector(".story-window");
+            storyWindow.classList.remove("hidden");
+        }
+        else if (payload == "close-drawer") {
+            let storyWindow = document.querySelector(".story-window");
+            storyWindow.classList.add("closed");
+        }
+        else if (payload == "open-drawer") {
+            let storyWindow = document.querySelector(".story-window");
+            storyWindow.classList.remove("closed");
+        }
     };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {

@@ -1,10 +1,11 @@
 
 interface IGameInstance {
-    initialize: (source?: string) => void
+    initialize: (source?: string, parent?: IGameInstance) => void
     startGame: () => void
     resumeGame: () => void
     clearAllGameData: () => void
     tick: () => boolean
+    doUIAction: (payload: any) => void
 }
 
 interface IGameManInstance {

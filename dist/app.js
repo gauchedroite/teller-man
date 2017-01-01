@@ -808,10 +808,10 @@ var UI = (function () {
     function UI() {
         var _this = this;
         this.portrait = false;
-        this.initialize = function (onmenu) {
+        this.initialize = function (fire) {
             document.querySelector(".goto-menu").addEventListener("click", function (e) {
                 e.stopPropagation();
-                setTimeout(onmenu, 0);
+                setTimeout(function () { fire("goto-menu"); }, 0);
             });
             if ("addEventListener" in document) {
                 document.addEventListener("DOMContentLoaded", function () {
@@ -830,10 +830,19 @@ var UI = (function () {
                 }
             };
         };
-        this.showUi = function (source) {
-            var storyWindow = document.querySelector(".story-window");
-            storyWindow.classList.remove("hidden");
-            //let iframe = storyWindow.querySelector(`iframe [src='${source}']`);
+        this.doAction = function (payload) {
+            if (payload == "show-ui") {
+                var storyWindow = document.querySelector(".story-window");
+                storyWindow.classList.remove("hidden");
+            }
+            else if (payload == "close-drawer") {
+                var storyWindow = document.querySelector(".story-window");
+                storyWindow.classList.add("closed");
+            }
+            else if (payload == "open-drawer") {
+                var storyWindow = document.querySelector(".story-window");
+                storyWindow.classList.remove("closed");
+            }
         };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
@@ -1299,9 +1308,19 @@ var UI2 = (function () {
     function UI2() {
         var _this = this;
         this.portrait = false;
-        this.initialize = function (onmenu) {
+        this.initialize = function (fire) {
+            document.querySelector(".navbar").addEventListener("click", function (e) {
+                var action = (document.body.classList.contains("closed") ? "open-drawer" : "close-drawer");
+                setTimeout(function () { fire(action); }, 0);
+            });
         };
-        this.showUi = function () {
+        this.doAction = function (payload) {
+            if (payload == "close-drawer") {
+                document.body.classList.add("closed");
+            }
+            else if (payload == "open-drawer") {
+                document.body.classList.remove("closed");
+            }
         };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
@@ -1746,10 +1765,10 @@ var UI9 = (function () {
     function UI9() {
         var _this = this;
         this.portrait = false;
-        this.initialize = function (onmenu) {
+        this.initialize = function (fire) {
             document.querySelector(".goto-menu").addEventListener("click", function (e) {
                 e.stopPropagation();
-                setTimeout(onmenu, 0);
+                setTimeout(fire, 0);
             });
             var navbar = document.querySelector(".navbar");
             var inner = document.querySelector(".story-inner");
@@ -1778,7 +1797,7 @@ var UI9 = (function () {
                 }
             };
         };
-        this.showUi = function () {
+        this.doAction = function (payload) {
         };
         this.alert = function (text, canclose, onalert) {
             var content = document.querySelector(".content");
@@ -2228,16 +2247,10 @@ var Game = (function () {
     function Game(ui, isRoot) {
         if (isRoot === void 0) { isRoot = false; }
         var _this = this;
-        this.initialize = function (source) {
+        this.initialize = function (source, parent) {
             _this.source = source;
-            _this.ui.initialize(function () {
-                if (_this.isRoot) {
-                    _this.gameMan.showMenu();
-                }
-                else if (source != undefined) {
-                    _this.continueExistingGame();
-                }
-            });
+            _this.parent = parent;
+            _this.ui.initialize(_this.handleUIEvents);
         };
         this.startGame = function () {
             if (_this.isRoot) {
@@ -2283,6 +2296,9 @@ var Game = (function () {
                 }
             }
             return false;
+        };
+        this.doUIAction = function (payload) {
+            _this.ui.doAction(payload);
         };
         this.startNewGame = function () {
             _this.gdata.history = []; //init the list of showed moments
@@ -2339,7 +2355,7 @@ var Game = (function () {
                             var game = _a[_i];
                             var showUi = game.tick();
                             if (showUi)
-                                _this.ui.showUi();
+                                _this.ui.doAction("show-ui");
                         }
                     }
                 }
@@ -2416,6 +2432,15 @@ var Game = (function () {
             };
             _this.data = _this.gdata.loadGame();
             _this.instantiateNewWindows(doUpdate);
+        };
+        this.handleUIEvents = function (payload) {
+            if (payload == "goto-menu") {
+                _this.gameMan.showMenu();
+            }
+            else if (payload == "open-drawer" || payload == "close-drawer") {
+                _this.doUIAction(payload);
+                _this.parent.doUIAction(payload);
+            }
         };
         this.saveContinueData = function () {
             _this.gdata.setContinueLocation(_this.source, {
@@ -2930,10 +2955,10 @@ var Game = (function () {
             if (newSitWindows.length > 0) {
                 var _loop_1 = function (i) {
                     var source = newSitWindows[i];
-                    this_1.ui.addChildWindow(source, function (game) {
-                        _this.gameWindows.push(game);
-                        game.initialize(source);
-                        //TODO: Wait for ALL child windows before calling doUpdate!!
+                    this_1.ui.addChildWindow(source, function (childGame) {
+                        _this.gameWindows.push(childGame);
+                        childGame.initialize(source, _this);
+                        //TODO: Wait for ALL child windows before exiting!!
                         callback();
                     });
                 };

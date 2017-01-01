@@ -17,6 +17,7 @@ class Game implements IGameInstance {
     sitWindows: Array<string>;
     gameWindows: Array<IGameInstance>;
     source: string;
+    parent: IGameInstance;
     started: boolean;
 
     constructor(ui: IUI, isRoot: boolean = false) {
@@ -31,16 +32,10 @@ class Game implements IGameInstance {
         this.started = false;
     }
 
-    initialize = (source?: string) => {
+    initialize = (source?: string, parent?: IGameInstance) => {
         this.source = source;
-        this.ui.initialize(() => { 
-            if (this.isRoot) {
-                this.gameMan.showMenu(); 
-            }
-            else if (source != undefined) {
-                this.continueExistingGame();
-            }
-        });
+        this.parent = parent;
+        this.ui.initialize(this.handleUIEvents);
     };
 
     startGame = () => {
@@ -89,6 +84,10 @@ class Game implements IGameInstance {
             }
         }
         return false;
+    };
+
+    doUIAction = (payload: any) => {
+        this.ui.doAction(payload);
     };
 
     private get gameMan() : IGameManInstance {
@@ -155,7 +154,7 @@ class Game implements IGameInstance {
                 if (this.isRoot) {
                     for (let game of this.gameWindows) {
                         let showUi = game.tick();
-                        if (showUi) this.ui.showUi();
+                        if (showUi) this.ui.doAction("show-ui");
                     }
                 }
             }
@@ -245,10 +244,10 @@ class Game implements IGameInstance {
             if (newSitWindows.length > 0) {
                 for (let i = 0; i < newSitWindows.length; i++) {
                     let source = newSitWindows[i];
-                    this.ui.addChildWindow(source, (game: IGameInstance) => {
-                        this.gameWindows.push(game);
-                        game.initialize(source);
-                        //TODO: Wait for ALL child windows before calling doUpdate!!
+                    this.ui.addChildWindow(source, (childGame: IGameInstance) => {
+                        this.gameWindows.push(childGame);
+                        childGame.initialize(source, this);
+                        //TODO: Wait for ALL child windows before exiting!!
                         callback()
                     });
                 }
@@ -259,6 +258,16 @@ class Game implements IGameInstance {
         }
         else {
             callback();
+        }
+    };
+
+    private handleUIEvents = (payload: any) => {
+        if (payload == "goto-menu") {
+            this.gameMan.showMenu(); 
+        }
+        else if (payload == "open-drawer" || payload == "close-drawer") {
+            this.doUIAction(payload);
+            this.parent.doUIAction(payload);
         }
     };
 

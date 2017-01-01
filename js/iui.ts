@@ -17,7 +17,7 @@ interface IChoice {
 }
 
 interface IUI {
-    initialize: (onmenu: () => void) => void,
+    initialize: (fire: (payload: any) => void) => void,
     alert: (text: string, canclose: () => boolean, onalert: () => void) => void,
     showChoices: (sceneChoices: Array<IChoice>, onchoice: (chosen: IChoice) => void) => void,
     hideChoices: (callback: () => void) => void,
@@ -26,5 +26,5 @@ interface IUI {
     addBlurbFast: (chunk: IMomentData, callback: () => void) => void,
     clearBlurb: () => void
     addChildWindow: (value: string, callback: (game: IGameInstance) => void) => void
-    showUi: () => void
+    doAction: (payload: any) => void
 }

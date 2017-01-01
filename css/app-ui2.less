@@ -28,8 +28,8 @@ body {
 .solid {
     position: absolute;
     width: 100%;
-    top: 5%;
-    height: 65%;
+    top: 40px;
+    height: calc(70% - 40px);
 }
 
 .graphics {
@@ -62,7 +62,6 @@ body {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    pointer-events: none;
 }
 
 .navbar {
@@ -70,10 +69,9 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 5%;
+    height: 40px;
     z-index: 10;
     font-size: x-large;
-    pointer-events: auto;
 
     .navbar-inner {
         width: 100%;
@@ -81,23 +79,51 @@ body {
         bottom: 0;
         display: flex;
         justify-content: space-between;
+
         div.title {
             width: 100%;
             cursor: default;
             padding: 8px;
-            margin: auto;
+            text-align: center;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
             background: rgba(255, 255, 255, 0.2);
         }
     }
+
+    .drawer {
+        position: absolute;
+        width: 18px;
+        left: calc(100% - 18px);
+        transition: all 0.25s ease;
+
+        div.drawer-inner {
+            font-size: 32px;
+            padding: 3px;
+            transition: all 0.25s ease;
+        }
+    }
+}
+
+.closed {
+    .drawer {
+        left: 0;
+        div.drawer-inner {
+            transform: scaleX(-1);
+        }
+    }
+    .solid {
+        pointer-events: none;
+    }
+    .story-inner {
+        pointer-events: none;
+    }
 }
 
 .story-inner {
     position: absolute;
     overflow: hidden;
-    pointer-events: auto;
     background-color: #aaa;
 }
 
