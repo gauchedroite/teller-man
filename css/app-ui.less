@@ -17,6 +17,7 @@ html, body {
     width: 100%;
     overflow-x: hidden;
 }
+
 body {
     font-family: "Roboto Slab", serif;
     color: rgba(0, 0, 0, 0.8);
@@ -26,6 +27,7 @@ body {
 }
 
 .solid {
+    z-index: 0;
     position: absolute;
     width: 100%;
     height: 100%;
@@ -49,10 +51,6 @@ body {
     &.game {
         opacity: 0;
         z-index: 0;
-        &.show {
-            opacity: 1;
-            z-index: 2;
-        }
     }
 }
 
@@ -347,7 +345,8 @@ section {
             font-size: large;
         }
     }
-    &.show {
+    &.show
+     {
         left: 0;
     }
     &.showing {
@@ -360,11 +359,11 @@ section {
 }
 
 .story-window {
+    z-index: 20;
     position: absolute;
     width: 30%;
     height: 100%;
     right: 0;
-    z-index: 20;
     box-sizing: border-box;
     border-left: 8px solid rgba(0, 0, 0, 0.25);
     transition: right 0.25s ease;
@@ -384,44 +383,41 @@ section {
     }
 }
 
-.landscape {
-    .next {
-        bottom: 1%;
-        left: 1%;
-        width: 5%;
-        height: 25%;
-        box-sizing: border-box;
-        background-color: rgba(255, 255, 255, 0.2);
-        border: 8px solid rgba(0, 0, 0, 0.075);
-        transition: left 0.15s ease;
-        .next-inner {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            font-size: 64px;
-            color: rgba(0, 0, 0, 0.075);
-        }
-        &.hidden {
-            left: -10%;
-        }
+//.landscape {
+.next {
+    bottom: 1%;
+    left: 1%;
+    width: 5%;
+    height: 25%;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 8px solid rgba(0, 0, 0, 0.075);
+    transition: left 0.15s ease;
+    .next-inner {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
+        font-size: 64px;
+        color: rgba(0, 0, 0, 0.075);
     }
-    .story-inner {
-        bottom: 1%;
-        left: 7%;
-        width: 30%;
-        min-width: 350px;
-        max-width: 450px;
-        height: calc(25% + 0px);
-        transition: height 0.15s ease;
-        border-bottom: 2px solid #ddd;
-        &.retracted {
-            height: @navbar-height;
-            opacity: 0.4;
-        }
+    &.hidden {
+        left: -10%;
     }
 }
+.story-inner {
+    bottom: 1%;
+    left: 7%;
+    width: 30%;
+    min-width: 350px;
+    max-width: 450px;
+    height: calc(25% + 0px);
+    transition: height 0.15s ease;
+    border-bottom: 2px solid #ddd;
+}
+//}
 
+/*
 .portrait {
     .graphics.game {
         height: calc(100% - @navbar-height-portrait);
@@ -443,7 +439,7 @@ section {
         }
     }
 }
-
+*/
 
 body.disabled {
     .solid {
@@ -457,5 +453,22 @@ body.disabled {
     .story-inner {
         opacity: 0.5;
         pointer-events: none;
+    }
+}
+
+body.show-game {
+    .game {
+        opacity: 1;
+        z-index: 2;
+    }
+    .story-inner {
+        height: @navbar-height;
+        opacity: 0;
+    }
+    .navbar-inner .title {
+        opacity: 0;
+    }
+    .story-window {
+        opacity: 0;
     }
 }

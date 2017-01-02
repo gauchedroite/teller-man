@@ -127,6 +127,7 @@ body {
   -ms-user-select: none;
 }
 .solid {
+  z-index: 0;
   position: absolute;
   width: 100%;
   height: 100%;
@@ -150,10 +151,6 @@ body {
 .graphics.game {
   opacity: 0;
   z-index: 0;
-}
-.graphics.game.show {
-  opacity: 1;
-  z-index: 2;
 }
 .story {
   z-index: 10;
@@ -448,11 +445,11 @@ section.image div {
   background-color: black;
 }
 .story-window {
+  z-index: 20;
   position: absolute;
   width: 30%;
   height: 100%;
   right: 0;
-  z-index: 20;
   box-sizing: border-box;
   border-left: 8px solid rgba(0, 0, 0, 0.25);
   transition: right 0.25s ease;
@@ -471,7 +468,7 @@ section.image div {
 .story-window.closed {
   right: calc(32px - 30%);
 }
-.landscape .next {
+.next {
   bottom: 1%;
   left: 1%;
   width: 5%;
@@ -481,7 +478,7 @@ section.image div {
   border: 8px solid rgba(0, 0, 0, 0.075);
   transition: left 0.15s ease;
 }
-.landscape .next .next-inner {
+.next .next-inner {
   position: absolute;
   bottom: 0;
   width: 100%;
@@ -489,10 +486,10 @@ section.image div {
   font-size: 64px;
   color: rgba(0, 0, 0, 0.075);
 }
-.landscape .next.hidden {
+.next.hidden {
   left: -10%;
 }
-.landscape .story-inner {
+.story-inner {
   bottom: 1%;
   left: 7%;
   width: 30%;
@@ -502,29 +499,29 @@ section.image div {
   transition: height 0.15s ease;
   border-bottom: 2px solid #ddd;
 }
-.landscape .story-inner.retracted {
-  height: 42px;
-  opacity: 0.4;
+/*
+.portrait {
+    .graphics.game {
+        height: calc(100% - @navbar-height-portrait);
+        top: @navbar-height-portrait;
+    }
+    .navbar {
+        height: @navbar-height-portrait;
+    }
+    .content {
+        top: @navbar-height-portrait;
+        height: calc(100% - @navbar-height-portrait);
+    }
+    .story-inner {
+        width: 100%;
+        height: 100%;
+        transition: height 0.15s ease;
+        &.retracted {
+            height: @navbar-height-portrait;
+        }
+    }
 }
-.portrait .graphics.game {
-  height: calc(100% - 46px);
-  top: 46px;
-}
-.portrait .navbar {
-  height: 46px;
-}
-.portrait .content {
-  top: 46px;
-  height: calc(100% - 46px);
-}
-.portrait .story-inner {
-  width: 100%;
-  height: 100%;
-  transition: height 0.15s ease;
-}
-.portrait .story-inner.retracted {
-  height: 46px;
-}
+*/
 body.disabled .solid {
   opacity: 0.5;
   pointer-events: none;
@@ -536,4 +533,18 @@ body.disabled .next {
 body.disabled .story-inner {
   opacity: 0.5;
   pointer-events: none;
+}
+body.show-game .game {
+  opacity: 1;
+  z-index: 2;
+}
+body.show-game .story-inner {
+  height: 42px;
+  opacity: 0;
+}
+body.show-game .navbar-inner .title {
+  opacity: 0;
+}
+body.show-game .story-window {
+  opacity: 0;
 }

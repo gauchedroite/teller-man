@@ -410,25 +410,21 @@ class UI implements IUI {
 
     private setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
         let minigame = <IMiniGame>chunk;
-        let game = <HTMLDivElement>document.querySelector(".game");
-        let inner = document.querySelector(".story-inner");
-        let panel = <HTMLDivElement>document.querySelector(".choice-panel");
-        let preloader = <HTMLDivElement>document.querySelector(".preloader");
+        let panel = document.querySelector(".choice-panel");
+        let preloader = document.querySelector(".preloader");
         let ready = false;
         let fadedout = false;
         this.runMinigame(minigame.url, (result: any) => {
             if (result.ready != undefined) { 
                 if (fadedout) {
-                    game.classList.add("show");
-                    inner.classList.add("retracted");
+                    document.body.classList.add("show-game");
                     this.fader(false);
                     preloader.classList.remove("change-bg");
                 }
                 ready = true;
             }
             else {
-                game.classList.remove("show");
-                inner.classList.remove("retracted");
+                document.body.classList.remove("show-game");
                 panel.classList.remove("disabled");
                 this.hideChoices(() => {
                     let text = (result.win == true ? minigame.winText : minigame.loseText);
@@ -444,8 +440,7 @@ class UI implements IUI {
         });
         this.showChoices(choices, (chosen: IChoice) => {
             if (ready) { 
-                game.classList.add("show");
-                inner.classList.add("retracted");
+                document.body.classList.add("show-game");
             }
             else {
                 fadedout = true;
@@ -459,7 +454,7 @@ class UI implements IUI {
     private runMinigame = (url: string, callback: (result: any) => void) => {
         let src = `game/${url.replace(/ /g, "%20").replace(/'/g, "%27")}`;
 
-        let game = <HTMLDivElement>document.querySelector(".game");
+        let game = document.querySelector(".game");
         let gameFrame = <HTMLIFrameElement>game.firstElementChild;
 
         (<any>window).eventHubAction = (result: any) => {
