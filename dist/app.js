@@ -855,10 +855,20 @@ var UI = (function () {
             content.classList.add("overlay");
             content.style.pointerEvents = "none";
             var next = document.querySelector(".next");
-            var panel = document.querySelector(".modal-inner");
+            var inner = document.querySelector(".modal-inner");
+            var panel = inner.querySelector("span");
             panel.innerHTML = "<p>" + text + "</p>";
             var modal = document.querySelector(".modal");
             modal.classList.add("show");
+            var waitToMinimize = function (e) {
+                e.stopPropagation();
+                if (modal.classList.contains("minimized"))
+                    modal.classList.remove("minimized");
+                else
+                    modal.classList.add("minimized");
+            };
+            var minimizer = inner.querySelector(".minimizer");
+            minimizer.addEventListener("click", waitToMinimize);
             var waitForClick = function (done) {
                 var onclick = function () {
                     modal.removeEventListener("click", onclick);
@@ -873,6 +883,7 @@ var UI = (function () {
                 var waitForClose = function () {
                     var ready = canclose();
                     if (ready) {
+                        minimizer.removeEventListener("click", waitToMinimize);
                         modal.classList.remove("show");
                         modal.classList.remove("disable");
                         setTimeout(function () {

@@ -11,8 +11,8 @@
   },
   "config": {
     "tsc": "-t ES5 -m system --sourceMap --noImplicitAny --suppressImplicitAnyIndexErrors --lib dom,es2015.promise,es5",
-    "less": "css/app-ui2.less dist/app-ui2.css",
-    "xx-less": "css/app-ui.less dist/app.css"
+    "xx-less": "css/app-ui2.less dist/app-ui2.css",
+    "less": "css/app-ui.less dist/app.css"
   },
   "scripts": {
     "tsc": "tsc %npm_package_config_tsc% --outFile dist/app.js js/game.ts",

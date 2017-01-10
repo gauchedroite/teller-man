@@ -63,11 +63,22 @@ class UI implements IUI {
 
         let next = document.querySelector(".next");
 
-        let panel = <HTMLElement>document.querySelector(".modal-inner");
+        let inner = <HTMLElement>document.querySelector(".modal-inner");
+        let panel = inner.querySelector("span");
         panel.innerHTML = "<p>" + text + "</p>";
 
         let modal = <HTMLElement>document.querySelector(".modal");
         modal.classList.add("show");
+
+        const waitToMinimize = (e: any) => {
+            e.stopPropagation();
+            if (modal.classList.contains("minimized"))
+                modal.classList.remove("minimized");
+            else
+                modal.classList.add("minimized");
+        };
+        let minimizer = inner.querySelector(".minimizer");
+        minimizer.addEventListener("click", waitToMinimize);
 
         const waitForClick = (done: () => void) => {
             const onclick = () => {
@@ -84,6 +95,7 @@ class UI implements IUI {
             const waitForClose = () => {
                 var ready = canclose();
                 if (ready) {
+                    minimizer.removeEventListener("click", waitToMinimize);
                     modal.classList.remove("show");
                     modal.classList.remove("disable");
                     setTimeout(() => { 

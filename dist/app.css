@@ -225,6 +225,13 @@ body {
   opacity: 0.5;
   transition: opacity 0.25s ease;
 }
+.story.no-back .story-inner {
+  background-color: inherit;
+}
+.story.no-back .content .content-inner {
+  color: #ccc;
+  text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
+}
 section {
   font-size: large;
   padding: 8px 0;
@@ -301,7 +308,7 @@ section.image div {
   position: absolute;
   width: 100%;
   top: 100%;
-  border-top: 3px solid #333333;
+  border-top: 3px solid #333;
   background: #ffffff;
   transition: top 0.25s ease;
 }
@@ -355,7 +362,7 @@ section.image div {
   position: absolute;
   top: 0;
   background-color: #ffffff;
-  border-bottom: 3px solid #333333;
+  border-bottom: 3px solid #333;
 }
 .modal {
   position: absolute;
@@ -367,6 +374,7 @@ section.image div {
   align-items: center;
   justify-content: center;
   z-index: 2;
+  font-size: x-large;
 }
 .modal .modal-inner {
   width: 150px;
@@ -378,7 +386,6 @@ section.image div {
   transform: scale(0);
 }
 .modal .modal-inner p {
-  font-size: x-large;
   text-align: center;
   line-height: 1.25;
 }
@@ -396,6 +403,39 @@ section.image div {
   width: 50px;
   height: 50px;
   cursor: default;
+}
+.modal.minimized {
+  height: initial;
+  top: initial;
+  bottom: 0;
+  font-size: inherit;
+}
+.modal.minimized .modal-inner {
+  width: inherit;
+  padding: 8px 52px 8px 8px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: inherit;
+}
+.modal.minimized .minimizer {
+  top: 2px;
+  right: 2px;
+  transform: rotate(180deg) scale(0.75);
+}
+.modal .minimizer {
+  position: absolute;
+  top: -12px;
+  right: -14px;
+  font-size: x-large;
+  padding: 12px;
+  border: 2px solid #666;
+  border-radius: 40px;
+  background-color: white;
+  width: 24px;
+  height: 24px;
+}
+.modal .minimizer > i {
+  margin-left: 4px;
+  margin-top: 2px;
 }
 .heading {
   position: absolute;
