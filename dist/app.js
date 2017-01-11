@@ -1098,7 +1098,7 @@ var UI = (function () {
                 });
             }
             else if (chunk.kind == ChunkKind.minigame) {
-                _this.setupMinigame(chunk, callback);
+                _this.runMinigame(chunk, callback);
             }
             else if (chunk.kind == ChunkKind.waitclick) {
                 waitForClick(callback);
@@ -1161,15 +1161,12 @@ var UI = (function () {
             if (sceneUrl == _this.previousSceneUrl)
                 return callback();
             _this.previousSceneUrl = sceneUrl;
-            _this.fader(true);
-            var preloader = document.querySelector(".preloader");
-            preloader.classList.add("change-bg");
+            document.body.classList.add("change-bg");
             window.eventHubAction = function (result) {
                 if (result.content == "ready") {
                     back.style.opacity = "1";
                     front.style.opacity = "0";
-                    _this.fader(false);
-                    preloader.classList.remove("change-bg");
+                    document.body.classList.remove("change-bg");
                     setTimeout(function () {
                         back.style.zIndex = "1";
                         front.style.zIndex = "0";
@@ -1180,24 +1177,30 @@ var UI = (function () {
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
         };
-        this.setupMinigame = function (chunk, callback) {
+        this.runMinigame = function (chunk, callback) {
             var minigame = chunk;
-            var panel = document.querySelector(".choice-panel");
-            var preloader = document.querySelector(".preloader");
-            var ready = false;
-            var fadedout = false;
-            _this.runMinigame(minigame.url, function (result) {
+            var gameReady = false;
+            var choiceMade = false;
+            var fireMinigame = function (url, callback) {
+                var game = document.querySelector(".game");
+                var gameFrame = game.firstElementChild;
+                window.eventHubAction = function (result) {
+                    setTimeout(function () { callback(result); }, 0);
+                };
+                var src = "game/" + url.replace(/ /g, "%20").replace(/'/g, "%27");
+                gameFrame.setAttribute("src", src);
+            };
+            fireMinigame(minigame.url, function (result) {
                 if (result.ready != undefined) {
-                    if (fadedout) {
+                    if (choiceMade) {
                         document.body.classList.add("show-game");
-                        _this.fader(false);
-                        preloader.classList.remove("change-bg");
+                        document.body.classList.remove("change-bg");
+                        document.body.classList.remove("disabled");
                     }
-                    ready = true;
+                    gameReady = true;
                 }
                 else {
                     document.body.classList.remove("show-game");
-                    panel.classList.remove("disabled");
                     _this.hideChoices(function () {
                         var text = (result.win == true ? minigame.winText : minigame.loseText);
                         setTimeout(function () { callback(result); }, 0);
@@ -1211,37 +1214,16 @@ var UI = (function () {
                 text: minigame.text
             });
             _this.showChoices(choices, function (chosen) {
-                if (ready) {
+                if (gameReady) {
                     document.body.classList.add("show-game");
+                    document.body.classList.remove("disabled");
                 }
                 else {
-                    fadedout = true;
-                    _this.fader(true);
-                    preloader.classList.add("change-bg");
+                    document.body.classList.add("change-bg");
+                    document.body.classList.add("disabled");
                 }
-                panel.classList.add("disabled");
+                choiceMade = true;
             });
-        };
-        this.runMinigame = function (url, callback) {
-            var src = "game/" + url.replace(/ /g, "%20").replace(/'/g, "%27");
-            var game = document.querySelector(".game");
-            var gameFrame = game.firstElementChild;
-            window.eventHubAction = function (result) {
-                setTimeout(function () { callback(result); }, 0);
-            };
-            gameFrame.setAttribute("src", src);
-        };
-        this.fader = function (enable) {
-            var solid = document.querySelector(".solid-inner");
-            var fader = solid.children[3];
-            if (enable) {
-                fader.style.opacity = "0.35";
-                fader.style.zIndex = "3";
-            }
-            else {
-                fader.style.opacity = "0";
-                setTimeout(function () { fader.style.zIndex = "0"; }, 500);
-            }
         };
         this.markupChunk = function (chunk) {
             var html = Array();

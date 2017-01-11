@@ -327,7 +327,7 @@ class UI implements IUI {
             });
         }
         else if (chunk.kind == ChunkKind.minigame) {
-            this.setupMinigame(<IMiniGame>chunk, callback);
+            this.runMinigame(<IMiniGame>chunk, callback);
         }
         else if (chunk.kind == ChunkKind.waitclick) {
             waitForClick(callback);
@@ -398,16 +398,13 @@ class UI implements IUI {
 
         this.previousSceneUrl = sceneUrl;
 
-        this.fader(true);
-        let preloader = <HTMLDivElement>document.querySelector(".preloader");
-        preloader.classList.add("change-bg");
+        document.body.classList.add("change-bg");
 
         (<any>window).eventHubAction = (result: any) => {
             if (result.content == "ready") {
                 back.style.opacity = "1";
                 front.style.opacity = "0";
-                this.fader(false);
-                preloader.classList.remove("change-bg");
+                document.body.classList.remove("change-bg");
                 setTimeout(() => { //do not use "transitionend" here as it was failing on me. hardcode the delay instead
                     back.style.zIndex = "1";
                     front.style.zIndex = "0";
@@ -420,72 +417,59 @@ class UI implements IUI {
         backFrame.setAttribute("src", sceneUrl);
     };
 
-    private setupMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
+    private runMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {
         let minigame = <IMiniGame>chunk;
-        let panel = document.querySelector(".choice-panel");
-        let preloader = document.querySelector(".preloader");
-        let ready = false;
-        let fadedout = false;
-        this.runMinigame(minigame.url, (result: any) => {
-            if (result.ready != undefined) { 
-                if (fadedout) {
+        let gameReady = false;
+        let choiceMade = false;
+        
+        const fireMinigame = (url: string, callback: (result: any) => void) => {
+            let game = document.querySelector(".game");
+            let gameFrame = <HTMLIFrameElement>game.firstElementChild;
+
+            (<any>window).eventHubAction = (result: any) => {
+                setTimeout(() => { callback(result); }, 0);
+            };
+
+            let src = `game/${url.replace(/ /g, "%20").replace(/'/g, "%27")}`;
+            gameFrame.setAttribute("src", src);
+        };
+
+        fireMinigame(minigame.url, (result: any) => {
+            if (result.ready != undefined) {
+                if (choiceMade) {
                     document.body.classList.add("show-game");
-                    this.fader(false);
-                    preloader.classList.remove("change-bg");
+                    document.body.classList.remove("change-bg");
+                    document.body.classList.remove("disabled");
                 }
-                ready = true;
+                gameReady = true;
             }
             else {
                 document.body.classList.remove("show-game");
-                panel.classList.remove("disabled");
                 this.hideChoices(() => {
                     let text = (result.win == true ? minigame.winText : minigame.loseText);
                     setTimeout(() => { callback(result); }, 0);
                 });
             }
         });
+
         let choices = Array<IChoice>();
         choices.push(<IChoice> { 
             kind: ChoiceKind.action,
             id: 0,
             text: minigame.text
         });
+
         this.showChoices(choices, (chosen: IChoice) => {
-            if (ready) { 
+            if (gameReady) {
                 document.body.classList.add("show-game");
+                document.body.classList.remove("disabled");
             }
             else {
-                fadedout = true;
-                this.fader(true); 
-                preloader.classList.add("change-bg");
-            } 
-            panel.classList.add("disabled");
+                document.body.classList.add("change-bg");
+                document.body.classList.add("disabled");
+            }
+            choiceMade = true;
         });
-    };
-
-    private runMinigame = (url: string, callback: (result: any) => void) => {
-        let src = `game/${url.replace(/ /g, "%20").replace(/'/g, "%27")}`;
-
-        let game = document.querySelector(".game");
-        let gameFrame = <HTMLIFrameElement>game.firstElementChild;
-
-        (<any>window).eventHubAction = (result: any) => {
-            setTimeout(() => { callback(result); }, 0);
-        };
-        gameFrame.setAttribute("src", src);
-    }
-
-    private fader = (enable: boolean) => {
-        let solid = <HTMLDivElement>document.querySelector(".solid-inner");
-        let fader = <HTMLDivElement>solid.children[3];
-        if (enable) {
-            fader.style.opacity = "0.35";
-            fader.style.zIndex = "3";
-        }
-        else {
-            fader.style.opacity = "0";
-            setTimeout(() => { fader.style.zIndex = "0"; }, 500);
-        }
     };
 
     private markupChunk = (chunk: IMomentData): string => {

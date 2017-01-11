@@ -400,6 +400,8 @@ section {
 }
 
 .fader {
+    opacity: 0;
+    z-index: 0;
     background-color: black;
 }
 
@@ -515,5 +517,18 @@ body.show-game {
     }
     .story-window {
         opacity: 0;
+    }
+}
+
+
+body.change-bg {
+    .fader {
+        z-index: 3;
+        opacity: 0.35;
+    }
+    .preloader {
+        z-index: 30;
+        opacity: 1;
+        transition-delay: 1s;
     }
 }
