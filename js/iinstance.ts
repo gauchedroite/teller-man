@@ -1,3 +1,4 @@
+/// <reference path="igame-data.ts" />
 
 interface IGameInstance {
     initialize: (source?: string, parent?: IGameInstance) => void

@@ -91,7 +91,9 @@ class Game implements IGameInstance {
     };
 
     private get gameMan() : IGameManInstance {
-        return (<any>window.parent).GameManInstance;
+        if (this.parent == undefined)
+            return (<any>window.parent).GameManInstance;
+        return (<any>this.parent).gameMan;
     }
 
     private startNewGame = () => {
@@ -147,7 +149,7 @@ class Game implements IGameInstance {
                 
                 this.ui.clearBlurb();
                 this.ui.initScene(Game.parseScene(this.currentScene), () => {
-                    if (this.isRoot) this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, this.currentMoment);
+                    this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, { source: this.source, moment: this.currentMoment });
                     setTimeout(() => { this.update(Op.BLURB); }, 0);
                 });
 
@@ -208,7 +210,7 @@ class Game implements IGameInstance {
                 }
             }
             else if (op == Op.BUILD_CHOICES) {
-                if (this.isRoot) this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
                 let moments = this.getAllPossibleMoments();
                 let messages = this.getAllPossibleMessages();
                 let choices = this.buildChoices(moments, messages);

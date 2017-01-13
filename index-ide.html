@@ -90,7 +90,7 @@
             top: 32px;
         }
         .debug-content {
-            padding: 6px 12px;
+            padding: 10px 12px;
         }
         table, caption, tbody, tfoot, thead, tr, th, td {
             border: 0;
@@ -119,13 +119,18 @@
         }
         .debug-moment {
             padding: 6px 12px;
+            border: 1px solid transparent;
+        }
+        .debug-moment:hover {
+            cursor: pointer;
+            border: 1px solid yellow;
         }
         .debug-moment .head {
             font-weight: bold;
             border-bottom: 1px solid #a0a0a0;
         }
         .debug-moment .body {
-            padding-bottom: 12px;
+            padding-bottom: 4px;
         }
         .debug-state {
             padding-top: 6px;
@@ -194,10 +199,16 @@
     </div>
 
     <div class="debug">
-        <div class="debug-moment">
+        <div class="debug-moment" id="moment-main">
             <div class="head">When</div>
             <div class="body" id="id-when"></div>
             <div class="head">Commands</div>
+            <div class="body" id="id-command"></div>
+        </div>
+        <div class="debug-moment" id="moment-child">
+            <div class="head">When/2</div>
+            <div class="body" id="id-when"></div>
+            <div class="head">Commands/2</div>
             <div class="body" id="id-command"></div>
         </div>
         <div class="debug-content hidden">

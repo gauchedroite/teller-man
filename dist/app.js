@@ -801,6 +801,7 @@ var GameData = (function () {
     });
     return GameData;
 }());
+/// <reference path="igame-data.ts" />
 /// <reference path="helpers.ts" />
 /// <reference path="igame.ts" />
 /// <reference path="iui.ts" />
@@ -2346,8 +2347,7 @@ var Game = (function () {
                     _this.saveContinueData();
                     _this.ui.clearBlurb();
                     _this.ui.initScene(Game.parseScene(_this.currentScene), function () {
-                        if (_this.isRoot)
-                            _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, _this.currentMoment);
+                        _this.gameMan.raiseActionEvent(OpAction.SHOWING_MOMENT, { source: _this.source, moment: _this.currentMoment });
                         setTimeout(function () { _this.update(Op.BLURB); }, 0);
                     });
                     if (_this.isRoot) {
@@ -2404,8 +2404,7 @@ var Game = (function () {
                     }
                 }
                 else if (op == Op.BUILD_CHOICES) {
-                    if (_this.isRoot)
-                        _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
+                    _this.gameMan.raiseActionEvent(OpAction.SHOWING_CHOICES);
                     var moments = _this.getAllPossibleMoments();
                     var messages = _this.getAllPossibleMessages();
                     var choices = _this.buildChoices(moments, messages);
@@ -2957,7 +2956,9 @@ var Game = (function () {
     }
     Object.defineProperty(Game.prototype, "gameMan", {
         get: function () {
-            return window.parent.GameManInstance;
+            if (this.parent == undefined)
+                return window.parent.GameManInstance;
+            return this.parent.gameMan;
         },
         enumerable: true,
         configurable: true

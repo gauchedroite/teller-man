@@ -12,7 +12,7 @@ var ChunkKind;
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
-    Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
+    Op[Op["START_BLURBING"] = 0] = "START_BLURBING";
     Op[Op["BLURB"] = 1] = "BLURB";
     Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
 })(Op || (Op = {}));
@@ -34,6 +34,7 @@ var AKind;
     AKind[AKind["Player"] = 0] = "Player";
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
+/// <reference path="igame-data.ts" />
 /// <reference path="igame-data.ts" />
 /// <reference path="igame.ts" />
 var GameStorage = (function () {
@@ -295,6 +296,23 @@ var Tide = (function () {
                 gdata.state = JSON.parse(textarea.value);
                 _this.action(OpAction.SHOWING_CHOICES);
             });
+            var debugMoments = document.getElementsByClassName("debug-moment");
+            for (var i = 0; i < debugMoments.length; i++) {
+                debugMoments[i].addEventListener("click", function (e) {
+                    var target = e.target;
+                    var div = target;
+                    while (true) {
+                        if (div.classList.contains("debug-moment"))
+                            break;
+                        div = div.parentElement;
+                    }
+                    var iframe = document.querySelector("div.ide-editor iframe");
+                    var editor = iframe.contentWindow.EditorInstance;
+                    var moment = _this.moments[div.id];
+                    if (moment != undefined)
+                        editor.gotoMoment(moment);
+                });
+            }
             window.onAction = _this.action;
             document.getElementById("ide-gamefile").checked = options.skipFileLoad;
             document.getElementById("ide-sync").checked = options.syncEditor;
@@ -369,21 +387,25 @@ var Tide = (function () {
                 if (document.getElementById("ide-sync").checked) {
                     var iframe = document.querySelector("div.ide-editor iframe");
                     var editor = iframe.contentWindow.EditorInstance;
-                    var moment = param;
+                    var moment = param.moment;
+                    var source = param.source;
                     editor.gotoMoment(moment);
+                    var id = (source == undefined ? "moment-main" : "moment-child");
+                    _this.moments[id] = JSON.parse(JSON.stringify(moment));
                     var whens = GameHelper.getWhens(moment.when);
                     var divs = Array.prototype.map.call(whens, function (when) {
                         return "<div>" + when + "</div>";
                     });
-                    document.getElementById("id-when").innerHTML = divs.join("");
+                    document.querySelector("#" + id + " #id-when").innerHTML = divs.join("");
                     var cmds = GameHelper.getCommands(moment.text);
                     divs = Array.prototype.map.call(cmds, function (cmd) {
                         return "<div>" + cmd + "</div>";
                     });
-                    document.getElementById("id-command").innerHTML = divs.join("");
+                    document.querySelector("#" + id + " #id-command").innerHTML = divs.join("");
                 }
             }
         };
+        this.moments = {};
     }
     return Tide;
 }());

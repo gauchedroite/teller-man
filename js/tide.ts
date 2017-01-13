@@ -7,8 +7,10 @@
 class Tide {
 
     prevState: any;
+    moments: any;
 
     constructor () {
+        this.moments = {};
     }
 
     initialize = () => {
@@ -87,6 +89,23 @@ class Tide {
             gdata.state = JSON.parse(textarea.value);
             this.action(OpAction.SHOWING_CHOICES);
         });
+
+        let debugMoments = document.getElementsByClassName("debug-moment");
+        for (var i = 0; i < debugMoments.length; i++) {
+            debugMoments[i].addEventListener("click", (e) => {
+                var target = <HTMLElement>e.target;
+                var div: HTMLElement = target;
+                while (true) {
+                    if (div.classList.contains("debug-moment")) break;
+                    div = div.parentElement;
+                }
+                let iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
+                let editor = <IEditorInstance>(<any>iframe.contentWindow).EditorInstance;
+                let moment = this.moments[div.id];
+                if (moment != undefined)
+                    editor.gotoMoment(moment);
+            });
+        }
 
         (<any>window).onAction = this.action;
 
@@ -170,20 +189,24 @@ class Tide {
             if ((<any>document.getElementById("ide-sync")).checked) {
                 let iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
                 let editor = <IEditorInstance>(<any>iframe.contentWindow).EditorInstance;
-                let moment = <IMoment>param;
+                let moment = <IMoment>param.moment;
+                let source = <string>param.source;
                 editor.gotoMoment(moment);
+
+                let id = (source == undefined ? "moment-main" : "moment-child");
+                this.moments[id] = JSON.parse(JSON.stringify(moment));
 
                 let whens = GameHelper.getWhens(moment.when);
                 let divs = Array.prototype.map.call(whens, function (when:string) {
                     return `<div>${when}</div>`;
                 })
-                document.getElementById("id-when").innerHTML = divs.join("");
+                document.querySelector(`#${id} #id-when`).innerHTML = divs.join("");
 
                 var cmds = GameHelper.getCommands(moment.text);
                 divs = Array.prototype.map.call(cmds, function (cmd:string) {
                     return `<div>${cmd}</div>`;
                 })
-                document.getElementById("id-command").innerHTML = divs.join("");
+                document.querySelector(`#${id} #id-command`).innerHTML = divs.join("");
             }
         }
     };
