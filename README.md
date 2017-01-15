@@ -1,4 +1,4 @@
-# teller - editor
+# teller - man
 An editor for games of stories.
 
 Getting started
