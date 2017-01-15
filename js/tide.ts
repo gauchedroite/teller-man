@@ -102,8 +102,10 @@ class Tide {
                 let iframe = <HTMLIFrameElement>document.querySelector("div.ide-editor iframe");
                 let editor = <IEditorInstance>(<any>iframe.contentWindow).EditorInstance;
                 let moment = this.moments[div.id];
-                if (moment != undefined)
+                if (moment != undefined) {
                     editor.gotoMoment(moment);
+                    ied.classList.add("show");
+                }
             });
         }
 

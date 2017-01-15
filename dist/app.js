@@ -27,6 +27,7 @@ var ChunkKind;
     ChunkKind[ChunkKind["minigame"] = 6] = "minigame";
     ChunkKind[ChunkKind["gameresult"] = 7] = "gameresult";
     ChunkKind[ChunkKind["waitclick"] = 8] = "waitclick";
+    ChunkKind[ChunkKind["title"] = 9] = "title";
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
@@ -825,10 +826,9 @@ var UI = (function () {
             window.onresize = function () {
                 _this.portrait = window.innerWidth < 750;
                 var format = (_this.portrait ? "portrait" : "landscape");
-                if (document.body.classList.contains(format) == false) {
-                    document.body.removeAttribute("class");
-                    document.body.classList.add(format);
-                }
+                document.body.classList.remove("portrait");
+                document.body.classList.remove("landscape");
+                document.body.classList.add(format);
             };
         };
         this.doAction = function (payload) {
@@ -856,6 +856,7 @@ var UI = (function () {
             content.classList.add("overlay");
             content.style.pointerEvents = "none";
             var next = document.querySelector(".next");
+            var storyInner = document.querySelector(".story-inner");
             var inner = document.querySelector(".modal-inner");
             var panel = inner.querySelector("span");
             panel.innerHTML = "<p>" + text + "</p>";
@@ -863,10 +864,10 @@ var UI = (function () {
             modal.classList.add("show");
             var waitToMinimize = function (e) {
                 e.stopPropagation();
-                if (modal.classList.contains("minimized"))
-                    modal.classList.remove("minimized");
+                if (storyInner.classList.contains("minimized"))
+                    storyInner.classList.remove("minimized");
                 else
-                    modal.classList.add("minimized");
+                    storyInner.classList.add("minimized");
             };
             var minimizer = inner.querySelector(".minimizer");
             minimizer.addEventListener("click", waitToMinimize);
@@ -915,10 +916,10 @@ var UI = (function () {
                 if (choice.kind == ChoiceKind.messageFrom)
                     icon = "ion-chatbubble-working";
                 icon = "ion-arrow-right-b";
-                //icon = "ion-arrow-right-c";
                 var li = document.createElement("li");
                 li.setAttribute("data-kind", choice.kind.toString());
                 li.setAttribute("data-id", choice.id.toString());
+                li.classList.add("hidden");
                 var html = "\n                <div class=\"kind\"><div><i class=\"icon " + icon + "\"></i></div></div>\n                <div class=\"choice\">" + choice.text + "</div>";
                 if (choice.subtext != undefined) {
                     html = html + "<div class=\"choice subtext\">" + choice.subtext + "</div>";
@@ -932,6 +933,7 @@ var UI = (function () {
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var storyInner = document.querySelector(".story-inner");
             storyInner.style.height = "calc(25% + " + panel.offsetHeight + "px)";
+            storyInner.classList.remove("minimized");
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
             _this.scrollContent(text.parentElement);
@@ -950,16 +952,18 @@ var UI = (function () {
                         break;
                     li = li.parentElement;
                 }
+                li.classList.add("selected");
                 setTimeout(function () {
                     onchoice({
                         kind: parseInt(li.getAttribute("data-kind")),
                         id: parseInt(li.getAttribute("data-id")),
                         text: ""
                     });
-                }, 0);
+                }, 500);
             };
             for (var i = 0; i < lis.length; i++) {
                 lis[i].addEventListener("click", onChoice);
+                lis[i].classList.remove("hidden");
             }
         };
         this.hideChoices = function (callback) {
@@ -980,8 +984,7 @@ var UI = (function () {
             setTimeout(callback, 250 /*matches .choice-panel transition*/);
         };
         this.initScene = function (data, callback) {
-            var title = document.querySelector(".title span");
-            title.textContent = data.title;
+            _this.setTitle(data.title);
             if (data.image == undefined)
                 return callback();
             _this.changeBackground(data.image, callback);
@@ -1080,11 +1083,16 @@ var UI = (function () {
                 var heading_1 = document.querySelector(".heading");
                 var inner_1 = document.querySelector(".heading-inner");
                 inner_1.innerHTML = html;
-                heading_1.classList.add("show", "showing");
+                var css_1 = chunk.css;
+                heading_1.classList.add("show");
+                if (css_1 != undefined)
+                    heading_1.classList.add(css_1);
                 heading_1.addEventListener("click", function onclick() {
                     heading_1.removeEventListener("click", onclick);
-                    heading_1.classList.remove("showing");
-                    setTimeout(function () { heading_1.classList.remove("show"); callback(); }, 500);
+                    heading_1.classList.remove("show");
+                    if (css_1 != undefined)
+                        heading_1.classList.remove(css_1);
+                    setTimeout(function () { callback(); }, 500);
                 });
             }
             else if (chunk.kind == ChunkKind.doo) {
@@ -1103,6 +1111,10 @@ var UI = (function () {
             }
             else if (chunk.kind == ChunkKind.waitclick) {
                 waitForClick(callback);
+            }
+            else if (chunk.kind == ChunkKind.title) {
+                _this.setTitle(chunk.text);
+                callback();
             }
             else {
                 callback();
@@ -1137,6 +1149,16 @@ var UI = (function () {
                     callback(doc.GameInstance);
             }, 0);
         };
+        this.setTitle = function (title) {
+            var inner = document.querySelector(".title-inner");
+            if (inner.innerHTML != title) {
+                setTimeout(function () {
+                    inner.innerHTML = title;
+                    inner.classList.remove("out");
+                }, 500);
+                inner.classList.add("out");
+            }
+        };
         this.changeBackground = function (assetName, callback) {
             if (assetName == undefined)
                 return callback();
@@ -1150,6 +1172,8 @@ var UI = (function () {
             var front = (zero.style.zIndex == "0" ? one : zero);
             var backFrame = back.firstElementChild;
             var frontFrame = front.firstElementChild;
+            var css = assetName.replace(".html", "").replace(".jpg", "").replace(".png", "");
+            document.body.setAttribute("data-bg", css);
             if (assetName.indexOf(".") == -1)
                 assetName += ".jpg";
             var sceneUrl;
@@ -2786,7 +2810,8 @@ var Game = (function () {
                         var parts_2 = part.substring(2).trim().split("/");
                         var title = parts_2[0].trim();
                         var subtitle = (parts_2.length > 1 ? parts_2[1].trim() : undefined);
-                        var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle };
+                        var css = (parts_2.length > 2 ? parts_2[2].trim() : undefined);
+                        var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle, css: css };
                         parsed.push(heading);
                     }
                     else if (part.startsWith(".m")) {
@@ -2805,6 +2830,11 @@ var Game = (function () {
                     else if (part.startsWith(".w")) {
                         var pause = { kind: ChunkKind.waitclick };
                         parsed.push(pause);
+                    }
+                    else if (part.startsWith(".t ")) {
+                        var text = part.substring(2).trim();
+                        var title = { kind: ChunkKind.title, text: text };
+                        parsed.push(title);
                     }
                     else if (part.startsWith(".")) {
                     }

@@ -309,8 +309,10 @@ var Tide = (function () {
                     var iframe = document.querySelector("div.ide-editor iframe");
                     var editor = iframe.contentWindow.EditorInstance;
                     var moment = _this.moments[div.id];
-                    if (moment != undefined)
+                    if (moment != undefined) {
                         editor.gotoMoment(moment);
+                        ied.classList.add("show");
+                    }
                 });
             }
             window.onAction = _this.action;

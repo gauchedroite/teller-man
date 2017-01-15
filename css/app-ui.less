@@ -39,7 +39,7 @@ body {
     width: 100%;
     height: 100%;
     display: block;
-    transition: opacity 0.75s ease;
+    transition: opacity 0.75s;
     iframe {
         border: 0;
         padding: 0;
@@ -77,20 +77,46 @@ body {
         width: 100%;
         bottom: 0;
         display: flex;
-        //justify-content: space-between;
         div.title {
-            cursor: default;
-            padding: 8px;
+            position: relative;
+            width: 100%;
             overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            background: rgba(255, 255, 255, 0.2);
+            .title-inner {
+                position: absolute;
+                top: 0;
+                left: 0;
+                cursor: default;
+                padding: 6px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                //font-family: "Anton", sans-serif;
+                font-family: "Montserrat", sans-serif;
+                font-weight: bolder;
+                font-size: larger;
+                letter-spacing: 0.1em;
+                text-shadow: rgba(255, 255, 255, 0.25) -1px 1px 1px, rgba(255, 255, 255, 0.25) 1px -1px 1px, rgba(255, 255, 255, 0.25) -1px -1px 1px, rgba(255, 255, 255, 0.25) 1px 1px 1px;
+                transition: top 0.5s;
+                &.out {
+                    top: -100%;
+                }
+            }
         }
         div.goto-menu {
             padding: 8px;
             cursor: pointer;
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.5);
             margin-right: 8px;
+            border: 2px solid rgba(0, 0, 0, 0.5);
+        }
+    }
+}
+
+.story {
+    .content {
+        .content-inner {
+            color: #ccc;
+            text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
         }
     }
 }
@@ -99,7 +125,6 @@ body {
     position: absolute;
     overflow: hidden;
     pointer-events: auto;
-    background-color: rgba(255, 255, 255, 0.2);
 }
 
 .next {
@@ -127,21 +152,9 @@ body {
     }
     &.overlay {
         opacity: 0.5;
-        transition: opacity 0.25s ease; 
+        transition: opacity 0.25s; 
     }
-    transition: opacity 0.25s ease; 
-}
-
-.story.no-back {
-    .story-inner {
-        background-color: inherit;
-    }
-    .content {
-        .content-inner {
-            color: #ccc;
-            text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
-        }
-    }
+    transition: opacity 0.25s; 
 }
 
 section {
@@ -168,7 +181,7 @@ section {
         .head {
             background: white;
             transform: scale(0);
-            transition: all 0.15s ease;
+            transition: all 0.15s;
             &.show {
                 transform: scale(1);
             }
@@ -209,7 +222,7 @@ section {
         div {
             width: 100%;
             height: 0;
-            transition: height 0.25s ease; 
+            transition: height 0.25s; 
             background: no-repeat center center;
             background-size: cover;
         }
@@ -221,8 +234,8 @@ section {
     width: 100%;
     top: 100%;
     border-top: 3px solid @seperator-color;
-    background: #ffffff; //url(game/assets/ignasi_pattern_s.png);
-    transition: top 0.25s ease; 
+    background: rgba(255, 255, 255, 0.35);
+    transition: top 0.25s; 
     &.disabled {
         opacity: 0.5;
         ul li {
@@ -236,9 +249,21 @@ section {
         li {
             padding-bottom: 22px;
             cursor: pointer;
-        }
-        li:last-child {
-            padding-bottom: 10px;
+            &.hidden {
+                opacity: 0.5;
+                transform: scale(0.5)
+            }
+            &.selected {
+                animation: blink 0.1s ease 4;
+            }
+            &:nth-child(1) { transition: opacity 0.5s, transform 0.5s; }
+            &:nth-child(2) { transition: opacity 0.5s 0.1s, transform 0.5s 0.1s; }
+            &:nth-child(3) { transition: opacity 0.5s 0.2s, transform 0.5s 0.2s; }
+            &:nth-child(4) { transition: opacity 0.5s 0.3s, transform 0.5s 0.3s; }
+            &:nth-child(5) { transition: opacity 0.5s 0.4s, transform 0.5s 0.4s; }
+            &:last-child {
+                padding-bottom: 10px;
+            }
         }
         .kind {
             font-size: larger;
@@ -247,7 +272,7 @@ section {
             float: left;
             border-radius: 50%;
             border: 2px solid black;
-            background-color: #ffffff; //@accent-color;
+            background-color: #ffffff;
             text-align: center;
             transform: translateY(-6px);
             i {
@@ -272,9 +297,15 @@ section {
         height: 3px;
         position: absolute;
         top: 0;
-        background-color: #ffffff; //@accent-color;
+        background-color: #ffffff;
         border-bottom: 3px solid @seperator-color;
     }
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 .modal {
@@ -292,7 +323,7 @@ section {
         width: 150px;
         border: 2px #666 solid;
         padding: 24px;
-        background-color: white;
+        background-color: #ccc;
         border-radius: 16px;
         opacity: 0;
         transform: scale(0);
@@ -306,7 +337,7 @@ section {
         .modal-inner {
             opacity: 1;
             transform: scale(1);
-            transition: all 0.15s ease;
+            transition: all 0.15s;
             cursor: pointer;
         }
     }
@@ -316,23 +347,6 @@ section {
             width: 50px;
             height: 50px;
             cursor: default;
-        }
-    }
-    &.minimized {
-        height: initial;
-        top: initial;
-        bottom: 0;
-        font-size: inherit;
-        .modal-inner {
-            width: inherit;
-            padding: 8px 52px 8px 8px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: inherit;
-        }
-        .minimizer {
-            top: 2px;
-            right: 2px;
-            transform: rotate(180deg) scale(0.75);
         }
     }
     .minimizer {
@@ -357,15 +371,15 @@ section {
     position: absolute;
     width: 100%;
     height: 100%;
-    top: 0;
-    left: 100%;
-    background-color: white;
+    top: -100%;
+    left: 0;
+    background-color: rgba(255, 255, 255, 0.5);
     z-index: 11;
+    cursor: default;
     opacity: 0;
-    transition: opacity 0.5s ease;
+    transition: top 0.25s, opacity 0.25s;
     .heading-inner {
         height: 100%;
-        background: url(game/assets/ignasi_pattern_s.png);
         h1 {
             position: absolute;
             width: 80%;
@@ -391,10 +405,8 @@ section {
         }
     }
     &.show
-     {
-        left: 0;
-    }
-    &.showing {
+    {
+        top: 0;
         opacity: 1;
     }
 }
@@ -413,7 +425,7 @@ section {
     right: 0;
     box-sizing: border-box;
     border-left: 8px solid rgba(0, 0, 0, 0.25);
-    transition: right 0.25s ease;
+    transition: right 0.25s 0.25s, height 0.25s;
     iframe {
         border: 0;
         padding: 0;
@@ -427,10 +439,10 @@ section {
     }
     &.closed {
         right: calc(32px - 30%);
+        height: 40px;
     }
 }
 
-//.landscape {
 .next {
     bottom: 1%;
     left: 1%;
@@ -439,7 +451,7 @@ section {
     box-sizing: border-box;
     background-color: rgba(255, 255, 255, 0.2);
     border: 8px solid rgba(0, 0, 0, 0.075);
-    transition: left 0.15s ease;
+    transition: left 0.15s;
     .next-inner {
         position: absolute;
         bottom: 0;
@@ -452,6 +464,7 @@ section {
         left: -10%;
     }
 }
+
 .story-inner {
     bottom: 1%;
     left: 7%;
@@ -459,34 +472,48 @@ section {
     min-width: 350px;
     max-width: 450px;
     height: calc(25% + 0px);
-    transition: height 0.15s ease;
-    border-bottom: 2px solid #ddd;
-}
-//}
+    border-top: 4px solid rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: height 0.15s, border 0.15s, background 0.15s;
 
-/*
-.portrait {
-    .graphics.game {
-        height: calc(100% - @navbar-height-portrait);
-        top: @navbar-height-portrait;
-    }
-    .navbar {
-        height: @navbar-height-portrait;
-    }
     .content {
-        top: @navbar-height-portrait;
-        height: calc(100% - @navbar-height-portrait);
+        transition: top 0.2s 0.1s;        
     }
-    .story-inner {
-        width: 100%;
-        height: 100%;
-        transition: height 0.15s ease;
-        &.retracted {
-            height: @navbar-height-portrait;
+
+    &.minimized {
+        border-top: 4px solid rgba(255, 255, 255, 0);
+        background-color: rgba(255, 255, 255, 0);
+        .content {
+            top: 100%;
+        }
+        .modal {
+            height: initial;
+            top: initial;
+            bottom: 0;
+            font-size: inherit;
+            .modal-inner {
+                width: inherit;
+                padding: 8px 52px 8px 8px;
+                background-color: rgba(255, 255, 255, 0.5);
+                border-radius: inherit;
+            }
+            .minimizer {
+                right: 2px;
+                transform: rotate(180deg) scale(0.75);
+                background-color: #ccc;
+            }
         }
     }
 }
-*/
+
+body.desktop {
+    .next {
+        display: none;
+    }
+    .story-inner {
+        left: 1%;
+    }
+}
 
 body.disabled {
     .solid {
@@ -530,5 +557,29 @@ body.change-bg {
         z-index: 30;
         opacity: 1;
         transition-delay: 1s;
+    }
+}
+
+//custom heading classes
+.heading {
+    &.jaune {
+        .heading-inner {
+            background: url(game/assets/ignasi_pattern_s.png);
+        }
+    }
+}
+
+//custom body classes
+//body[data-bg="nicolasP_CoffeeB"] {}
+body[data-bg="en-haut-de-la-colline"] {
+    .story .content .content-inner {
+        color: black;
+        text-shadow: unset;
+    }
+    .story-inner {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+    .choice-panel {
+        border-top: 3px solid #666;
     }
 }

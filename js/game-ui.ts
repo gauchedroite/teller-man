@@ -28,10 +28,9 @@ class UI implements IUI {
         window.onresize = () => {
             this.portrait = window.innerWidth < 750;
             let format = (this.portrait ? "portrait" : "landscape");
-            if (document.body.classList.contains(format) == false) {
-                document.body.removeAttribute("class");
-                document.body.classList.add(format);
-            }
+            document.body.classList.remove("portrait");
+            document.body.classList.remove("landscape");
+            document.body.classList.add(format);
         };
     };
 
@@ -62,6 +61,7 @@ class UI implements IUI {
         content.style.pointerEvents = "none";
 
         let next = document.querySelector(".next");
+        let storyInner = <HTMLElement>document.querySelector(".story-inner");
 
         let inner = <HTMLElement>document.querySelector(".modal-inner");
         let panel = inner.querySelector("span");
@@ -72,10 +72,10 @@ class UI implements IUI {
 
         const waitToMinimize = (e: any) => {
             e.stopPropagation();
-            if (modal.classList.contains("minimized"))
-                modal.classList.remove("minimized");
+            if (storyInner.classList.contains("minimized"))
+                storyInner.classList.remove("minimized");
             else
-                modal.classList.add("minimized");
+                storyInner.classList.add("minimized");
         };
         let minimizer = inner.querySelector(".minimizer");
         minimizer.addEventListener("click", waitToMinimize);
@@ -125,11 +125,11 @@ class UI implements IUI {
             if (choice.kind == ChoiceKind.messageTo) icon = "ion-android-person";
             if (choice.kind == ChoiceKind.messageFrom) icon = "ion-chatbubble-working";
             icon = "ion-arrow-right-b";
-            //icon = "ion-arrow-right-c";
 
             let li = <HTMLLIElement>document.createElement("li");
             li.setAttribute("data-kind", choice.kind.toString());
             li.setAttribute("data-id", choice.id.toString());
+            li.classList.add("hidden");
             let html = `
                 <div class="kind"><div><i class="icon ${icon}"></i></div></div>
                 <div class="choice">${choice.text}</div>`;
@@ -148,6 +148,7 @@ class UI implements IUI {
 
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
         storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
+        storyInner.classList.remove("minimized");
 
         let text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = panel.offsetHeight + "px";
@@ -168,16 +169,18 @@ class UI implements IUI {
                 if (li.nodeName == "LI") break;
                 li = li.parentElement;
             }
+            li.classList.add("selected");
             setTimeout(() => {
                 onchoice(<IChoice> {
                     kind: parseInt(li.getAttribute("data-kind")),
                     id: parseInt(li.getAttribute("data-id")),
                     text: ""
                 });
-            }, 0);
+            }, 500);
         };
         for (var i = 0; i < lis.length; i++) {
             lis[i].addEventListener("click", onChoice);
+            lis[i].classList.remove("hidden");
         } 
     };
 
@@ -205,8 +208,7 @@ class UI implements IUI {
     };
 
     initScene = (data: ISceneData, callback: () => void) => {
-        var title = document.querySelector(".title span");
-        title.textContent = data.title;
+        this.setTitle(data.title);
         if (data.image == undefined) return callback();
         this.changeBackground(data.image, callback);
     };
@@ -308,11 +310,14 @@ class UI implements IUI {
             let heading = <HTMLDivElement>document.querySelector(".heading");
             let inner = <HTMLDivElement>document.querySelector(".heading-inner");
             inner.innerHTML = html;
-            heading.classList.add("show", "showing");
+            let css = (<IHeading>chunk).css;
+            heading.classList.add("show");
+            if (css != undefined) heading.classList.add(css);
             heading.addEventListener("click", function onclick() {
                 heading.removeEventListener("click", onclick);
-                heading.classList.remove("showing");
-                setTimeout(() => { heading.classList.remove("show"); callback(); }, 500);
+                heading.classList.remove("show");
+                if (css != undefined) heading.classList.remove(css);
+                setTimeout(() => { callback(); }, 500);
             });
         }
         else if (chunk.kind == ChunkKind.doo) {
@@ -331,6 +336,10 @@ class UI implements IUI {
         }
         else if (chunk.kind == ChunkKind.waitclick) {
             waitForClick(callback);
+        }
+        else if (chunk.kind == ChunkKind.title) {
+            this.setTitle((<ITitle>chunk).text);
+            callback();
         }
         else {
             callback();
@@ -369,6 +378,17 @@ class UI implements IUI {
         }, 0);
     };
 
+    private setTitle = (title: string) => {
+        let inner = document.querySelector(".title-inner");
+        if (inner.innerHTML != title) {
+            setTimeout(function() {
+                inner.innerHTML = title;
+                inner.classList.remove("out");
+            }, 500);
+            inner.classList.add("out");
+        }
+    };
+
     private changeBackground = (assetName: string, callback: () => void) => {
         if (assetName == undefined) return callback();
         assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
@@ -384,6 +404,9 @@ class UI implements IUI {
 
         let backFrame = <HTMLIFrameElement>back.firstElementChild;
         let frontFrame = <HTMLIFrameElement>front.firstElementChild;
+
+        let css = assetName.replace(".html", "").replace(".jpg", "").replace(".png", "");
+        document.body.setAttribute("data-bg", css);
 
         if (assetName.indexOf(".") == -1) assetName += ".jpg";
         let sceneUrl: string;

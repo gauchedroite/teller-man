@@ -650,7 +650,8 @@ class Game implements IGameInstance {
                     let parts = part.substring(2).trim().split("/");
                     let title = parts[0].trim();
                     let subtitle = (parts.length > 1 ? parts[1].trim() : undefined);
-                    let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle };
+                    let css = (parts.length > 2 ? parts[2].trim() : undefined);
+                    let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle, css: css };
                     parsed.push(heading);
                 }
                 else if (part.startsWith(".m")) {
@@ -669,6 +670,11 @@ class Game implements IGameInstance {
                 else if (part.startsWith(".w")) {
                     let pause = <IWaitClick> { kind: ChunkKind.waitclick };
                     parsed.push(pause);
+                }
+                else if (part.startsWith(".t ")) {
+                    let text = part.substring(2).trim();
+                    let title = <ITitle> { kind: ChunkKind.title, text: text };
+                    parsed.push(title);
                 }
                 else if (part.startsWith(".")) {
                 }

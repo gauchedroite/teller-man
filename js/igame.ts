@@ -8,7 +8,8 @@ enum ChunkKind {
     doo,
     minigame,
     gameresult,
-    waitclick
+    waitclick,
+    title
 }
 interface IChunkKind {
     kind: ChunkKind
@@ -37,6 +38,7 @@ interface IHeading extends IChunkKind {
     kind: ChunkKind
     title: string
     subtitle: string
+    css: string
 }
 interface IDo extends IChunkKind {
     kind: ChunkKind
@@ -58,8 +60,12 @@ interface IGameResult extends IChunkKind {
 interface IWaitClick extends IChunkKind {
     kind: ChunkKind
 }
+interface ITitle extends IChunkKind {
+    kind: ChunkKind
+    text: string
+}
 
-type IMomentData = IDialog | IText | IBackground | IInline | IHeading | IDo | IMiniGame | IGameResult | IWaitClick;
+type IMomentData = IDialog | IText | IBackground | IInline | IHeading | IDo | IMiniGame | IGameResult | IWaitClick | ITitle;
 
 enum Op {
     START_BLURBING,         //0
