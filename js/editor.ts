@@ -50,7 +50,7 @@ class Editor implements IEditorInstance {
         var gdata = this.gdata;
         var pages = [
             {
-                url: "http://", 
+                url: "index-edit.html", 
                 getData: function (id: number): IGameData {
                     var data = gdata.loadGame();
                     return data;
@@ -168,7 +168,7 @@ class Editor implements IEditorInstance {
         ];
         if (url == undefined) return;
         for (var page of pages) {
-            if (url.startsWith(page.url)) {
+            if (url.endsWith(page.url)) {
                 var id = this.$.parseUrlQuery(url).id;
                 var data = page.getData(id);
                 var template = Template7.compile(content);

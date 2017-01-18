@@ -9,10 +9,11 @@ var ChunkKind;
     ChunkKind[ChunkKind["minigame"] = 6] = "minigame";
     ChunkKind[ChunkKind["gameresult"] = 7] = "gameresult";
     ChunkKind[ChunkKind["waitclick"] = 8] = "waitclick";
+    ChunkKind[ChunkKind["title"] = 9] = "title";
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
-    Op[Op["CURRENT_MOMENT"] = 0] = "CURRENT_MOMENT";
+    Op[Op["START_BLURBING"] = 0] = "START_BLURBING";
     Op[Op["BLURB"] = 1] = "BLURB";
     Op[Op["BUILD_CHOICES"] = 2] = "BUILD_CHOICES";
 })(Op || (Op = {}));
@@ -34,6 +35,7 @@ var AKind;
     AKind[AKind["Player"] = 0] = "Player";
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
+/// <reference path="igame-data.ts" />
 /// <reference path="igame.ts" />
 /// <reference path="igame-data.ts" />
 var GameData = (function () {
@@ -622,7 +624,11 @@ var GameData = (function () {
         this.clearHistory = function () {
             localStorage.removeItem("history");
         };
-        this.clearContinueState = function () {
+        //
+        // clear continue location and state
+        //
+        this.clearContinueData = function () {
+            localStorage.removeItem("continueLocations");
             localStorage.removeItem("continueState");
         };
     }
@@ -730,6 +736,40 @@ var GameData = (function () {
         enumerable: true,
         configurable: true
     });
+    //
+    // continue location
+    //
+    GameData.prototype.getContinueLocation = function (source) {
+        var locs = JSON.parse(localStorage.getItem("continueLocations"));
+        if (locs == null)
+            return null;
+        var key = (source == undefined ? "root" : source);
+        var loc = null;
+        locs.forEach(function (item) {
+            if (item.source == key) {
+                loc = item.loc;
+            }
+        });
+        return loc;
+    };
+    GameData.prototype.setContinueLocation = function (source, loc) {
+        var locs = JSON.parse(localStorage.getItem("continueLocations"));
+        var key = (source == undefined ? "root" : source);
+        if (locs == undefined)
+            locs = new Array();
+        var found = false;
+        locs.forEach(function (item) {
+            if (found == false && item.source == key) {
+                item.loc = loc;
+                localStorage.setItem("continueLocations", JSON.stringify(locs));
+                found = true;
+            }
+        });
+        if (found == false) {
+            locs.push({ source: key, loc: loc });
+            localStorage.setItem("continueLocations", JSON.stringify(locs));
+        }
+    };
     Object.defineProperty(GameData.prototype, "continueState", {
         //
         // continue state
@@ -737,8 +777,8 @@ var GameData = (function () {
         get: function () {
             return JSON.parse(localStorage.getItem("continueState"));
         },
-        set: function (moms) {
-            localStorage.setItem("continueState", JSON.stringify(moms));
+        set: function (state) {
+            localStorage.setItem("continueState", JSON.stringify(state));
         },
         enumerable: true,
         configurable: true
@@ -1254,7 +1294,7 @@ var Editor = (function () {
         var gdata = this.gdata;
         var pages = [
             {
-                url: "http://",
+                url: "index-edit.html",
                 getData: function (id) {
                     var data = gdata.loadGame();
                     return data;
@@ -1379,7 +1419,7 @@ var Editor = (function () {
             return;
         for (var _i = 0, pages_1 = pages; _i < pages_1.length; _i++) {
             var page = pages_1[_i];
-            if (url.startsWith(page.url)) {
+            if (url.endsWith(page.url)) {
                 var id = this.$.parseUrlQuery(url).id;
                 var data = page.getData(id);
                 var template = Template7.compile(content);
