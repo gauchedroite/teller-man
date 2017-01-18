@@ -168,7 +168,7 @@ class Editor implements IEditorInstance {
         ];
         if (url == undefined) return;
         for (var page of pages) {
-            if (url.endsWith(page.url)) {
+            if (url.startsWith(page.url) || url.endsWith(page.url)) {
                 var id = this.$.parseUrlQuery(url).id;
                 var data = page.getData(id);
                 var template = Template7.compile(content);

@@ -1419,7 +1419,7 @@ var Editor = (function () {
             return;
         for (var _i = 0, pages_1 = pages; _i < pages_1.length; _i++) {
             var page = pages_1[_i];
-            if (url.endsWith(page.url)) {
+            if (url.startsWith(page.url) || url.endsWith(page.url)) {
                 var id = this.$.parseUrlQuery(url).id;
                 var data = page.getData(id);
                 var template = Template7.compile(content);
