@@ -2477,6 +2477,7 @@ var Game = (function () {
             }
             else {
                 _this.parent.doUIAction(action);
+                //TODO: set other uis too!
             }
         };
         this.saveContinueData = function () {
