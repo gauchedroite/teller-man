@@ -1,3 +1,4 @@
+/// <reference path="helpers.ts" />
 /// <reference path="webgl-runner.ts" />
 /// <reference path="igame-data.ts" />
 /// <reference path="iinstance.ts" />
@@ -14,44 +15,48 @@ class GameMan implements IGameManInstance {
         let game: IGameInstance;
         let confirming = false;
 
+        FastClick.attach(document.body);
+
         this.runner = new WebglRunner("vertex-shader", "fragment-shader");
         this.runner.run();
 
         // Set main game url
-        document.querySelector(".primo-limbo").classList.remove("hidden");
         let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
         gameFrame.setAttribute("src", frameSrc);
 
-        // START button
-        document.querySelector(".start").addEventListener("click", () => {
+        const switchToGame = () => {
             me.runner.pause();
 
-            document.querySelector(".menu").classList.remove("hidden");
-            document.querySelector(".primo-limbo").classList.add("hidden");
+            document.body.classList.remove("show-menu");
+            document.body.classList.add("show-game");
 
             let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
             game = (<any>gameFrame.contentWindow).GameInstance;
             game.startGame();
-        });
+        };
+
+        // START button
+        document.querySelector(".start-inner").addEventListener("click", switchToGame);
 
         // PLAY button
         document.querySelector(".play").addEventListener("click", () => {
             me.runner.pause();
-            document.querySelector(".menu").classList.remove("zoome");
+            document.body.classList.remove("show-menu");
+            document.body.classList.add("show-game");
             game.resumeGame();
         });
 
         // NEW GAME button
-        document.querySelector(".new-game div").addEventListener("click", (e) => {
+        document.querySelector(".new-game button").addEventListener("click", (e) => {
             if (confirming) {
                 me.runner.pause();
                 game.clearAllGameData();
                 location.reload(true);
             }
             else {
-                let div = document.querySelector(".new-game div");
-                div.classList.add("confirm");
-                div.querySelector("h3").innerText = "Votre progrès sera effacé. OK?";
+                let button = document.querySelector(".new-game button");
+                button.classList.add("confirm");
+                (<HTMLDivElement>button.querySelector("div.text")).innerText = "Votre progrès sera effacé. OK?";
                 confirming = true;
             }
             e.stopPropagation();
@@ -59,25 +64,16 @@ class GameMan implements IGameManInstance {
 
         // Whole screen
         document.querySelector(".menu-wrap").addEventListener("click", () => {
-            let div = document.querySelector(".new-game div");
-            div.classList.remove("confirm");
-            div.querySelector("h3").innerText = "Nouvelle partie";
+            let button = document.querySelector(".new-game button");
+            button.classList.remove("confirm");
+            (<HTMLDivElement>button.querySelector("div.text")).innerText = "Nouvelle partie";
             confirming = false;
         });
 
 
-        let autoStart = true;
+        let autoStart = false;
         if (autoStart) {
-            setTimeout(() => {
-                me.runner.pause();
-
-                document.querySelector(".menu").classList.remove("hidden");
-                document.querySelector(".primo-limbo").classList.add("hidden");
-
-                let gameFrame = <HTMLIFrameElement>document.getElementById("game-frame");
-                game = (<any>gameFrame.contentWindow).GameInstance;
-                game.startGame();
-            }, 500);
+            setTimeout(switchToGame, 500);
         }
     };
 
@@ -91,7 +87,8 @@ class GameMan implements IGameManInstance {
     // Called from the game frame
     showMenu = () => {
         this.runner.resume();
-        document.querySelector(".menu").classList.add("zoome");
+        document.body.classList.remove("show-game");
+        document.body.classList.add("show-menu");
     };
 
 

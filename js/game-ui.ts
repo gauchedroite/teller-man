@@ -11,27 +11,20 @@ class UI implements IUI {
     }
 
     initialize = (fire: (payload: any) => void) => {
+        FastClick.attach(document.body);
+
         document.querySelector(".goto-menu").addEventListener("click", (e) => {
             e.stopPropagation();
             setTimeout(() => { fire("goto-menu"); }, 0);
         });
 
-        if ("addEventListener" in document) {
-            document.addEventListener("DOMContentLoaded", () => {
-                FastClick.attach(document.body);
-                this.portrait = window.innerWidth < 750;
-                let format = (this.portrait ? "portrait" : "landscape");
-                document.body.classList.add(format);
-            }, false);
-        }
-
-        window.onresize = () => {
-            this.portrait = window.innerWidth < 750;
-            let format = (this.portrait ? "portrait" : "landscape");
-            document.body.classList.remove("portrait");
-            document.body.classList.remove("landscape");
-            document.body.classList.add(format);
+        const onresize = () => {
+            this.portrait = window.innerWidth < window.innerHeight;
+            document.body.classList.remove("portrait", "landscape");
+            document.body.classList.add(this.portrait ? "portrait" : "landscape");
         };
+        window.onresize = onresize;
+        onresize();
     };
 
     doAction = (payload: any) => {
@@ -392,9 +385,6 @@ class UI implements IUI {
     private changeBackground = (assetName: string, callback: () => void) => {
         if (assetName == undefined) return callback();
         assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
-
-        if (document.body.classList.contains("portrait"))
-            return callback();
 
         let solid = <HTMLDivElement>document.querySelector(".solid-inner");
         let zero = <HTMLDivElement>solid.children[0];

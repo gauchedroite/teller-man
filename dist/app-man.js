@@ -3,12 +3,12 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
         function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments)).next());
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
 var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t;
-    return { next: verb(0), "throw": verb(1), "return": verb(2) };
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
     function verb(n) { return function (v) { return step([n, v]); }; }
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
@@ -33,6 +33,24 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+;
+if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (searchString, position) {
+        position = position || 0;
+        return this.substr(position, searchString.length) === searchString;
+    };
+}
+if (!String.prototype.endsWith) {
+    String.prototype.endsWith = function (searchString, position) {
+        var subjectString = this.toString();
+        if (typeof position !== 'number' || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
+            position = subjectString.length;
+        }
+        position -= searchString.length;
+        var lastIndex = subjectString.indexOf(searchString, position);
+        return lastIndex !== -1 && lastIndex === position;
+    };
+}
 var WebglRunner = (function () {
     function WebglRunner(vsid, fsid) {
         var _this = this;
@@ -137,6 +155,8 @@ var AKind;
     AKind[AKind["Player"] = 0] = "Player";
     AKind[AKind["NPC"] = 1] = "NPC";
 })(AKind || (AKind = {}));
+/// <reference path="igame-data.ts" />
+/// <reference path="helpers.ts" />
 /// <reference path="webgl-runner.ts" />
 /// <reference path="igame-data.ts" />
 /// <reference path="iinstance.ts" />
@@ -147,59 +167,54 @@ var GameMan = (function () {
             var me = _this;
             var game;
             var confirming = false;
+            FastClick.attach(document.body);
             _this.runner = new WebglRunner("vertex-shader", "fragment-shader");
             _this.runner.run();
             // Set main game url
-            document.querySelector(".primo-limbo").classList.remove("hidden");
             var gameFrame = document.getElementById("game-frame");
             gameFrame.setAttribute("src", frameSrc);
-            // START button
-            document.querySelector(".start").addEventListener("click", function () {
+            var switchToGame = function () {
                 me.runner.pause();
-                document.querySelector(".menu").classList.remove("hidden");
-                document.querySelector(".primo-limbo").classList.add("hidden");
+                document.body.classList.remove("show-menu");
+                document.body.classList.add("show-game");
                 var gameFrame = document.getElementById("game-frame");
                 game = gameFrame.contentWindow.GameInstance;
                 game.startGame();
-            });
+            };
+            // START button
+            document.querySelector(".start-inner").addEventListener("click", switchToGame);
             // PLAY button
             document.querySelector(".play").addEventListener("click", function () {
                 me.runner.pause();
-                document.querySelector(".menu").classList.remove("zoome");
+                document.body.classList.remove("show-menu");
+                document.body.classList.add("show-game");
                 game.resumeGame();
             });
             // NEW GAME button
-            document.querySelector(".new-game div").addEventListener("click", function (e) {
+            document.querySelector(".new-game button").addEventListener("click", function (e) {
                 if (confirming) {
                     me.runner.pause();
                     game.clearAllGameData();
                     location.reload(true);
                 }
                 else {
-                    var div = document.querySelector(".new-game div");
-                    div.classList.add("confirm");
-                    div.querySelector("h3").innerText = "Votre progrès sera effacé. OK?";
+                    var button = document.querySelector(".new-game button");
+                    button.classList.add("confirm");
+                    button.querySelector("div.text").innerText = "Votre progrès sera effacé. OK?";
                     confirming = true;
                 }
                 e.stopPropagation();
             });
             // Whole screen
             document.querySelector(".menu-wrap").addEventListener("click", function () {
-                var div = document.querySelector(".new-game div");
-                div.classList.remove("confirm");
-                div.querySelector("h3").innerText = "Nouvelle partie";
+                var button = document.querySelector(".new-game button");
+                button.classList.remove("confirm");
+                button.querySelector("div.text").innerText = "Nouvelle partie";
                 confirming = false;
             });
-            var autoStart = true;
+            var autoStart = false;
             if (autoStart) {
-                setTimeout(function () {
-                    me.runner.pause();
-                    document.querySelector(".menu").classList.remove("hidden");
-                    document.querySelector(".primo-limbo").classList.add("hidden");
-                    var gameFrame = document.getElementById("game-frame");
-                    game = gameFrame.contentWindow.GameInstance;
-                    game.startGame();
-                }, 500);
+                setTimeout(switchToGame, 500);
             }
         };
         // Proxy this call from the game frame to the IDE (if there's one)
@@ -210,7 +225,8 @@ var GameMan = (function () {
         // Called from the game frame
         this.showMenu = function () {
             _this.runner.resume();
-            document.querySelector(".menu").classList.add("zoome");
+            document.body.classList.remove("show-game");
+            document.body.classList.add("show-menu");
         };
         this.christian = function () {
             _this.christian_async();
@@ -260,8 +276,7 @@ var GameMan = (function () {
                         i = 0;
                         _a.label = 1;
                     case 1:
-                        if (!(i < 3))
-                            return [3 /*break*/, 4];
+                        if (!(i < 3)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.delay(500)];
                     case 2:
                         yo = _a.sent();

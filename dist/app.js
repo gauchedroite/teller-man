@@ -811,25 +811,18 @@ var UI = (function () {
         var _this = this;
         this.portrait = false;
         this.initialize = function (fire) {
+            FastClick.attach(document.body);
             document.querySelector(".goto-menu").addEventListener("click", function (e) {
                 e.stopPropagation();
                 setTimeout(function () { fire("goto-menu"); }, 0);
             });
-            if ("addEventListener" in document) {
-                document.addEventListener("DOMContentLoaded", function () {
-                    FastClick.attach(document.body);
-                    _this.portrait = window.innerWidth < 750;
-                    var format = (_this.portrait ? "portrait" : "landscape");
-                    document.body.classList.add(format);
-                }, false);
-            }
-            window.onresize = function () {
-                _this.portrait = window.innerWidth < 750;
-                var format = (_this.portrait ? "portrait" : "landscape");
-                document.body.classList.remove("portrait");
-                document.body.classList.remove("landscape");
-                document.body.classList.add(format);
+            var onresize = function () {
+                _this.portrait = window.innerWidth < window.innerHeight;
+                document.body.classList.remove("portrait", "landscape");
+                document.body.classList.add(_this.portrait ? "portrait" : "landscape");
             };
+            window.onresize = onresize;
+            onresize();
         };
         this.doAction = function (payload) {
             if (payload == "show-ui") {
@@ -1163,8 +1156,6 @@ var UI = (function () {
             if (assetName == undefined)
                 return callback();
             assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
-            if (document.body.classList.contains("portrait"))
-                return callback();
             var solid = document.querySelector(".solid-inner");
             var zero = solid.children[0];
             var one = solid.children[1];
