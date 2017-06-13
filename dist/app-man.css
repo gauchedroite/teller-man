@@ -82,6 +82,9 @@ body {
 body.show-menu .game {
   display: none;
 }
+body.show-game .play {
+  display: none;
+}
 body.show-game .primo-limbo {
   opacity: 0;
   pointer-events: none;

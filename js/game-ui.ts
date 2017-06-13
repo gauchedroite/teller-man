@@ -49,11 +49,8 @@ class UI implements IUI {
     };
 
     alert = (text: string, canclose: () => boolean, onalert: () => void) => {
-        let content = <HTMLElement>document.querySelector(".content");
-        content.classList.add("overlay");
-        content.style.pointerEvents = "none";
+        document.body.classList.add("showing-alert");
 
-        let next = document.querySelector(".next");
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
 
         let inner = <HTMLElement>document.querySelector(".modal-inner");
@@ -76,11 +73,9 @@ class UI implements IUI {
         const waitForClick = (done: () => void) => {
             const onclick = () => {
                 modal.removeEventListener("click", onclick);
-                next.removeEventListener("click", onclick);
                 return done();
             };
             modal.addEventListener("click", onclick);
-            next.addEventListener("click", onclick);
         };
 
         waitForClick(() => {
@@ -92,8 +87,7 @@ class UI implements IUI {
                     modal.classList.remove("show");
                     modal.classList.remove("disable");
                     setTimeout(() => { 
-                        content.classList.remove("overlay");
-                        content.style.pointerEvents = "";
+                        document.body.classList.remove("showing-alert");
                         setTimeout(onalert, 0);
                     }, 250);
                 }
@@ -134,21 +128,17 @@ class UI implements IUI {
         }
         panel.appendChild(ul);
 
-        let content = <HTMLElement>document.querySelector(".content");
-        content.classList.add("overlay");
+        document.body.classList.add("showing-choices");
 
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
-        storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
+        //storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
         storyInner.classList.remove("minimized");
 
         let text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = panel.offsetHeight + "px";
         this.scrollContent(text.parentElement);
-
-        let next = <HTMLElement>document.querySelector(".next");
-        next.classList.add("hidden");
 
         let me = this;
         let lis = document.querySelectorAll(".choice-panel li");
@@ -178,14 +168,13 @@ class UI implements IUI {
     };
 
     hideChoices = (callback: () => void) => {
-        var content = <HTMLElement>document.querySelector(".content");
-        content.classList.remove("overlay");
-        content.style.pointerEvents = "auto";
+        document.body.classList.remove("showing-choices");
 
         // make sure the first blurb will be visible
+        var content = <HTMLElement>document.querySelector(".content");
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
         storyInner.scrollTop = content.offsetTop;
-        storyInner.style.height = "25%";
+        //storyInner.style.height = "25%";
 
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";
@@ -193,9 +182,6 @@ class UI implements IUI {
         var text = <HTMLElement>document.querySelector(".content-inner");
         text.style.marginBottom = "0";
         text.setAttribute("style", "");
-
-        let next = <HTMLElement>document.querySelector(".next");
-        next.classList.remove("hidden");
         
         setTimeout(callback, 250/*matches .choice-panel transition*/);
     };
@@ -210,7 +196,6 @@ class UI implements IUI {
         let html = this.markupChunk(chunk);
         let content = document.querySelector(".content");
         let inner = document.querySelector(".content-inner");
-        let next = document.querySelector(".next");
         let div = document.createElement("div");
         div.innerHTML = html;
         let section = <HTMLDivElement>div.firstChild;
@@ -218,11 +203,9 @@ class UI implements IUI {
         const waitForClick = (done: () => void) => {
             const onclick = () => {
                 content.removeEventListener("click", onclick);
-                next.removeEventListener("click", onclick);
                 return done();
             };
             content.addEventListener("click", onclick);
-            next.addEventListener("click", onclick);
         };
 
         if (chunk.kind == ChunkKind.background) {

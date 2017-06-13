@@ -845,10 +845,7 @@ var UI = (function () {
             }
         };
         this.alert = function (text, canclose, onalert) {
-            var content = document.querySelector(".content");
-            content.classList.add("overlay");
-            content.style.pointerEvents = "none";
-            var next = document.querySelector(".next");
+            document.body.classList.add("showing-alert");
             var storyInner = document.querySelector(".story-inner");
             var inner = document.querySelector(".modal-inner");
             var panel = inner.querySelector("span");
@@ -867,11 +864,9 @@ var UI = (function () {
             var waitForClick = function (done) {
                 var onclick = function () {
                     modal.removeEventListener("click", onclick);
-                    next.removeEventListener("click", onclick);
                     return done();
                 };
                 modal.addEventListener("click", onclick);
-                next.addEventListener("click", onclick);
             };
             waitForClick(function () {
                 panel.innerHTML = "<div class=\"bounce1\"></div><div class=\"bounce2\"></div>";
@@ -882,8 +877,7 @@ var UI = (function () {
                         modal.classList.remove("show");
                         modal.classList.remove("disable");
                         setTimeout(function () {
-                            content.classList.remove("overlay");
-                            content.style.pointerEvents = "";
+                            document.body.classList.remove("showing-alert");
                             setTimeout(onalert, 0);
                         }, 250);
                     }
@@ -921,17 +915,14 @@ var UI = (function () {
                 ul.appendChild(li);
             }
             panel.appendChild(ul);
-            var content = document.querySelector(".content");
-            content.classList.add("overlay");
+            document.body.classList.add("showing-choices");
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var storyInner = document.querySelector(".story-inner");
-            storyInner.style.height = "calc(25% + " + panel.offsetHeight + "px)";
+            //storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
             storyInner.classList.remove("minimized");
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
             _this.scrollContent(text.parentElement);
-            var next = document.querySelector(".next");
-            next.classList.add("hidden");
             var me = _this;
             var lis = document.querySelectorAll(".choice-panel li");
             var onChoice = function (e) {
@@ -960,20 +951,17 @@ var UI = (function () {
             }
         };
         this.hideChoices = function (callback) {
-            var content = document.querySelector(".content");
-            content.classList.remove("overlay");
-            content.style.pointerEvents = "auto";
+            document.body.classList.remove("showing-choices");
             // make sure the first blurb will be visible
+            var content = document.querySelector(".content");
             var storyInner = document.querySelector(".story-inner");
             storyInner.scrollTop = content.offsetTop;
-            storyInner.style.height = "25%";
+            //storyInner.style.height = "25%";
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = "0";
             text.setAttribute("style", "");
-            var next = document.querySelector(".next");
-            next.classList.remove("hidden");
             setTimeout(callback, 250 /*matches .choice-panel transition*/);
         };
         this.initScene = function (data, callback) {
@@ -986,18 +974,15 @@ var UI = (function () {
             var html = _this.markupChunk(chunk);
             var content = document.querySelector(".content");
             var inner = document.querySelector(".content-inner");
-            var next = document.querySelector(".next");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
             var waitForClick = function (done) {
                 var onclick = function () {
                     content.removeEventListener("click", onclick);
-                    next.removeEventListener("click", onclick);
                     return done();
                 };
                 content.addEventListener("click", onclick);
-                next.addEventListener("click", onclick);
             };
             if (chunk.kind == ChunkKind.background) {
                 if (_this.portrait)

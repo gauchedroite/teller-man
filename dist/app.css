@@ -197,13 +197,6 @@ body {
   overflow: hidden;
   pointer-events: auto;
 }
-.next {
-  display: none;
-  position: absolute;
-  overflow: hidden;
-  pointer-events: auto;
-  background-color: rgba(255, 255, 255, 0.2);
-}
 .content {
   position: absolute;
   top: 0;
@@ -223,10 +216,6 @@ body {
 }
 .content .content-inner p {
   padding-bottom: 12px;
-}
-.content.overlay {
-  opacity: 0.5;
-  transition: opacity 0.25s;
 }
 section {
   font-size: large;
@@ -305,7 +294,7 @@ section.image div {
   width: 100%;
   top: 100%;
   border-top: 3px solid #333;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.85);
   transition: top 0.25s;
 }
 .choice-panel.disabled {
@@ -516,32 +505,11 @@ section.image div {
   right: calc(32px - 30%);
   height: 40px;
 }
-.next {
-  bottom: 1%;
-  left: 1%;
-  width: 5%;
-  height: 25%;
-  box-sizing: border-box;
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 8px solid rgba(0, 0, 0, 0.075);
-  transition: left 0.15s;
-}
-.next .next-inner {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  font-size: 64px;
-  color: rgba(0, 0, 0, 0.075);
-}
-.next.hidden {
-  left: -10%;
-}
 .story-inner {
   bottom: 0;
   left: 0;
   width: 100%;
-  height: calc(25% + 0px);
+  height: calc(100% - 60px);
   border-top: 4px solid rgba(255, 255, 255, 0.5);
   background-color: rgba(255, 255, 255, 0.2);
   transition: height 0.15s, border 0.15s, background 0.15s;
@@ -577,10 +545,6 @@ body.disabled .solid {
   opacity: 0.5;
   pointer-events: none;
 }
-body.disabled .next {
-  opacity: 0.5;
-  pointer-events: none;
-}
 body.disabled .story-inner {
   opacity: 0.5;
   pointer-events: none;
@@ -607,6 +571,15 @@ body.change-bg .preloader {
   z-index: 30;
   opacity: 1;
   transition-delay: 1s;
+}
+body.showing-choices .content {
+  opacity: 0.5;
+  transition: opacity 0.25s;
+}
+body.showing-alert .content {
+  opacity: 0.5;
+  transition: opacity 0.25s;
+  pointer-events: none;
 }
 @media (min-width: 768px) {
   .story-inner {
