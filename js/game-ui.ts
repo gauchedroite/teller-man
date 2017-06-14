@@ -25,6 +25,13 @@ class UI implements IUI {
         };
         window.onresize = onresize;
         onresize();
+
+        document.querySelector(".title").addEventListener("click", (e) => {
+            if (document.body.classList.contains("hide-story"))
+                document.body.classList.remove("hide-story");
+            else
+                document.body.classList.add("hide-story");
+        });
     };
 
     doAction = (payload: any) => {

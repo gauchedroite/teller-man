@@ -110,6 +110,10 @@ body {
   height: 100%;
   background-color: #ffffff;
 }
+.solid .solid-inner {
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
 .graphics {
   position: absolute;
   width: 100%;
@@ -512,7 +516,7 @@ section.image div {
   height: calc(100% - 60px);
   border-top: 4px solid rgba(255, 255, 255, 0.5);
   background-color: rgba(255, 255, 255, 0.2);
-  transition: height 0.15s, border 0.15s, background 0.15s;
+  transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
 }
 .story-inner .content {
   transition: top 0.2s 0.1s;
@@ -581,6 +585,13 @@ body.showing-alert .content {
   transition: opacity 0.25s;
   pointer-events: none;
 }
+body.hide-story .solid-inner {
+  opacity: 1;
+}
+body.hide-story .story-inner {
+  opacity: 0;
+  pointer-events: none;
+}
 @media (min-width: 768px) {
   .story-inner {
     bottom: 1%;
@@ -591,7 +602,7 @@ body.showing-alert .content {
     height: calc(25% + 0px);
     border-top: 4px solid rgba(255, 255, 255, 0.5);
     background-color: rgba(255, 255, 255, 0.2);
-    transition: height 0.15s, border 0.15s, background 0.15s;
+    transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
   }
   .story-inner .content {
     transition: top 0.2s 0.1s;

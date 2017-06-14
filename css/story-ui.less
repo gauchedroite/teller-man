@@ -378,7 +378,7 @@ section {
     height: calc(100% - 60px);
     border-top: 4px solid rgba(255, 255, 255, 0.5);
     background-color: rgba(255, 255, 255, 0.2);
-    transition: height 0.15s, border 0.15s, background 0.15s;
+    transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
 
     .content {
         transition: top 0.2s 0.1s;        
@@ -465,6 +465,16 @@ body.showing-alert {
     }
 }
 
+body.hide-story {
+    .solid-inner {
+        opacity: 1;
+    }
+    .story-inner {
+        opacity: 0;
+        pointer-events: none;
+    }
+}
+
 @media (min-width: @screen-sm-min) {
     .story-inner {
         bottom: 1%;
@@ -475,7 +485,7 @@ body.showing-alert {
         height: calc(25% + 0px);
         border-top: 4px solid rgba(255, 255, 255, 0.5);
         background-color: rgba(255, 255, 255, 0.2);
-        transition: height 0.15s, border 0.15s, background 0.15s;
+    transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
 
         .content {
             transition: top 0.2s 0.1s;        

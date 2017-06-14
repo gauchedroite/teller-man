@@ -823,6 +823,12 @@ var UI = (function () {
             };
             window.onresize = onresize;
             onresize();
+            document.querySelector(".title").addEventListener("click", function (e) {
+                if (document.body.classList.contains("hide-story"))
+                    document.body.classList.remove("hide-story");
+                else
+                    document.body.classList.add("hide-story");
+            });
         };
         this.doAction = function (payload) {
             if (payload == "show-ui") {
