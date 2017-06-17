@@ -17,9 +17,9 @@ interface IChunkKind {
 interface IDialog extends IChunkKind {
     kind: ChunkKind
     actor: string
-    mood: string
     parenthetical: string
     lines: Array<string>
+    metadata: IMetadata
 }
 interface IText extends IChunkKind {
     kind: ChunkKind
@@ -29,20 +29,23 @@ interface IBackground extends IChunkKind {
     kind: ChunkKind
     asset: string
     wide: boolean
+    metadata: IMetadata
 }
 interface IInline extends IChunkKind {
     kind: ChunkKind
     image: string
+    metadata: IMetadata
 }
 interface IHeading extends IChunkKind {
     kind: ChunkKind
     title: string
     subtitle: string
-    css: string
+    metadata: IMetadata
 }
 interface IDo extends IChunkKind {
     kind: ChunkKind
     text: string
+    metadata: IMetadata
 }
 interface IMiniGame extends IChunkKind {
     kind: ChunkKind
@@ -89,4 +92,11 @@ enum OpAction {
     SHOWING_CHOICES,
     GAME_START,
     SHOWING_MOMENT
+}
+
+interface IMetadata {
+    class: string,
+    style: string,
+    css: string
+    image: string
 }

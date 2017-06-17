@@ -212,7 +212,7 @@ var GameMan = (function () {
                 button.querySelector("div.text").innerText = "Nouvelle partie";
                 confirming = false;
             });
-            var autoStart = false;
+            var autoStart = true;
             if (autoStart) {
                 setTimeout(switchToGame, 500);
             }

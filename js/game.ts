@@ -591,54 +591,51 @@ class Game implements IGameInstance {
         var parts = moment.text.split("\n");
         for (var part of parts) {
             if (part.length > 0) {
-                if (part.startsWith("/*")) {
+                let parts2 = part.split("//");
+                let command = (parts2.length > 0 ? parts2[0].trim() : null);
+                let metadata = Game.parseMetadata(parts2.length > 1 ? parts2[1].trim() : null);
+
+                if (command.startsWith("/*")) {
                     inComment = true;
                 }
                 else if (inComment) {
-                    inComment = (part.startsWith("*/") == false);
+                    inComment = (command.startsWith("*/") == false);
                 }
-                else if (part.startsWith("//")) {
+                else if (command == undefined || command.length == 0) {
                 }
-                else if (part.startsWith(".a ")) {
-                    let actor = part.substring(2).trim();
-                    let aa = actor.split("/");
-
+                else if (command.startsWith(".a ")) {
+                    let actor = command.substring(2).trim();
                     dialog = <IDialog> { kind: ChunkKind.dialog };
-                    if (aa.length == 2) {
-                        dialog.actor = aa[0].trim();
-                        dialog.mood = aa[1].trim();
-                    }
-                    else {
-                        dialog.actor = aa[0];
-                    }
+                    dialog.actor = actor;
+                    dialog.metadata = metadata;
                     fsm = "DIALOG";
                 }
-                else if (part.startsWith("(")) {
-                    dialog.parenthetical = part;
+                else if (command.startsWith("(")) {
+                    dialog.parenthetical = command;
                 }
-                else if (part.startsWith(".bb")) {
-                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(3).trim(), wide: true };
+                else if (command.startsWith(".bb")) {
+                    let asset = <IBackground> { kind: ChunkKind.background, asset: command.substring(3).trim(), wide: true, metadata: metadata };
                     parsed.push(asset);
                 }
-                else if (part.startsWith(".b")) {
-                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(2).trim(), wide: false };
+                else if (command.startsWith(".b")) {
+                    let asset = <IBackground> { kind: ChunkKind.background, asset: command.substring(2).trim(), wide: false, metadata: metadata };
                     parsed.push(asset);
                 }
-                else if (part.startsWith(".i")) {
-                    let image = <IInline> { kind: ChunkKind.inline , image: part.substring(2).trim() };
+                else if (command.startsWith(".i")) {
+                    let image = <IInline> { kind: ChunkKind.inline , image: command.substring(2).trim(), metadata: metadata };
                     parsed.push(image);
                 }
-                else if (part.startsWith(".d ")) {
-                    let text = part.substring(2).trim();
-                    let pause = <IDo> { kind: ChunkKind.doo, text: text };
+                else if (command.startsWith(".d ")) {
+                    let text = command.substring(2).trim();
+                    let pause = <IDo> { kind: ChunkKind.doo, text: text, metadata: metadata };
                     parsed.push(pause);
                 }
-                else if (part.startsWith(".d")) {
-                    let space = part.indexOf(" ");
+                else if (command.startsWith(".d")) {
+                    let space = command.indexOf(" ");
                     if (space != -1) {
-                        let chance = parseInt(part.substring(2, space));
+                        let chance = parseInt(command.substring(2, space));
                         if ((Math.random() * chance) < 1) {
-                            let lines = part.substr(space).trim().split("/");
+                            let lines = command.substr(space).trim().split("/");
                             let text = <IText> { kind: ChunkKind.text };
                             text.lines = Array<string>();
                             for (var line of lines) {
@@ -648,17 +645,16 @@ class Game implements IGameInstance {
                         }
                     }
                 }
-                else if (part.startsWith(".h")) {
-                    let parts = part.substring(2).trim().split("/");
+                else if (command.startsWith(".h")) {
+                    let parts = command.substring(2).trim().split("/");
                     let title = parts[0].trim();
                     let subtitle = (parts.length > 1 ? parts[1].trim() : undefined);
-                    let css = (parts.length > 2 ? parts[2].trim() : undefined);
-                    let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle, css: css };
+                    let heading = <IHeading> { kind: ChunkKind.heading, title: title, subtitle: subtitle, metadata: metadata};
                     parsed.push(heading);
                 }
-                else if (part.startsWith(".m")) {
+                else if (command.startsWith(".m")) {
                     let minigame = <IMiniGame> { kind: ChunkKind.minigame };
-                    let parts = part.substring(2).trim().split("/");
+                    let parts = command.substring(2).trim().split("/");
                     minigame.text = parts[0].trim(); 
                     minigame.url = parts[1].trim();
                     let parts2 = parts[2].split("=>");
@@ -669,20 +665,20 @@ class Game implements IGameInstance {
                     minigame.loseCommand = parts2[1].trim();
                     parsed.push(minigame);
                 }
-                else if (part.startsWith(".w")) {
+                else if (command.startsWith(".w")) {
                     let pause = <IWaitClick> { kind: ChunkKind.waitclick };
                     parsed.push(pause);
                 }
-                else if (part.startsWith(".t ")) {
-                    let text = part.substring(2).trim();
+                else if (command.startsWith(".t ")) {
+                    let text = command.substring(2).trim();
                     let title = <ITitle> { kind: ChunkKind.title, text: text };
                     parsed.push(title);
                 }
-                else if (part.startsWith(".")) {
+                else if (command.startsWith(".")) {
                 }
                 else {
                     if (fsm == "DIALOG") {
-                        var lines = part.split("/");
+                        var lines = command.split("/");
 
                         dialog.lines = Array<string>();
                         for (var line of lines) {
@@ -692,7 +688,7 @@ class Game implements IGameInstance {
                         fsm = "";
                     }
                     else {
-                        var lines = part.split("/");
+                        var lines = command.split("/");
 
                         let text = <IText> { kind: ChunkKind.text };
                         text.lines = Array<string>();
@@ -785,6 +781,24 @@ class Game implements IGameInstance {
         data.title = scene.name;
         data.image = scene.text;
         return data;
+    };
+
+    private static parseMetadata = (text: string): IMetadata => {
+        if (text == undefined) return null;
+        let parts = text.split(",");
+        if (parts.length == 0) return null;
+        let metadata = <IMetadata>{};
+        for (var part of parts) {
+            let parts2 = part.split("=");
+            if (parts2.length == 2) {
+                let command = parts2[0].toLowerCase();
+                let argument = parts2[1];
+                if (("|class|style|css|image|").indexOf(`|${command}|`) != -1) {
+                    metadata[command] = argument;
+                }
+            }
+        }
+        return metadata;
     };
 
     private updateTimedState = () => {

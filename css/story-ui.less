@@ -163,6 +163,9 @@ section {
             transition: height 0.25s; 
             background: no-repeat center center;
             background-size: cover;
+            &.ready {
+                height: 100%;
+            }
         }
     }
 }
@@ -311,7 +314,7 @@ section {
     height: 100%;
     top: -100%;
     left: 0;
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.95);
     z-index: 11;
     cursor: default;
     opacity: 0;
@@ -341,11 +344,6 @@ section {
             font-family: "Farsan", cursive;
             font-size: large;
         }
-    }
-    &.show
-    {
-        top: 0;
-        opacity: 1;
     }
 }
 
@@ -476,6 +474,17 @@ body.hide-story {
     .story-inner {
         opacity: 0;
         pointer-events: none;
+    }
+}
+
+body.showing-heading {
+    .title {
+        display: none;
+    }
+    
+    .heading {
+        top: 0;
+        opacity: 1;
     }
 }
 

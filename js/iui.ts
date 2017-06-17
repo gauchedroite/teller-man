@@ -14,6 +14,7 @@ interface IChoice {
     id: number
     text: string
     subtext?: string
+    metadata: IMetadata
 }
 
 interface IUI {

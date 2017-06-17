@@ -121,6 +121,8 @@ class UI implements IUI {
             icon = "ion-arrow-right-b";
 
             let li = <HTMLLIElement>document.createElement("li");
+            if (choice.metadata != undefined && choice.metadata.class != undefined) li.classList.add(choice.metadata.class);
+            if (choice.metadata != undefined && choice.metadata.style != undefined) li.setAttribute("style", choice.metadata.style);
             li.setAttribute("data-kind", choice.kind.toString());
             li.setAttribute("data-id", choice.id.toString());
             li.classList.add("hidden");
@@ -140,7 +142,6 @@ class UI implements IUI {
         panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
 
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
-        //storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
         storyInner.classList.remove("minimized");
 
         let text = <HTMLElement>document.querySelector(".content-inner");
@@ -196,7 +197,7 @@ class UI implements IUI {
     initScene = (data: ISceneData, callback: () => void) => {
         this.setTitle(data.title);
         if (data.image == undefined) return callback();
-        this.changeBackground(data.image, callback);
+        this.changeBackground(data.image, null, callback);
     };
 
     addBlurb = (chunk: IMomentData, callback: (result?: any) => void) => {
@@ -218,27 +219,25 @@ class UI implements IUI {
         if (chunk.kind == ChunkKind.background) {
             let bg = <IBackground>chunk;
             if (bg.wide)
-                this.changeWideBackground(bg.asset, callback);
+                this.changeWideBackground(bg.asset, bg.metadata, callback);
             else
-                this.changeBackground(bg.asset, callback);
+                this.changeBackground(bg.asset, bg.metadata, callback);
         }
         else if (chunk.kind == ChunkKind.inline) {
-            section.style.opacity = "0";
+            let inline = <IInline>chunk;
+            if (inline.metadata != undefined && inline.metadata.class != undefined) section.classList.add(inline.metadata.class);
+            if (inline.metadata != undefined && inline.metadata.style != undefined) section.setAttribute("style", inline.metadata.style);
             inner.appendChild(section);
             this.scrollContent(inner.parentElement);
-            section.style.opacity = "1";
-            section.style.transition = "opacity 0.1s ease";
-            section.style.animation = "color-cycle 5s infinite";
 
-            let assetName = (<IInline>chunk).image.replace(/ /g, "%20").replace(/'/g, "%27");
+            let assetName = inline.image.replace(/ /g, "%20").replace(/'/g, "%27");
             if (assetName.indexOf(".") == -1) assetName += ".jpg";
             assetName = `game/assets/${assetName}`;
             let image = new Image();
             image.onload = () => {
-                section.style.animation = "";
                 let img = <HTMLImageElement>section.firstElementChild;
                 img.style.backgroundImage = `url(${assetName})`;
-                img.style.height = "100%";
+                img.classList.add("ready");
                 return callback();
             };
             image.src = assetName;
@@ -252,8 +251,8 @@ class UI implements IUI {
 
             if (chunk.kind == ChunkKind.dialog) {
                 let dialog = <IDialog>chunk;
-                if (dialog.mood != undefined) {
-                    let assetName = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                if (dialog.metadata != undefined && dialog.metadata.image != undefined) {
+                    let assetName = "game/assets/" + dialog.metadata.image.replace(/ /g, "%20").replace(/'/g, "%27");
                     if (assetName.indexOf(".") == -1) assetName += ".jpg";
                     let head = <HTMLDivElement>section.getElementsByClassName("head")[0];
                     let image = new Image();
@@ -286,25 +285,27 @@ class UI implements IUI {
             }
         }
         else if (chunk.kind == ChunkKind.heading) {
+            let hchunk = <IHeading>chunk;
             let heading = <HTMLDivElement>document.querySelector(".heading");
             let inner = <HTMLDivElement>document.querySelector(".heading-inner");
             inner.innerHTML = html;
-            let css = (<IHeading>chunk).css;
-            heading.classList.add("show");
-            if (css != undefined) heading.classList.add(css);
+            document.body.classList.add("showing-heading");
+            if (hchunk.metadata != undefined && hchunk.metadata.class != undefined) heading.classList.add(hchunk.metadata.class);
             heading.addEventListener("click", function onclick() {
                 heading.removeEventListener("click", onclick);
-                heading.classList.remove("show");
-                if (css != undefined) heading.classList.remove(css);
+                document.body.classList.remove("showing-heading");
+                if (hchunk.metadata != undefined && hchunk.metadata.class != undefined) heading.classList.remove(hchunk.metadata.class);
                 setTimeout(() => { callback(); }, 500);
             });
         }
         else if (chunk.kind == ChunkKind.doo) {
+            let doo = <IDo>chunk;
             let choices = Array<IChoice>();
             choices.push(<IChoice> { 
                 kind: ChoiceKind.action,
                 id: 0,
-                text: (<IDo>chunk).text 
+                text: doo.text,
+                metadata: doo.metadata
             });
             this.showChoices(choices, (chosen: IChoice) => {
                 this.hideChoices(callback);
@@ -368,7 +369,7 @@ class UI implements IUI {
         }
     };
 
-    private changeBackground = (assetName: string, callback: () => void) => {
+    private changeBackground = (assetName: string, metadata: IMetadata, callback: () => void) => {
         if (assetName == undefined) return callback();
         assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
 
@@ -415,7 +416,7 @@ class UI implements IUI {
         backFrame.setAttribute("src", sceneUrl);
     };
 
-    private changeWideBackground = (assetName: string, callback: () => void) => {
+    private changeWideBackground = (assetName: string, metadata: IMetadata, callback: () => void) => {
         if (assetName == undefined) return callback();
         if (window.getComputedStyle(document.querySelector(".wbg")).display == "none") return callback();
 
@@ -441,6 +442,8 @@ class UI implements IUI {
         };
 
         let one = document.createElement("iframe");
+        if (metadata.class != undefined) one.setAttribute("class", metadata.class);
+        if (metadata.style != undefined) one.setAttribute("style", metadata.style);
         wbg.appendChild(one);
         one.setAttribute("src", sceneUrl);
     };
@@ -513,7 +516,7 @@ class UI implements IUI {
         }
         else if (chunk.kind == ChunkKind.dialog) {
             let dialog = <IDialog>chunk;
-            let hasImage = (dialog.mood != undefined);
+            let hasImage = (dialog.metadata != undefined && dialog.metadata.image != undefined);
             html.push("<section class='dialog'>");
             if (hasImage) {
                 html.push(`<div class='head-placeholder'></div>`);

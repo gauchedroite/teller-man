@@ -910,6 +910,10 @@ var UI = (function () {
                     icon = "ion-chatbubble-working";
                 icon = "ion-arrow-right-b";
                 var li = document.createElement("li");
+                if (choice.metadata != undefined && choice.metadata.class != undefined)
+                    li.classList.add(choice.metadata.class);
+                if (choice.metadata != undefined && choice.metadata.style != undefined)
+                    li.setAttribute("style", choice.metadata.style);
                 li.setAttribute("data-kind", choice.kind.toString());
                 li.setAttribute("data-id", choice.id.toString());
                 li.classList.add("hidden");
@@ -924,7 +928,6 @@ var UI = (function () {
             document.body.classList.add("showing-choices");
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var storyInner = document.querySelector(".story-inner");
-            //storyInner.style.height = `calc(25% + ${panel.offsetHeight}px)`;
             storyInner.classList.remove("minimized");
             var text = document.querySelector(".content-inner");
             text.style.marginBottom = panel.offsetHeight + "px";
@@ -974,7 +977,7 @@ var UI = (function () {
             _this.setTitle(data.title);
             if (data.image == undefined)
                 return callback();
-            _this.changeBackground(data.image, callback);
+            _this.changeBackground(data.image, null, callback);
         };
         this.addBlurb = function (chunk, callback) {
             var html = _this.markupChunk(chunk);
@@ -993,27 +996,27 @@ var UI = (function () {
             if (chunk.kind == ChunkKind.background) {
                 var bg = chunk;
                 if (bg.wide)
-                    _this.changeWideBackground(bg.asset, callback);
+                    _this.changeWideBackground(bg.asset, bg.metadata, callback);
                 else
-                    _this.changeBackground(bg.asset, callback);
+                    _this.changeBackground(bg.asset, bg.metadata, callback);
             }
             else if (chunk.kind == ChunkKind.inline) {
-                section.style.opacity = "0";
+                var inline = chunk;
+                if (inline.metadata != undefined && inline.metadata.class != undefined)
+                    section.classList.add(inline.metadata.class);
+                if (inline.metadata != undefined && inline.metadata.style != undefined)
+                    section.setAttribute("style", inline.metadata.style);
                 inner.appendChild(section);
                 _this.scrollContent(inner.parentElement);
-                section.style.opacity = "1";
-                section.style.transition = "opacity 0.1s ease";
-                section.style.animation = "color-cycle 5s infinite";
-                var assetName_1 = chunk.image.replace(/ /g, "%20").replace(/'/g, "%27");
+                var assetName_1 = inline.image.replace(/ /g, "%20").replace(/'/g, "%27");
                 if (assetName_1.indexOf(".") == -1)
                     assetName_1 += ".jpg";
                 assetName_1 = "game/assets/" + assetName_1;
                 var image = new Image();
                 image.onload = function () {
-                    section.style.animation = "";
                     var img = section.firstElementChild;
                     img.style.backgroundImage = "url(" + assetName_1 + ")";
-                    img.style.height = "100%";
+                    img.classList.add("ready");
                     return callback();
                 };
                 image.src = assetName_1;
@@ -1026,8 +1029,8 @@ var UI = (function () {
                 section.style.transition = "all 0.15s ease";
                 if (chunk.kind == ChunkKind.dialog) {
                     var dialog = chunk;
-                    if (dialog.mood != undefined) {
-                        var assetName_2 = "game/assets/" + dialog.mood.replace(/ /g, "%20").replace(/'/g, "%27");
+                    if (dialog.metadata != undefined && dialog.metadata.image != undefined) {
+                        var assetName_2 = "game/assets/" + dialog.metadata.image.replace(/ /g, "%20").replace(/'/g, "%27");
                         if (assetName_2.indexOf(".") == -1)
                             assetName_2 += ".jpg";
                         var head_1 = section.getElementsByClassName("head")[0];
@@ -1059,27 +1062,29 @@ var UI = (function () {
                 }
             }
             else if (chunk.kind == ChunkKind.heading) {
+                var hchunk_1 = chunk;
                 var heading_1 = document.querySelector(".heading");
                 var inner_1 = document.querySelector(".heading-inner");
                 inner_1.innerHTML = html;
-                var css_1 = chunk.css;
-                heading_1.classList.add("show");
-                if (css_1 != undefined)
-                    heading_1.classList.add(css_1);
+                document.body.classList.add("showing-heading");
+                if (hchunk_1.metadata != undefined && hchunk_1.metadata.class != undefined)
+                    heading_1.classList.add(hchunk_1.metadata.class);
                 heading_1.addEventListener("click", function onclick() {
                     heading_1.removeEventListener("click", onclick);
-                    heading_1.classList.remove("show");
-                    if (css_1 != undefined)
-                        heading_1.classList.remove(css_1);
+                    document.body.classList.remove("showing-heading");
+                    if (hchunk_1.metadata != undefined && hchunk_1.metadata.class != undefined)
+                        heading_1.classList.remove(hchunk_1.metadata.class);
                     setTimeout(function () { callback(); }, 500);
                 });
             }
             else if (chunk.kind == ChunkKind.doo) {
+                var doo = chunk;
                 var choices = Array();
                 choices.push({
                     kind: ChoiceKind.action,
                     id: 0,
-                    text: chunk.text
+                    text: doo.text,
+                    metadata: doo.metadata
                 });
                 _this.showChoices(choices, function (chosen) {
                     _this.hideChoices(callback);
@@ -1138,7 +1143,7 @@ var UI = (function () {
                 inner.classList.add("out");
             }
         };
-        this.changeBackground = function (assetName, callback) {
+        this.changeBackground = function (assetName, metadata, callback) {
             if (assetName == undefined)
                 return callback();
             assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
@@ -1179,7 +1184,7 @@ var UI = (function () {
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
         };
-        this.changeWideBackground = function (assetName, callback) {
+        this.changeWideBackground = function (assetName, metadata, callback) {
             if (assetName == undefined)
                 return callback();
             if (window.getComputedStyle(document.querySelector(".wbg")).display == "none")
@@ -1203,6 +1208,10 @@ var UI = (function () {
                 }
             };
             var one = document.createElement("iframe");
+            if (metadata.class != undefined)
+                one.setAttribute("class", metadata.class);
+            if (metadata.style != undefined)
+                one.setAttribute("style", metadata.style);
             wbg.appendChild(one);
             one.setAttribute("src", sceneUrl);
         };
@@ -1267,7 +1276,7 @@ var UI = (function () {
             }
             else if (chunk.kind == ChunkKind.dialog) {
                 var dialog = chunk;
-                var hasImage = (dialog.mood != undefined);
+                var hasImage = (dialog.metadata != undefined && dialog.metadata.image != undefined);
                 html.push("<section class='dialog'>");
                 if (hasImage) {
                     html.push("<div class='head-placeholder'></div>");
@@ -2755,53 +2764,50 @@ var Game = (function () {
             for (var _i = 0, parts_1 = parts; _i < parts_1.length; _i++) {
                 var part = parts_1[_i];
                 if (part.length > 0) {
-                    if (part.startsWith("/*")) {
+                    var parts2 = part.split("//");
+                    var command = (parts2.length > 0 ? parts2[0].trim() : null);
+                    var metadata = Game.parseMetadata(parts2.length > 1 ? parts2[1].trim() : null);
+                    if (command.startsWith("/*")) {
                         inComment = true;
                     }
                     else if (inComment) {
-                        inComment = (part.startsWith("*/") == false);
+                        inComment = (command.startsWith("*/") == false);
                     }
-                    else if (part.startsWith("//")) {
+                    else if (command == undefined || command.length == 0) {
                     }
-                    else if (part.startsWith(".a ")) {
-                        var actor = part.substring(2).trim();
-                        var aa = actor.split("/");
+                    else if (command.startsWith(".a ")) {
+                        var actor = command.substring(2).trim();
                         dialog = { kind: ChunkKind.dialog };
-                        if (aa.length == 2) {
-                            dialog.actor = aa[0].trim();
-                            dialog.mood = aa[1].trim();
-                        }
-                        else {
-                            dialog.actor = aa[0];
-                        }
+                        dialog.actor = actor;
+                        dialog.metadata = metadata;
                         fsm = "DIALOG";
                     }
-                    else if (part.startsWith("(")) {
-                        dialog.parenthetical = part;
+                    else if (command.startsWith("(")) {
+                        dialog.parenthetical = command;
                     }
-                    else if (part.startsWith(".bb")) {
-                        var asset = { kind: ChunkKind.background, asset: part.substring(3).trim(), wide: true };
+                    else if (command.startsWith(".bb")) {
+                        var asset = { kind: ChunkKind.background, asset: command.substring(3).trim(), wide: true, metadata: metadata };
                         parsed.push(asset);
                     }
-                    else if (part.startsWith(".b")) {
-                        var asset = { kind: ChunkKind.background, asset: part.substring(2).trim(), wide: false };
+                    else if (command.startsWith(".b")) {
+                        var asset = { kind: ChunkKind.background, asset: command.substring(2).trim(), wide: false, metadata: metadata };
                         parsed.push(asset);
                     }
-                    else if (part.startsWith(".i")) {
-                        var image = { kind: ChunkKind.inline, image: part.substring(2).trim() };
+                    else if (command.startsWith(".i")) {
+                        var image = { kind: ChunkKind.inline, image: command.substring(2).trim(), metadata: metadata };
                         parsed.push(image);
                     }
-                    else if (part.startsWith(".d ")) {
-                        var text = part.substring(2).trim();
-                        var pause = { kind: ChunkKind.doo, text: text };
+                    else if (command.startsWith(".d ")) {
+                        var text = command.substring(2).trim();
+                        var pause = { kind: ChunkKind.doo, text: text, metadata: metadata };
                         parsed.push(pause);
                     }
-                    else if (part.startsWith(".d")) {
-                        var space = part.indexOf(" ");
+                    else if (command.startsWith(".d")) {
+                        var space = command.indexOf(" ");
                         if (space != -1) {
-                            var chance = parseInt(part.substring(2, space));
+                            var chance = parseInt(command.substring(2, space));
                             if ((Math.random() * chance) < 1) {
-                                var lines_1 = part.substr(space).trim().split("/");
+                                var lines_1 = command.substr(space).trim().split("/");
                                 var text = { kind: ChunkKind.text };
                                 text.lines = Array();
                                 for (var _a = 0, lines_2 = lines_1; _a < lines_2.length; _a++) {
@@ -2812,41 +2818,40 @@ var Game = (function () {
                             }
                         }
                     }
-                    else if (part.startsWith(".h")) {
-                        var parts_2 = part.substring(2).trim().split("/");
+                    else if (command.startsWith(".h")) {
+                        var parts_2 = command.substring(2).trim().split("/");
                         var title = parts_2[0].trim();
                         var subtitle = (parts_2.length > 1 ? parts_2[1].trim() : undefined);
-                        var css = (parts_2.length > 2 ? parts_2[2].trim() : undefined);
-                        var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle, css: css };
+                        var heading = { kind: ChunkKind.heading, title: title, subtitle: subtitle, metadata: metadata };
                         parsed.push(heading);
                     }
-                    else if (part.startsWith(".m")) {
+                    else if (command.startsWith(".m")) {
                         var minigame = { kind: ChunkKind.minigame };
-                        var parts_3 = part.substring(2).trim().split("/");
+                        var parts_3 = command.substring(2).trim().split("/");
                         minigame.text = parts_3[0].trim();
                         minigame.url = parts_3[1].trim();
-                        var parts2 = parts_3[2].split("=>");
-                        minigame.winText = parts2[0].trim();
-                        minigame.winCommand = parts2[1].trim();
-                        parts2 = parts_3[3].split("=>");
-                        minigame.loseText = parts2[0].trim();
-                        minigame.loseCommand = parts2[1].trim();
+                        var parts2_1 = parts_3[2].split("=>");
+                        minigame.winText = parts2_1[0].trim();
+                        minigame.winCommand = parts2_1[1].trim();
+                        parts2_1 = parts_3[3].split("=>");
+                        minigame.loseText = parts2_1[0].trim();
+                        minigame.loseCommand = parts2_1[1].trim();
                         parsed.push(minigame);
                     }
-                    else if (part.startsWith(".w")) {
+                    else if (command.startsWith(".w")) {
                         var pause = { kind: ChunkKind.waitclick };
                         parsed.push(pause);
                     }
-                    else if (part.startsWith(".t ")) {
-                        var text = part.substring(2).trim();
+                    else if (command.startsWith(".t ")) {
+                        var text = command.substring(2).trim();
                         var title = { kind: ChunkKind.title, text: text };
                         parsed.push(title);
                     }
-                    else if (part.startsWith(".")) {
+                    else if (command.startsWith(".")) {
                     }
                     else {
                         if (fsm == "DIALOG") {
-                            var lines = part.split("/");
+                            var lines = command.split("/");
                             dialog.lines = Array();
                             for (var _b = 0, lines_3 = lines; _b < lines_3.length; _b++) {
                                 var line = lines_3[_b];
@@ -2856,7 +2861,7 @@ var Game = (function () {
                             fsm = "";
                         }
                         else {
-                            var lines = part.split("/");
+                            var lines = command.split("/");
                             var text = { kind: ChunkKind.text };
                             text.lines = Array();
                             for (var _c = 0, lines_4 = lines; _c < lines_4.length; _c++) {
@@ -3067,6 +3072,26 @@ Game.parseScene = function (scene) {
     data.title = scene.name;
     data.image = scene.text;
     return data;
+};
+Game.parseMetadata = function (text) {
+    if (text == undefined)
+        return null;
+    var parts = text.split(",");
+    if (parts.length == 0)
+        return null;
+    var metadata = {};
+    for (var _i = 0, parts_6 = parts; _i < parts_6.length; _i++) {
+        var part = parts_6[_i];
+        var parts2 = part.split("=");
+        if (parts2.length == 2) {
+            var command = parts2[0].toLowerCase();
+            var argument = parts2[1];
+            if (("|class|style|css|image|").indexOf("|" + command + "|") != -1) {
+                metadata[command] = argument;
+            }
+        }
+    }
+    return metadata;
 };
 Game.getDataFile = function (url, callback) {
     var xhr = new XMLHttpRequest();

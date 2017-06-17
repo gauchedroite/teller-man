@@ -111,7 +111,7 @@ body {
   background-color: #ffffff;
 }
 .solid .solid-inner {
-  opacity: 0.2;
+  opacity: 0.66;
   transition: opacity 0.15s;
 }
 .graphics {
@@ -312,6 +312,9 @@ section.image div {
   background: no-repeat center center;
   background-size: cover;
 }
+section.image div.ready {
+  height: 100%;
+}
 .choice-panel {
   position: absolute;
   width: 100%;
@@ -467,7 +470,7 @@ section.image div {
   height: 100%;
   top: -100%;
   left: 0;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.95);
   z-index: 11;
   cursor: default;
   opacity: 0;
@@ -498,10 +501,6 @@ section.image div {
   text-align: center;
   font-family: "Farsan", cursive;
   font-size: large;
-}
-.heading.show {
-  top: 0;
-  opacity: 1;
 }
 .story-window {
   z-index: 20;
@@ -610,6 +609,13 @@ body.hide-story .solid-inner {
 body.hide-story .story-inner {
   opacity: 0;
   pointer-events: none;
+}
+body.showing-heading .title {
+  display: none;
+}
+body.showing-heading .heading {
+  top: 0;
+  opacity: 1;
 }
 /*@media (min-width: @screen-sm-min) {
     .obsolete-story-inner {
