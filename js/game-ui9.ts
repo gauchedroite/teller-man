@@ -180,7 +180,7 @@ class UI9 implements IUI {
             if (this.portrait) return callback();
             let bg = <IBackground>chunk;
             this.changeBackground(bg.asset, () => {
-                if (bg.wait) {
+                if (bg.wide) {
                     content.addEventListener("click", function onclick() {
                         content.removeEventListener("click", onclick);
                         return callback();

@@ -40,7 +40,7 @@
             image.onload = function() {
                 var content = document.querySelector(".content");
                 content.style.backgroundImage = "url(" + assetName  + ")";
-                window.parent.eventHubAction({ content: "ready" });
+                window.parent.eventHubAction({ asset: "9MzoJBh", content: "ready" });
             };
             image.src = assetName;
 

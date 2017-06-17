@@ -991,16 +991,11 @@ var UI = (function () {
                 content.addEventListener("click", onclick);
             };
             if (chunk.kind == ChunkKind.background) {
-                if (_this.portrait)
-                    return callback();
-                var bg_1 = chunk;
-                _this.changeBackground(bg_1.asset, function () {
-                    if (bg_1.wait) {
-                        waitForClick(callback);
-                    }
-                    else
-                        callback();
-                });
+                var bg = chunk;
+                if (bg.wide)
+                    _this.changeWideBackground(bg.asset, callback);
+                else
+                    _this.changeBackground(bg.asset, callback);
             }
             else if (chunk.kind == ChunkKind.inline) {
                 section.style.opacity = "0";
@@ -1183,6 +1178,33 @@ var UI = (function () {
             };
             back.style.opacity = "0";
             backFrame.setAttribute("src", sceneUrl);
+        };
+        this.changeWideBackground = function (assetName, callback) {
+            if (assetName == undefined)
+                return callback();
+            if (window.getComputedStyle(document.querySelector(".wbg")).display == "none")
+                return callback();
+            var wbg = document.querySelector(".wbg-inner");
+            var zero = wbg.firstElementChild;
+            assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+            if (assetName.indexOf(".") == -1)
+                assetName += ".jpg";
+            var sceneUrl = "game/teller-image.html?" + assetName;
+            if (assetName.endsWith(".html"))
+                sceneUrl = "game/" + assetName;
+            if (sceneUrl == zero.src)
+                return callback();
+            document.body.classList.add("change-wbg");
+            window.eventHubAction = function (result) {
+                if (result.asset == assetName && result.content == "ready") {
+                    document.body.classList.remove("change-wbg");
+                    wbg.removeChild(zero);
+                    callback();
+                }
+            };
+            var one = document.createElement("iframe");
+            wbg.appendChild(one);
+            one.setAttribute("src", sceneUrl);
         };
         this.runMinigame = function (chunk, callback) {
             var minigame = chunk;
@@ -1463,9 +1485,9 @@ var UI2 = (function () {
             if (chunk.kind == ChunkKind.background) {
                 if (_this.portrait)
                     return callback();
-                var bg_2 = chunk;
-                _this.changeBackground(bg_2.asset, function () {
-                    if (bg_2.wait) {
+                var bg_1 = chunk;
+                _this.changeBackground(bg_1.asset, function () {
+                    if (bg_1.wide) {
                         waitForClick(callback);
                     }
                     else
@@ -1923,9 +1945,9 @@ var UI9 = (function () {
             if (chunk.kind == ChunkKind.background) {
                 if (_this.portrait)
                     return callback();
-                var bg_3 = chunk;
-                _this.changeBackground(bg_3.asset, function () {
-                    if (bg_3.wait) {
+                var bg_2 = chunk;
+                _this.changeBackground(bg_2.asset, function () {
+                    if (bg_2.wide) {
                         content.addEventListener("click", function onclick() {
                             content.removeEventListener("click", onclick);
                             return callback();
@@ -2757,11 +2779,12 @@ var Game = (function () {
                     else if (part.startsWith("(")) {
                         dialog.parenthetical = part;
                     }
+                    else if (part.startsWith(".bb")) {
+                        var asset = { kind: ChunkKind.background, asset: part.substring(3).trim(), wide: true };
+                        parsed.push(asset);
+                    }
                     else if (part.startsWith(".b")) {
-                        var wait = part.endsWith("/w");
-                        if (wait)
-                            part = part.substr(0, part.length - 2);
-                        var asset = { kind: ChunkKind.background, asset: part.substring(2).trim(), wait: wait };
+                        var asset = { kind: ChunkKind.background, asset: part.substring(2).trim(), wide: false };
                         parsed.push(asset);
                     }
                     else if (part.startsWith(".i")) {

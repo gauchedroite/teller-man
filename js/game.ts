@@ -616,10 +616,12 @@ class Game implements IGameInstance {
                 else if (part.startsWith("(")) {
                     dialog.parenthetical = part;
                 }
+                else if (part.startsWith(".bb")) {
+                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(3).trim(), wide: true };
+                    parsed.push(asset);
+                }
                 else if (part.startsWith(".b")) {
-                    let wait = part.endsWith("/w");
-                    if (wait) part = part.substr(0, part.length - 2);
-                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(2).trim(), wait: wait };
+                    let asset = <IBackground> { kind: ChunkKind.background, asset: part.substring(2).trim(), wide: false };
                     parsed.push(asset);
                 }
                 else if (part.startsWith(".i")) {

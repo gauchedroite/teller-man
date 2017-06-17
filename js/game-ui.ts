@@ -216,15 +216,11 @@ class UI implements IUI {
         };
 
         if (chunk.kind == ChunkKind.background) {
-            if (this.portrait) return callback();
             let bg = <IBackground>chunk;
-            this.changeBackground(bg.asset, () => {
-                if (bg.wait) {
-                    waitForClick(callback);
-                }
-                else
-                    callback();
-            });
+            if (bg.wide)
+                this.changeWideBackground(bg.asset, callback);
+            else
+                this.changeBackground(bg.asset, callback);
         }
         else if (chunk.kind == ChunkKind.inline) {
             section.style.opacity = "0";
@@ -394,10 +390,9 @@ class UI implements IUI {
             sceneUrl = `game/${assetName}`;
         else
             sceneUrl = `game/teller-image.html?${assetName}`;
-        if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
 
-        if (sceneUrl == this.previousSceneUrl)
-            return callback();
+        if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
+        if (sceneUrl == this.previousSceneUrl) return callback();
 
         this.previousSceneUrl = sceneUrl;
 
@@ -418,6 +413,36 @@ class UI implements IUI {
 
         back.style.opacity = "0";
         backFrame.setAttribute("src", sceneUrl);
+    };
+
+    private changeWideBackground = (assetName: string, callback: () => void) => {
+        if (assetName == undefined) return callback();
+        if (window.getComputedStyle(document.querySelector(".wbg")).display == "none") return callback();
+
+        let wbg = <HTMLDivElement>document.querySelector(".wbg-inner");
+        let zero = <HTMLIFrameElement>wbg.firstElementChild;
+
+        assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+        if (assetName.indexOf(".") == -1) assetName += ".jpg";
+
+        let sceneUrl = `game/teller-image.html?${assetName}`;
+        if (assetName.endsWith(".html")) sceneUrl = `game/${assetName}`;
+            
+        if (sceneUrl == zero.src) return callback();
+
+        document.body.classList.add("change-wbg");
+
+        (<any>window).eventHubAction = (result: any) => {
+            if (result.asset == assetName && result.content == "ready") {
+                document.body.classList.remove("change-wbg");
+                wbg.removeChild(zero);
+                callback();
+            }
+        };
+
+        let one = document.createElement("iframe");
+        wbg.appendChild(one);
+        one.setAttribute("src", sceneUrl);
     };
 
     private runMinigame = (chunk: IMiniGame, callback: (result?: any) => void) => {

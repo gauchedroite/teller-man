@@ -111,7 +111,7 @@ body {
   background-color: #ffffff;
 }
 .solid .solid-inner {
-  opacity: 0.5;
+  opacity: 0.2;
   transition: opacity 0.15s;
 }
 .graphics {
@@ -137,6 +137,25 @@ body {
   opacity: 0;
   z-index: 0;
   background-color: black;
+}
+@media (min-width: 768px) {
+  .wbg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+  .wbg iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+  }
+}
+.wbg {
+  display: none;
 }
 .story {
   z-index: 10;
@@ -592,44 +611,81 @@ body.hide-story .story-inner {
   opacity: 0;
   pointer-events: none;
 }
+/*@media (min-width: @screen-sm-min) {
+    .obsolete-story-inner {
+        bottom: 1%;
+        left: 1%;
+        width: 30%;
+        min-width: 350px;
+        max-width: 450px;
+        height: calc(25% + 0px);
+        border-top: 4px solid rgba(255, 255, 255, 0.5);
+        background-color: rgba(255, 255, 255, 0.2);
+        transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
+
+        .content {
+            transition: top 0.2s 0.1s;        
+        }
+
+        &.minimized {
+            border-top: 4px solid rgba(255, 255, 255, 0);
+            background-color: rgba(255, 255, 255, 0);
+            .content {
+                top: 100%;
+            }
+            .modal {
+                height: initial;
+                top: initial;
+                bottom: 0;
+                font-size: inherit;
+                .modal-inner {
+                    width: inherit;
+                    padding: 8px 52px 8px 8px;
+                    background-color: rgba(255, 255, 255, 0.5);
+                    border-radius: inherit;
+                }
+                .minimizer {
+                    right: 2px;
+                    transform: rotate(180deg) scale(0.75);
+                    background-color: #ccc;
+                }
+            }
+        }
+    }
+}*/
 @media (min-width: 768px) {
-  .story-inner {
-    bottom: 1%;
-    left: 1%;
-    width: 30%;
-    min-width: 350px;
-    max-width: 450px;
-    height: calc(25% + 0px);
-    border-top: 4px solid rgba(255, 255, 255, 0.5);
-    background-color: rgba(255, 255, 255, 0.2);
-    transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
+  .wbg {
+    display: block;
   }
-  .story-inner .content {
-    transition: top 0.2s 0.1s;
+  .game-body {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #3c3c3c;
   }
-  .story-inner.minimized {
-    border-top: 4px solid rgba(255, 255, 255, 0);
-    background-color: rgba(255, 255, 255, 0);
+  .game-body iframe {
+    transition: opacity 0.5s;
   }
-  .story-inner.minimized .content {
-    top: 100%;
+  .game-story {
+    position: relative;
+    background-color: #222222;
+    width: 100%;
+    max-width: 414px;
+    height: 736px;
+    max-height: 95%;
+    margin: 10% auto;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0px 9px 13px 0px rgba(0, 0, 0, 0.3);
   }
-  .story-inner.minimized .modal {
-    height: initial;
-    top: initial;
-    bottom: 0;
-    font-size: inherit;
+  body.landscape .game-story {
+    max-height: 736px;
+    margin: 2% auto;
   }
-  .story-inner.minimized .modal .modal-inner {
-    width: inherit;
-    padding: 8px 52px 8px 8px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: inherit;
-  }
-  .story-inner.minimized .modal .minimizer {
-    right: 2px;
-    transform: rotate(180deg) scale(0.75);
-    background-color: #ccc;
+  body.change-wbg .wbg iframe {
+    opacity: 0;
   }
 }
 .heading.jaune .heading-inner {

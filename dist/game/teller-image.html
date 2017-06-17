@@ -35,14 +35,15 @@
         document.addEventListener("DOMContentLoaded", function() {
 
             var assetName = "assets/" + window.location.search.substring(1);
-            
+//setTimeout(function() {            
             var image = new Image();
             image.onload = function() {
                 var content = document.querySelector(".content");
                 content.style.backgroundImage = "url(" + assetName  + ")";
-                window.parent.eventHubAction({ content: "ready" });
+                window.parent.eventHubAction({ asset: window.location.search.substring(1), content: "ready" });
             };
             image.src = assetName;
+//}, 5000);
 
         }, false);
     </script>

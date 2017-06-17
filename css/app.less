@@ -24,7 +24,7 @@ body {
     height: 100%;
     background-color: #ffffff;
     .solid-inner {
-        opacity: 0.5;
+        opacity: 0.2;
         transition: opacity 0.15s;
     }
 }
@@ -53,4 +53,23 @@ body {
     opacity: 0;
     z-index: 0;
     background-color: black;
+}
+
+
+@media (min-width: @screen-sm-min) {
+    .wbg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+        iframe {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 0;
+            padding: 0;
+            margin: 0;
+            overflow: hidden;
+        }
+    }
 }

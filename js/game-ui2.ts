@@ -186,7 +186,7 @@ class UI2 implements IUI {
             if (this.portrait) return callback();
             let bg = <IBackground>chunk;
             this.changeBackground(bg.asset, () => {
-                if (bg.wait) {
+                if (bg.wide) {
                     waitForClick(callback);
                 }
                 else
