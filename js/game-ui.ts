@@ -144,9 +144,9 @@ class UI implements IUI {
         let storyInner = <HTMLElement>document.querySelector(".story-inner");
         storyInner.classList.remove("minimized");
 
-        let text = <HTMLElement>document.querySelector(".content-inner");
-        text.style.marginBottom = panel.offsetHeight + "px";
-        this.scrollContent(text.parentElement);
+        let article = <HTMLElement>document.querySelector("article");
+        article.style.marginBottom = panel.offsetHeight + "px";
+        this.scrollContent(article.parentElement);
 
         let me = this;
         let lis = document.querySelectorAll(".choice-panel li");
@@ -187,9 +187,9 @@ class UI implements IUI {
         var panel = <HTMLElement>document.querySelector(".choice-panel");
         panel.style.top = "100%";
 
-        var text = <HTMLElement>document.querySelector(".content-inner");
-        text.style.marginBottom = "0";
-        text.setAttribute("style", "");
+        var article = <HTMLElement>document.querySelector("article");
+        article.style.marginBottom = "0";
+        article.setAttribute("style", "");
         
         setTimeout(callback, 250/*matches .choice-panel transition*/);
     };
@@ -197,13 +197,13 @@ class UI implements IUI {
     initScene = (data: ISceneData, callback: () => void) => {
         this.setTitle(data.title);
         if (data.image == undefined) return callback();
-        this.changeBackground(data.image, null, callback);
+        this.changeBackground(data.image, undefined, callback);
     };
 
     addBlurb = (chunk: IMomentData, callback: (result?: any) => void) => {
         let html = this.markupChunk(chunk);
         let content = document.querySelector(".content");
-        let inner = document.querySelector(".content-inner");
+        let article = document.querySelector("article");
         let div = document.createElement("div");
         div.innerHTML = html;
         let section = <HTMLDivElement>div.firstChild;
@@ -227,8 +227,8 @@ class UI implements IUI {
             let inline = <IInline>chunk;
             if (inline.metadata != undefined && inline.metadata.class != undefined) section.classList.add(inline.metadata.class);
             if (inline.metadata != undefined && inline.metadata.style != undefined) section.setAttribute("style", inline.metadata.style);
-            inner.appendChild(section);
-            this.scrollContent(inner.parentElement);
+            article.appendChild(section);
+            this.scrollContent(article.parentElement);
 
             let assetName = inline.image.replace(/ /g, "%20").replace(/'/g, "%27");
             if (assetName.indexOf(".") == -1) assetName += ".jpg";
@@ -244,8 +244,8 @@ class UI implements IUI {
         }
         else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
             section.style.opacity = "0";
-            inner.appendChild(section);
-            this.scrollContent(inner.parentElement);
+            article.appendChild(section);
+            this.scrollContent(article.parentElement);
             section.style.opacity = "1";
             section.style.transition = "all 0.15s ease";
 
@@ -321,6 +321,13 @@ class UI implements IUI {
             this.setTitle((<ITitle>chunk).text);
             callback();
         }
+        else if (chunk.kind == ChunkKind.style) {
+            let style = <IStyle>chunk;
+            let article = document.querySelector("article");
+            if (style.metadata != undefined && style.metadata.class != undefined) article.classList.add(style.metadata.class);
+            if (style.metadata != undefined && style.metadata.style != undefined) article.setAttribute("style", style.metadata.style);
+            callback();
+        }
         else {
             callback();
         }
@@ -331,17 +338,17 @@ class UI implements IUI {
         	.replace(/ style\="visibility:hidden"/g, "")
             .replace(/<span>/g, "")
             .replace(/<\/span>/g, "");
-        var content = document.querySelector(".content-inner");
+        var article = document.querySelector("article");
         var div = document.createElement("div");
         div.innerHTML = html;
         var section = <HTMLDivElement>div.firstChild;
-        content.appendChild(section);
+        article.appendChild(section);
         callback();
     };
 
     clearBlurb = () => {
-        var content = <HTMLDivElement>document.querySelector(".content-inner");
-        content.innerHTML = "";
+        var article = <HTMLDivElement>document.querySelector("article");
+        article.innerHTML = "";
     };
 
     addChildWindow = (source: string, callback: (game: IGameInstance) => void) => {
@@ -371,80 +378,67 @@ class UI implements IUI {
 
     private changeBackground = (assetName: string, metadata: IMetadata, callback: () => void) => {
         if (assetName == undefined) return callback();
-        assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+        if (window.getComputedStyle(document.querySelector(".bg")).display == "none") return callback();
 
-        let solid = <HTMLDivElement>document.querySelector(".solid-inner");
-        let zero = <HTMLDivElement>solid.children[0];
-        let one = <HTMLDivElement>solid.children[1];
-        let back = (zero.style.zIndex == "0" ? zero : one); 
-        let front = (zero.style.zIndex == "0" ? one : zero); 
+        let bg = <HTMLDivElement>document.querySelector(".bg-inner");
+        let zero = <HTMLIFrameElement>bg.firstElementChild;
 
-        let backFrame = <HTMLIFrameElement>back.firstElementChild;
-        let frontFrame = <HTMLIFrameElement>front.firstElementChild;
-
-        let css = assetName.replace(".html", "").replace(".jpg", "").replace(".png", "");
-        document.body.setAttribute("data-bg", css);
-
+        assetName = encodeURIComponent(assetName);
         if (assetName.indexOf(".") == -1) assetName += ".jpg";
-        let sceneUrl: string;
-        if (assetName.endsWith(".html")) 
-            sceneUrl = `game/${assetName}`;
-        else
-            sceneUrl = `game/teller-image.html?${assetName}`;
 
-        if (frontFrame.src.indexOf(sceneUrl) != -1) return callback();
-        if (sceneUrl == this.previousSceneUrl) return callback();
-
-        this.previousSceneUrl = sceneUrl;
+        let sceneUrl = `game/teller-image.html?${assetName}`;
+        if (assetName.endsWith(".html")) sceneUrl = `game/${assetName}`;
+            
+        if (zero.src.endsWith(sceneUrl)) return callback();
 
         document.body.classList.add("change-bg");
 
         (<any>window).eventHubAction = (result: any) => {
-            if (result.content == "ready") {
-                back.style.opacity = "1";
-                front.style.opacity = "0";
-                document.body.classList.remove("change-bg");
-                setTimeout(() => { //do not use "transitionend" here as it was failing on me. hardcode the delay instead
-                    back.style.zIndex = "1";
-                    front.style.zIndex = "0";
+            if (result.asset == assetName && result.content == "ready") {
+                setTimeout(function() {
+                    document.body.classList.remove("change-bg");
+                    bg.removeChild(zero);
                     callback();
-                }, 500);
+                }, 250);
             }
         };
 
-        back.style.opacity = "0";
-        backFrame.setAttribute("src", sceneUrl);
+        let one = document.createElement("iframe");
+        if (metadata != undefined && metadata.class != undefined) one.setAttribute("class", metadata.class);
+        if (metadata != undefined && metadata.style != undefined) one.setAttribute("style", metadata.style);
+        bg.appendChild(one);
+        one.setAttribute("src", sceneUrl);
     };
 
     private changeWideBackground = (assetName: string, metadata: IMetadata, callback: () => void) => {
         if (assetName == undefined) return callback();
         if (window.getComputedStyle(document.querySelector(".wbg")).display == "none") return callback();
 
-        let wbg = <HTMLDivElement>document.querySelector(".wbg-inner");
-        let zero = <HTMLIFrameElement>wbg.firstElementChild;
+        let bg = <HTMLDivElement>document.querySelector(".wbg-inner");
+        let zero = <HTMLIFrameElement>bg.firstElementChild;
 
-        assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+        assetName = encodeURIComponent(assetName);
         if (assetName.indexOf(".") == -1) assetName += ".jpg";
 
         let sceneUrl = `game/teller-image.html?${assetName}`;
         if (assetName.endsWith(".html")) sceneUrl = `game/${assetName}`;
             
-        if (sceneUrl == zero.src) return callback();
+        if (zero.src.endsWith(sceneUrl)) return callback();
 
         document.body.classList.add("change-wbg");
 
         (<any>window).eventHubAction = (result: any) => {
             if (result.asset == assetName && result.content == "ready") {
                 document.body.classList.remove("change-wbg");
-                wbg.removeChild(zero);
+                bg.removeChild(zero);
                 callback();
             }
         };
 
         let one = document.createElement("iframe");
-        if (metadata.class != undefined) one.setAttribute("class", metadata.class);
-        if (metadata.style != undefined) one.setAttribute("style", metadata.style);
-        wbg.appendChild(one);
+        if (metadata != undefined && metadata.class != undefined) one.setAttribute("class", metadata.class);
+        if (metadata != undefined && metadata.style != undefined) one.setAttribute("style", metadata.style);
+        bg.appendChild(one);
         one.setAttribute("src", sceneUrl);
     };
 

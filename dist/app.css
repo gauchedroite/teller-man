@@ -103,40 +103,23 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
 }
-.solid {
-  z-index: 0;
+.bg {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: #ffffff;
 }
-.solid .solid-inner {
-  opacity: 0.66;
-  transition: opacity 0.15s;
+.bg .bg-inner {
+  opacity: 0.5;
 }
-.graphics {
+.bg iframe {
   position: absolute;
   width: 100%;
   height: 100%;
-  display: block;
-  transition: opacity 0.75s;
-}
-.graphics iframe {
   border: 0;
   padding: 0;
   margin: 0;
   overflow: hidden;
-  width: 100%;
-  height: 100%;
-}
-.graphics.game {
-  opacity: 0;
-  z-index: 0;
-}
-.fader {
-  opacity: 0;
-  z-index: 0;
-  background-color: black;
+  transition: opacity 0.5s;
 }
 @media (min-width: 768px) {
   .wbg {
@@ -211,10 +194,6 @@ body {
   margin-right: 8px;
   border: 2px solid rgba(0, 0, 0, 0.5);
 }
-.story .content .content-inner {
-  color: #ccc;
-  text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
-}
 .story-inner {
   position: absolute;
   overflow: hidden;
@@ -233,11 +212,13 @@ body {
 .content::-webkit-scrollbar {
   display: none;
 }
-.content .content-inner {
+.content article {
   padding: 16px 0;
   line-height: 1.4em;
+  color: #ccc;
+  text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
 }
-.content .content-inner p {
+.content article p {
   padding-bottom: 12px;
 }
 section {
@@ -585,14 +566,12 @@ body.show-game .navbar-inner .title {
 body.show-game .story-window {
   opacity: 0;
 }
-body.change-bg .fader {
-  z-index: 3;
-  opacity: 0.35;
+body.change-bg .bg iframe {
+  opacity: 0;
 }
 body.change-bg .preloader {
-  z-index: 30;
   opacity: 1;
-  transition-delay: 1s;
+  transition: opacity 0.5s 1.5s;
 }
 body.showing-choices .content {
   opacity: 0.5;
@@ -603,7 +582,7 @@ body.showing-alert .content {
   transition: opacity 0.25s;
   pointer-events: none;
 }
-body.hide-story .solid-inner {
+body.hide-story .bg-inner {
   opacity: 1;
 }
 body.hide-story .story-inner {

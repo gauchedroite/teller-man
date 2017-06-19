@@ -675,6 +675,8 @@ class Game implements IGameInstance {
                     parsed.push(title);
                 }
                 else if (command.startsWith(".")) {
+                    let style = <IStyle> { kind: ChunkKind.style, metadata: metadata };
+                    parsed.push(style);
                 }
                 else {
                     if (fsm == "DIALOG") {

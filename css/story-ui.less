@@ -61,15 +61,6 @@
     }
 }
 
-.story {
-    .content {
-        .content-inner {
-            color: #ccc;
-            text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
-        }
-    }
-}
-
 .story-inner {
     position: absolute;
     overflow: hidden;
@@ -85,13 +76,17 @@
     overflow: scroll;
     &::-webkit-scrollbar { display: none; }
     -ms-overflow-style: none;
-    .content-inner {
+
+    article {
         padding: 16px 0;
         line-height: 1.4em;
+        color: #ccc;
+        text-shadow: rgba(0, 0, 0, 0.5) -1px 1px 1px, rgba(0, 0, 0, 0.5) 1px -1px 1px, rgba(0, 0, 0, 0.5) -1px -1px 1px, rgba(0, 0, 0, 0.5) 1px 1px 1px;
         p {
             padding-bottom: 12px;
         }
     }
+
     transition: opacity 0.25s; 
 }
 
@@ -441,14 +436,14 @@ body.show-game {
 }
 
 body.change-bg {
-    .fader {
-        z-index: 3;
-        opacity: 0.35;
+    .bg {
+        iframe {
+            opacity: 0;
+        }
     }
     .preloader {
-        z-index: 30;
         opacity: 1;
-        transition-delay: 1s;
+        transition: opacity 0.5s 1.5s;
     }
 }
 
@@ -468,7 +463,7 @@ body.showing-alert {
 }
 
 body.hide-story {
-    .solid-inner {
+    .bg-inner {
         opacity: 1;
     }
     .story-inner {

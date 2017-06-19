@@ -28,6 +28,7 @@ var ChunkKind;
     ChunkKind[ChunkKind["gameresult"] = 7] = "gameresult";
     ChunkKind[ChunkKind["waitclick"] = 8] = "waitclick";
     ChunkKind[ChunkKind["title"] = 9] = "title";
+    ChunkKind[ChunkKind["style"] = 10] = "style";
 })(ChunkKind || (ChunkKind = {}));
 var Op;
 (function (Op) {
@@ -929,9 +930,9 @@ var UI = (function () {
             panel.style.top = "calc(100% - " + panel.offsetHeight + "px)";
             var storyInner = document.querySelector(".story-inner");
             storyInner.classList.remove("minimized");
-            var text = document.querySelector(".content-inner");
-            text.style.marginBottom = panel.offsetHeight + "px";
-            _this.scrollContent(text.parentElement);
+            var article = document.querySelector("article");
+            article.style.marginBottom = panel.offsetHeight + "px";
+            _this.scrollContent(article.parentElement);
             var me = _this;
             var lis = document.querySelectorAll(".choice-panel li");
             var onChoice = function (e) {
@@ -968,21 +969,21 @@ var UI = (function () {
             //storyInner.style.height = "25%";
             var panel = document.querySelector(".choice-panel");
             panel.style.top = "100%";
-            var text = document.querySelector(".content-inner");
-            text.style.marginBottom = "0";
-            text.setAttribute("style", "");
+            var article = document.querySelector("article");
+            article.style.marginBottom = "0";
+            article.setAttribute("style", "");
             setTimeout(callback, 250 /*matches .choice-panel transition*/);
         };
         this.initScene = function (data, callback) {
             _this.setTitle(data.title);
             if (data.image == undefined)
                 return callback();
-            _this.changeBackground(data.image, null, callback);
+            _this.changeBackground(data.image, undefined, callback);
         };
         this.addBlurb = function (chunk, callback) {
             var html = _this.markupChunk(chunk);
             var content = document.querySelector(".content");
-            var inner = document.querySelector(".content-inner");
+            var article = document.querySelector("article");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
@@ -1006,8 +1007,8 @@ var UI = (function () {
                     section.classList.add(inline.metadata.class);
                 if (inline.metadata != undefined && inline.metadata.style != undefined)
                     section.setAttribute("style", inline.metadata.style);
-                inner.appendChild(section);
-                _this.scrollContent(inner.parentElement);
+                article.appendChild(section);
+                _this.scrollContent(article.parentElement);
                 var assetName_1 = inline.image.replace(/ /g, "%20").replace(/'/g, "%27");
                 if (assetName_1.indexOf(".") == -1)
                     assetName_1 += ".jpg";
@@ -1023,8 +1024,8 @@ var UI = (function () {
             }
             else if (chunk.kind == ChunkKind.text || chunk.kind == ChunkKind.dialog || chunk.kind == ChunkKind.gameresult) {
                 section.style.opacity = "0";
-                inner.appendChild(section);
-                _this.scrollContent(inner.parentElement);
+                article.appendChild(section);
+                _this.scrollContent(article.parentElement);
                 section.style.opacity = "1";
                 section.style.transition = "all 0.15s ease";
                 if (chunk.kind == ChunkKind.dialog) {
@@ -1064,8 +1065,8 @@ var UI = (function () {
             else if (chunk.kind == ChunkKind.heading) {
                 var hchunk_1 = chunk;
                 var heading_1 = document.querySelector(".heading");
-                var inner_1 = document.querySelector(".heading-inner");
-                inner_1.innerHTML = html;
+                var inner = document.querySelector(".heading-inner");
+                inner.innerHTML = html;
                 document.body.classList.add("showing-heading");
                 if (hchunk_1.metadata != undefined && hchunk_1.metadata.class != undefined)
                     heading_1.classList.add(hchunk_1.metadata.class);
@@ -1100,6 +1101,15 @@ var UI = (function () {
                 _this.setTitle(chunk.text);
                 callback();
             }
+            else if (chunk.kind == ChunkKind.style) {
+                var style = chunk;
+                var article_1 = document.querySelector("article");
+                if (style.metadata != undefined && style.metadata.class != undefined)
+                    article_1.classList.add(style.metadata.class);
+                if (style.metadata != undefined && style.metadata.style != undefined)
+                    article_1.setAttribute("style", style.metadata.style);
+                callback();
+            }
             else {
                 callback();
             }
@@ -1109,16 +1119,16 @@ var UI = (function () {
                 .replace(/ style\="visibility:hidden"/g, "")
                 .replace(/<span>/g, "")
                 .replace(/<\/span>/g, "");
-            var content = document.querySelector(".content-inner");
+            var article = document.querySelector("article");
             var div = document.createElement("div");
             div.innerHTML = html;
             var section = div.firstChild;
-            content.appendChild(section);
+            article.appendChild(section);
             callback();
         };
         this.clearBlurb = function () {
-            var content = document.querySelector(".content-inner");
-            content.innerHTML = "";
+            var article = document.querySelector("article");
+            article.innerHTML = "";
         };
         this.addChildWindow = function (source, callback) {
             var storyWindow = document.querySelector(".story-window");
@@ -1146,73 +1156,65 @@ var UI = (function () {
         this.changeBackground = function (assetName, metadata, callback) {
             if (assetName == undefined)
                 return callback();
-            assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
-            var solid = document.querySelector(".solid-inner");
-            var zero = solid.children[0];
-            var one = solid.children[1];
-            var back = (zero.style.zIndex == "0" ? zero : one);
-            var front = (zero.style.zIndex == "0" ? one : zero);
-            var backFrame = back.firstElementChild;
-            var frontFrame = front.firstElementChild;
-            var css = assetName.replace(".html", "").replace(".jpg", "").replace(".png", "");
-            document.body.setAttribute("data-bg", css);
+            if (window.getComputedStyle(document.querySelector(".bg")).display == "none")
+                return callback();
+            var bg = document.querySelector(".bg-inner");
+            var zero = bg.firstElementChild;
+            assetName = encodeURIComponent(assetName);
             if (assetName.indexOf(".") == -1)
                 assetName += ".jpg";
-            var sceneUrl;
+            var sceneUrl = "game/teller-image.html?" + assetName;
             if (assetName.endsWith(".html"))
                 sceneUrl = "game/" + assetName;
-            else
-                sceneUrl = "game/teller-image.html?" + assetName;
-            if (frontFrame.src.indexOf(sceneUrl) != -1)
+            if (zero.src.endsWith(sceneUrl))
                 return callback();
-            if (sceneUrl == _this.previousSceneUrl)
-                return callback();
-            _this.previousSceneUrl = sceneUrl;
             document.body.classList.add("change-bg");
             window.eventHubAction = function (result) {
-                if (result.content == "ready") {
-                    back.style.opacity = "1";
-                    front.style.opacity = "0";
-                    document.body.classList.remove("change-bg");
+                if (result.asset == assetName && result.content == "ready") {
                     setTimeout(function () {
-                        back.style.zIndex = "1";
-                        front.style.zIndex = "0";
+                        document.body.classList.remove("change-bg");
+                        bg.removeChild(zero);
                         callback();
-                    }, 500);
+                    }, 250);
                 }
             };
-            back.style.opacity = "0";
-            backFrame.setAttribute("src", sceneUrl);
+            var one = document.createElement("iframe");
+            if (metadata != undefined && metadata.class != undefined)
+                one.setAttribute("class", metadata.class);
+            if (metadata != undefined && metadata.style != undefined)
+                one.setAttribute("style", metadata.style);
+            bg.appendChild(one);
+            one.setAttribute("src", sceneUrl);
         };
         this.changeWideBackground = function (assetName, metadata, callback) {
             if (assetName == undefined)
                 return callback();
             if (window.getComputedStyle(document.querySelector(".wbg")).display == "none")
                 return callback();
-            var wbg = document.querySelector(".wbg-inner");
-            var zero = wbg.firstElementChild;
-            assetName = assetName.replace(/ /g, "%20").replace(/'/g, "%27");
+            var bg = document.querySelector(".wbg-inner");
+            var zero = bg.firstElementChild;
+            assetName = encodeURIComponent(assetName);
             if (assetName.indexOf(".") == -1)
                 assetName += ".jpg";
             var sceneUrl = "game/teller-image.html?" + assetName;
             if (assetName.endsWith(".html"))
                 sceneUrl = "game/" + assetName;
-            if (sceneUrl == zero.src)
+            if (zero.src.endsWith(sceneUrl))
                 return callback();
             document.body.classList.add("change-wbg");
             window.eventHubAction = function (result) {
                 if (result.asset == assetName && result.content == "ready") {
                     document.body.classList.remove("change-wbg");
-                    wbg.removeChild(zero);
+                    bg.removeChild(zero);
                     callback();
                 }
             };
             var one = document.createElement("iframe");
-            if (metadata.class != undefined)
+            if (metadata != undefined && metadata.class != undefined)
                 one.setAttribute("class", metadata.class);
-            if (metadata.style != undefined)
+            if (metadata != undefined && metadata.style != undefined)
                 one.setAttribute("style", metadata.style);
-            wbg.appendChild(one);
+            bg.appendChild(one);
             one.setAttribute("src", sceneUrl);
         };
         this.runMinigame = function (chunk, callback) {
@@ -1566,8 +1568,8 @@ var UI2 = (function () {
             }
             else if (chunk.kind == ChunkKind.heading) {
                 var heading_2 = document.querySelector(".heading");
-                var inner_2 = document.querySelector(".heading-inner");
-                inner_2.innerHTML = html;
+                var inner_1 = document.querySelector(".heading-inner");
+                inner_1.innerHTML = html;
                 heading_2.classList.add("show", "showing");
                 heading_2.addEventListener("click", function onclick() {
                     heading_2.removeEventListener("click", onclick);
@@ -2033,8 +2035,8 @@ var UI9 = (function () {
             }
             else if (chunk.kind == ChunkKind.heading) {
                 var heading_3 = document.querySelector(".heading");
-                var inner_3 = document.querySelector(".heading-inner");
-                inner_3.innerHTML = html;
+                var inner_2 = document.querySelector(".heading-inner");
+                inner_2.innerHTML = html;
                 heading_3.classList.add("show", "showing");
                 heading_3.addEventListener("click", function onclick() {
                     heading_3.removeEventListener("click", onclick);
@@ -2848,6 +2850,8 @@ var Game = (function () {
                         parsed.push(title);
                     }
                     else if (command.startsWith(".")) {
+                        var style = { kind: ChunkKind.style, metadata: metadata };
+                        parsed.push(style);
                     }
                     else {
                         if (fsm == "DIALOG") {
