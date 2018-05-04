@@ -513,7 +513,6 @@ section.image div.ready {
   left: 0;
   width: 100%;
   height: calc(100% - 60px);
-  border-top: 4px solid rgba(255, 255, 255, 0.5);
   background-color: rgba(255, 255, 255, 0.2);
   transition: height 0.15s, border 0.15s, background 0.15s, opacity 0.25s;
 }
