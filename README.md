@@ -7,5 +7,5 @@ Everything is written in TypeScript and LESS.
 
 Only npm scripts are used to build the app. No fancy webpack or gulp scripts involved.
 
-See the [Wiki](wiki) for more docs.
+See the [Wikki](wiki) for more docs.
 
